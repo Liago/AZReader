@@ -1,0 +1,7 @@
+{
+  "name": "AZReader",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
