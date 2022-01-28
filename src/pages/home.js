@@ -1,13 +1,18 @@
-import MessageListItem from "../components/MessageListItem";
 import { useEffect, useRef, useState } from "react";
-import { getMessages } from "../data/messages";
+import { useDispatch } from "react-redux";
+
 import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon, IonImg, IonList, IonModal, IonPage, IonRefresher, IonRefresherContent, IonSearchbar, IonTitle, IonToolbar, useIonViewWillEnter } from "@ionic/react";
-import { close, pulse } from "ionicons/icons";
+import MessageListItem from "../components/MessageListItem";
+import { close, pulse, saveOutline } from "ionicons/icons";
 
 import { getArticledParsed } from "../store/rest";
 
+import { getMessages } from "../data/messages";
 import "./Home.css";
+import { savePost } from "../store/actions";
+
 const Home = () => {
+	const dispatch = useDispatch()
 	const [messages, setMessages] = useState([]);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
@@ -41,7 +46,7 @@ const Home = () => {
 	const renderArticle = () => {
 		if (!articleParsed) return;
 
-		const { title, content, lead_image_url} = articleParsed;
+		const { title, content, lead_image_url } = articleParsed;
 
 		return (
 			<IonCard>
@@ -56,6 +61,10 @@ const Home = () => {
 				</IonCardContent>
 			</IonCard>
 		)
+	}
+
+	const savePostHandler = () => {
+		dispatch(savePost(articleParsed))
 	}
 
 	return (
@@ -100,6 +109,12 @@ const Home = () => {
 								<IonToolbar>
 									<IonTitle>Post parser</IonTitle>
 									<IonButtons slot="end">
+										<IonButton
+											color='dark'
+											onClick={savePostHandler}
+										>
+											<IonIcon slot='icon-only' icon={saveOutline} />
+										</IonButton>
 										<IonButton onClick={() => setShowModal(false)}>
 											<IonIcon slot="icon-only" icon={close} />
 										</IonButton>
