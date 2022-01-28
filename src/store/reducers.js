@@ -1,5 +1,4 @@
 import _ from "lodash";
-// import { reducer as formReducer } from 'redux-form';
 
 import * as actionTypes from "./actionTypes";
 

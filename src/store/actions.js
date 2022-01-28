@@ -309,16 +309,12 @@ export const login = (credentials) => {
 		if (!response.data.success) {
 			alert('Invalid credentials');
 		} else {
-			// const { token } = response.data;
 			console.log(`response`, response)
 
 			dispatch({
 				type: actionTypes.LOGIN,
 				payload: response.data.data[0]
 			});
-			// setTimeout(() => {
-			// 	document.location = "/home";
-			// }, 1000);
 		}
 		return Promise.resolve();
 	}
