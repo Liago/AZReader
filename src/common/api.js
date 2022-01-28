@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from 'axios';
-// import { endpoint } from "../config/appSettings";
-
-const endpoint = { api: 'http://localhost:3000' }
+import { endpoint } from "../config/appSettings";
 
 const wrappedApi = ({ store }) => {
 
@@ -90,11 +88,55 @@ const wrappedApi = ({ store }) => {
 		];
 	}
 
+	const UseLazyAuthApi = (method, url, opts = {}) => {
+		const [error, setError] = useState(null);
+		const [event, setEvent] = useState({
+			loading: true,
+			data: null
+		});
 
+		const token = store.getState()?.app?.token || null;
+
+		const func = async (payload = {}) => {
+			try {
+				setEvent({
+					loading: true,
+					data: null
+				});
+
+				const response = await axios({
+					baseURL: endpoint.firebase_auth,
+					headers: {
+						'Authorization': 'Bearer ' + token
+					},
+					method,
+					url,
+					data: { ...payload, ...opts }
+				});
+
+				setEvent({
+					loading: false,
+					data: response.data
+				});
+			} catch (e) {
+				setError(e);
+			}
+		}
+
+		return [
+			func,
+			{
+				error,
+				loading: event.loading,
+				data: event.data
+			}
+		];
+	}
 	return {
 		UseRawCall,
 		UseApi,
-		UseLazyApi
+		UseLazyApi,
+		UseLazyAuthApi
 	}
 }
 

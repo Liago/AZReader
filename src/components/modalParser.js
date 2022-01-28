@@ -23,6 +23,7 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 							<IonTitle>Post parser</IonTitle>
 							<IonButtons slot="end">
 								<IonButton
+									disabled={!articleParsed && true}
 									color='dark'
 									onClick={savePostHandler}
 								>

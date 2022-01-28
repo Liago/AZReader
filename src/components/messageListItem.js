@@ -7,7 +7,7 @@ import './MessageListItem.css';
 const MessageListItem = ({ post }) => {
 
 	return (
-		<IonItem routerLink={`/message/${post.id}`} detail={false}>
+		<IonItem routerLink={`/article/${post.id}`} detail={false}>
 			<div slot="start" className="dot dot-unread"></div>
 			<IonLabel className="ion-text-wrap">
 				<h2>

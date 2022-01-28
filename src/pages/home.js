@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar } from "@ionic/react";
-import { pulse } from "ionicons/icons";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal } from "@ionic/react";
+import { pulse, umbrellaSharp } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
+import AuthenticationForm from "../components/form/auth";
 
 import { savePost } from "../store/actions";
 import { getArticledParsed } from "../store/rest";
@@ -24,6 +25,15 @@ const Home = () => {
 
 	const pageRef = useRef();
 
+	const handleDismiss = () => dismiss();
+
+	const [present, dismiss] = useIonModal(AuthenticationForm, {
+		onDismiss: handleDismiss,
+		breakpoints: [0.1, 0.5, 1],
+		initialBreakpoint: 0.5,
+	});
+
+
 	const refresh = (e) => {
 		setTimeout(() => {
 			e.detail.complete();
@@ -31,28 +41,24 @@ const Home = () => {
 	};
 	useEffect(() => {
 		if (searchText === '') return;
-		console.log('searchText', searchText);
 
-		parseArticle()
+		parseArticle();
 	}, [searchText])
-
-	useEffect(() => {
-		if (loading || !articleParsed) return;
-
-		console.log('articleParsed', articleParsed);
-	}, [loading])
 
 	const savePostHandler = () => {
 		dispatch(savePost(articleParsed))
 	}
+
 	const renderPostList = () => {
 		if (isEmpty(list)) return;
 
-		return (
-			list.map((item, i) => (
-				<MessageListItem key={i} post={item} />
-			))
-		)
+		return list.map((item, i) => <MessageListItem key={i} post={item} />)
+	}
+
+	const renderModalParser = () => {
+		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText }
+
+		return <ModalParser {...modalProps} />
 	}
 
 	return (
@@ -61,6 +67,12 @@ const Home = () => {
 				<IonToolbar>
 					<IonTitle>Articoli</IonTitle>
 					<IonButtons slot="primary">
+						<IonButton
+							color="dark"
+							onClick={() => present()}
+						>
+							<IonIcon slot='icon-only' icon={umbrellaSharp} />
+						</IonButton>
 						<IonButton
 							color="dark"
 							onClick={() => setShowModal(true)}
@@ -80,11 +92,10 @@ const Home = () => {
 						<IonTitle size="large">Articoli</IonTitle>
 					</IonToolbar>
 				</IonHeader>
-
 				<IonList>
 					{renderPostList()}
 				</IonList>
-				<ModalParser  {...{ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText }} />
+				{renderModalParser()}
 			</IonContent >
 		</IonPage >
 	);

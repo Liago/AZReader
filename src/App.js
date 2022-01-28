@@ -39,7 +39,7 @@ const App = () => (
 					<IonRouterOutlet>
 						<Route path="/home" exact={true} component={Home}>
 						</Route>
-						<Route path="/message/:id" component={ViewMessage}>
+						<Route path="/article/:id" component={ViewMessage}>
 						</Route>
 						<Route path="/" exact={true}>
 							<Redirect to="/home" />
