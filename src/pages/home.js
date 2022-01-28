@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon, IonImg, IonList, IonModal, IonPage, IonRefresher, IonRefresherContent, IonSearchbar, IonTitle, IonToolbar, useIonViewWillEnter } from "@ionic/react";
-import MessageListItem from "../components/MessageListItem";
 import { close, pulse, saveOutline } from "ionicons/icons";
 
+import MessageListItem from "../components/messageListItem";
+
+import { savePost } from "../store/actions";
 import { getArticledParsed } from "../store/rest";
 
 import { getMessages } from "../data/messages";
 import "./Home.css";
-import { savePost } from "../store/actions";
+
+import { isEmpty } from "lodash";
 
 const Home = () => {
-	const dispatch = useDispatch()
+	const dispatch = useDispatch();
+	const { list } = useSelector(state => state.posts);
 	const [messages, setMessages] = useState([]);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
@@ -66,12 +70,21 @@ const Home = () => {
 	const savePostHandler = () => {
 		dispatch(savePost(articleParsed))
 	}
+	const renderPostList = () => {
+		if (isEmpty(list)) return;
+
+		return (
+			list.map((item, i) => (
+				<MessageListItem key={i} post={item} />
+			))
+		)
+	}
 
 	return (
 		<IonPage id="home-page" ref={pageRef}>
 			<IonHeader>
 				<IonToolbar>
-					<IonTitle>Inbox</IonTitle>
+					<IonTitle>Articoli</IonTitle>
 					<IonButtons slot="primary">
 						<IonButton
 							color="dark"
@@ -89,14 +102,12 @@ const Home = () => {
 
 				<IonHeader collapse="condense">
 					<IonToolbar>
-						<IonTitle size="large">Inbox</IonTitle>
+						<IonTitle size="large">Articoli</IonTitle>
 					</IonToolbar>
 				</IonHeader>
 
 				<IonList>
-					{messages.map((m) => (
-						<MessageListItem key={m.id} message={m} />
-					))}
+					{renderPostList()}
 				</IonList>
 				<IonModal
 					isOpen={showModal}

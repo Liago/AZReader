@@ -328,7 +328,8 @@ export const onLogout = () => {
 export const savePost = (post) => {
 	const { list } = store.getState()?.posts;
 	let newList = [...list];
-	isEmpty(list)
+	post['id'] = Date.now(); 
+	isEmpty(list) 
 		? newList = [post]
 		: newList.push(post)
 
