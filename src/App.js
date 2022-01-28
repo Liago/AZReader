@@ -1,6 +1,11 @@
 import { Redirect, Route } from "react-router-dom";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import { persistor, store } from "./store/store";
+
+
 import Home from "./pages/home";
 import ViewMessage from "./pages/viewMessage";
 
@@ -28,17 +33,23 @@ setupIonicReact();
 
 const App = () => (
 	<IonApp>
-		<IonReactRouter>
-			<IonRouterOutlet>
-				<Route path="/home" exact={true} component={Home}>
-				</Route>
-				<Route path="/message/:id" component={ViewMessage}>
-				</Route>
-				<Route path="/" exact={true}>
-					<Redirect to="/home" />
-				</Route>
-			</IonRouterOutlet>
-		</IonReactRouter>
+		<Provider store={store}>
+			<PersistGate loading={null} persistor={persistor}>
+				<IonReactRouter>
+					<IonRouterOutlet>
+						<Route path="/home" exact={true} component={Home}>
+						</Route>
+						<Route path="/message/:id" component={ViewMessage}>
+						</Route>
+						<Route path="/" exact={true}>
+							<Redirect to="/home" />
+						</Route>
+					</IonRouterOutlet>
+				</IonReactRouter>
+
+			</PersistGate>
+		</Provider>
+
 	</IonApp>
 );
 

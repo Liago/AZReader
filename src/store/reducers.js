@@ -8,39 +8,14 @@ const initialState = {
 		darkMode: false,
 		devMode: false,
 		notificationSegment: "Subscribed Users",
-		loading: false,
-		error: null,
-		isMessageDelete: false,
-		notificationMessage: null,
-		posts: [],
-		archivePosts: [],
-		language: '',
-		tokenApp: null,
-		configuration: {
-			url: {
-				api: null,
-				images: null,
-			}
-		},
-		track: null,
-		postFromNotification: {
-			id: null,
-			open: false,
-		},
+
 	},
+	archive: [],
 	user: {
 		isLogged: false,
 		credentials: [],
 		userList: [],
 		favouritePosts: []
-	},
-	bookNavigation: {
-		book: {
-			id: null,
-			chapters: [],
-			selectedChapter: null,
-			selectedChapterPage: null
-		}
 	},
 	toast: null,
 };
@@ -50,29 +25,6 @@ const toast = (state = initialState.toast, action) => {
 			return initialState.toast
 		case actionTypes.TOAST_SET_VALUE:
 			return { ...action.payload };
-		default:
-			return state;
-	}
-}
-const bookNavigation = (state = initialState.bookNavigation, action) => {
-	switch (action.type) {
-		case actionTypes.SET_CURRENT_BOOK:
-			return {
-				...state,
-				book: action.payload
-			};
-		case actionTypes.SET_CURRENT_CHAPTER:
-			return {
-				...state,
-				selectedChapter: action.payload
-
-			}
-		case actionTypes.SET_CURRENT_CHAPTER_PAGE:
-			return {
-				...state,
-				selectedChapterPage: action.payload
-
-			}
 		default:
 			return state;
 	}
@@ -345,10 +297,21 @@ const user = (state = initialState.user, action) => {
 			return state;
 	}
 };
+const posts = (state = initialState.posts, action) => {
+	switch (action.type) {
+		case actionTypes.SAVE_POST:
+			return {
+				...state,
+				posts: action.payload
+			};
+		default:
+			return state;
+	}
+}
 
 
 const createRootReducer = {
-	app, user, toast, bookNavigation,
+	app, user, toast, posts
 }
 
 export default createRootReducer;

@@ -328,3 +328,10 @@ export const onLogout = () => {
 		type: actionTypes.LOGOUT,
 	}
 }
+
+export const savePost = (post) => {
+	return {
+		type: actionTypes.SAVE_POST,
+		payload: post,
+	};
+}
