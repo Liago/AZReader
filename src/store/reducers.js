@@ -1,6 +1,8 @@
-import _ from "lodash";
 
 import * as actionTypes from "./actionTypes";
+import { store } from "./store";
+
+import {isEmpty} from "lodash";
 
 const initialState = {
 	app: {
@@ -17,6 +19,9 @@ const initialState = {
 		favouritePosts: []
 	},
 	toast: null,
+	posts: {
+		list: []
+	}
 };
 const toast = (state = initialState.toast, action) => {
 	switch (action.type) {
@@ -301,7 +306,7 @@ const posts = (state = initialState.posts, action) => {
 		case actionTypes.SAVE_POST:
 			return {
 				...state,
-				posts: action.payload
+				list: action.payload,
 			};
 		default:
 			return state;

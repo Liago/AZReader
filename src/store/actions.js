@@ -326,8 +326,14 @@ export const onLogout = () => {
 }
 
 export const savePost = (post) => {
+	const { list } = store.getState()?.posts;
+	let newList = [...list];
+	isEmpty(list)
+		? newList = [post]
+		: newList.push(post)
+
 	return {
 		type: actionTypes.SAVE_POST,
-		payload: post,
+		payload: newList,
 	};
 }
