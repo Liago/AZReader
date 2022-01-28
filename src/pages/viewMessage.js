@@ -28,6 +28,20 @@ const ViewMessage = () => {
 		setPost(post);
 	}, []);
 
+	const renderContent = () => {
+		if (!post) return;
+
+		return (
+			<div className="p-4">
+				<p className="text-3xl font-medium text-left" dangerouslySetInnerHTML={{ __html: post?.title }}></p>
+				<p className="text-xs font-normal">{post.domain || null}</p>
+				<div className="pt-4 text-justify">
+					<p dangerouslySetInnerHTML={{ __html: post?.content }}></p>
+				</div>
+			</div>
+		)
+	}
+
 
 	return (
 		<IonPage id="view-message-page">
@@ -38,15 +52,7 @@ const ViewMessage = () => {
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
-			<IonContent fullscreen>
-				<div className="p-4">
-					<p className="text-3xl font-medium text-left" dangerouslySetInnerHTML={{ __html: post?.title }}></p>
-					<p className="text-xs font-normal">{post.domain}</p>
-					<div className="pt-4 text-justify">
-						<p dangerouslySetInnerHTML={{ __html: post?.content }}></p>
-					</div>
-				</div>
-			</IonContent>
+			<IonContent fullscreen>{renderContent()}</IonContent>
 		</IonPage>
 	);
 }

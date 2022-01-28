@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon, IonImg, IonList, IonModal, IonPage, IonRefresher, IonRefresherContent, IonSearchbar, IonTitle, IonToolbar, useIonViewWillEnter } from "@ionic/react";
-import { close, pulse, saveOutline } from "ionicons/icons";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar } from "@ionic/react";
+import { pulse } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
+import ModalParser from "../components/modalParser";
 
 import { savePost } from "../store/actions";
 import { getArticledParsed } from "../store/rest";
 
-import { getMessages } from "../data/messages";
 import "./Home.css";
 
 import { isEmpty } from "lodash";
@@ -23,11 +23,6 @@ const Home = () => {
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
 
 	const pageRef = useRef();
-
-	useEffect(() => {
-		const msgs = getMessages();
-		setMessages(msgs);
-	}, []);
 
 	const refresh = (e) => {
 		setTimeout(() => {
@@ -46,26 +41,6 @@ const Home = () => {
 
 		console.log('articleParsed', articleParsed);
 	}, [loading])
-
-	const renderArticle = () => {
-		if (!articleParsed) return;
-
-		const { title, content, lead_image_url } = articleParsed;
-
-		return (
-			<IonCard>
-				<IonImg src={lead_image_url} />
-				<IonCardHeader>
-					<IonCardSubtitle>{title}</IonCardSubtitle>
-					<IonCardTitle></IonCardTitle>
-				</IonCardHeader>
-
-				<IonCardContent>
-					<div dangerouslySetInnerHTML={{ __html: content }}></div>
-				</IonCardContent>
-			</IonCard>
-		)
-	}
 
 	const savePostHandler = () => {
 		dispatch(savePost(articleParsed))
@@ -109,43 +84,7 @@ const Home = () => {
 				<IonList>
 					{renderPostList()}
 				</IonList>
-				<IonModal
-					isOpen={showModal}
-					swipeToClose={true}
-					presentingElement={pageRef.current || undefined}
-				>
-					<IonContent>
-						<IonPage>
-							<IonHeader>
-								<IonToolbar>
-									<IonTitle>Post parser</IonTitle>
-									<IonButtons slot="end">
-										<IonButton
-											color='dark'
-											onClick={savePostHandler}
-										>
-											<IonIcon slot='icon-only' icon={saveOutline} />
-										</IonButton>
-										<IonButton onClick={() => setShowModal(false)}>
-											<IonIcon slot="icon-only" icon={close} />
-										</IonButton>
-									</IonButtons>
-								</IonToolbar>
-							</IonHeader>
-							<IonContent fullscreen>
-								<IonSearchbar
-									animated
-									value={searchText}
-									placeholder="Url articolo"
-									debounce={1000}
-									onIonChange={(e) => setSearchText(e.detail.value)}
-								>
-								</IonSearchbar>
-								{renderArticle()}
-							</IonContent>
-						</IonPage>
-					</IonContent>
-				</IonModal>
+				<ModalParser  {...{ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText }} />
 			</IonContent >
 		</IonPage >
 	);
