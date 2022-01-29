@@ -107,7 +107,7 @@ const wrappedApi = ({ store }) => {
 				const response = await axios({
 					baseURL: endpoint.firebase_auth,
 					headers: {
-						'Authorization': 'Bearer ' + token
+						'Content-Type': 'application/json'
 					},
 					method,
 					url,
@@ -119,6 +119,7 @@ const wrappedApi = ({ store }) => {
 					data: response.data
 				});
 			} catch (e) {
+				console.log('[LAZYAPI] :>> ', e);
 				setError(e);
 			}
 		}
