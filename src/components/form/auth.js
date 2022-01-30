@@ -2,31 +2,31 @@ import { useForm } from "react-hook-form";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from "@ionic/react";
 import { close } from "ionicons/icons";
 
-import { signUpHandler } from '../../store/rest'
-import { useEffect } from "react";
+import { fetchSignUp } from '../../store/rest'
+import { useEffect, useState } from "react";
 
 
 
-const AuthenticationForm = ({ onDismiss }) => {
+const AuthenticationForm = ({ onDismiss, mode }) => {
+	const [error, setError] = useState('')
 	const { register, handleSubmit, watch, formState: { errors } } = useForm();
-	const [signUp, {data: response, loading, error}] = signUpHandler();
-	
+	// const [signUp, {data: response, loading, error}] = signUpHandler2();
+
 	const onSubmit = data => {
-		console.log(data);
 		data['returnSecureToken'] = true;
-		signUp(data)
+		fetchSignUp(data, mode).then((response) => {
+			console.log('response', response);
+			!response.email
+				? setError(response)
+				: onDismiss()
+		})
 	}
 
-	useEffect(() => {
-		if (!response) return;
-		console.log('response :>> ', response);
-	},[response])
-
-	useEffect(() => {
+	const renderError = () => {
 		if (!error) return;
 
-		console.log('errore API', error)
-	},[error])
+		return <p>{error.message}</p>
+	}
 
 	// console.log(watch("email")); // watch input value by passing the name of it
 
@@ -69,6 +69,7 @@ const AuthenticationForm = ({ onDismiss }) => {
 				</div>
 
 				{errors.exampleRequired && <span>This field is required</span>}
+				{renderError()}
 				<button
 					type="submit"
 					className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

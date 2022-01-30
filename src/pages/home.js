@@ -28,6 +28,7 @@ const Home = () => {
 	const handleDismiss = () => dismiss();
 
 	const [present, dismiss] = useIonModal(AuthenticationForm, {
+		mode: 'SIGNIN',
 		onDismiss: handleDismiss,
 		breakpoints: [0.1, 0.5, 1],
 		initialBreakpoint: 0.5,
