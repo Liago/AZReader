@@ -303,6 +303,14 @@ export const favouritesHandler = (post, action) => {
 	}
 }
 
+export const setUserToken = (token) => {
+	return {
+		type: actionTypes.LOGIN,
+		payload: token
+	}
+}
+
+
 export const login = (credentials) => {
 	return async (dispatch) => {
 		let response = await UseRawCall('POST', '/login.php', credentials);
@@ -328,8 +336,8 @@ export const onLogout = () => {
 export const savePost = (post) => {
 	const { list } = store.getState()?.posts;
 	let newList = [...list];
-	post['id'] = Date.now(); 
-	isEmpty(list) 
+	post['id'] = Date.now();
+	isEmpty(list)
 		? newList = [post]
 		: newList.push(post)
 

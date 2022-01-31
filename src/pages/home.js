@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal } from "@ionic/react";
-import { pulse, umbrellaSharp } from "ionicons/icons";
+import { powerOutline, pulse, umbrellaSharp } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
@@ -18,7 +18,7 @@ import { isEmpty } from "lodash";
 const Home = () => {
 	const dispatch = useDispatch();
 	const { list } = useSelector(state => state.posts);
-	const [messages, setMessages] = useState([]);
+	const { isLogged } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
@@ -62,18 +62,34 @@ const Home = () => {
 		return <ModalParser {...modalProps} />
 	}
 
+	const renderLoginLogout = () => {
+		if (isLogged)
+			return (
+				<IonButton
+					color="dark"
+					onClick={() => console.log('logout')}
+				>
+					<IonIcon slot='icon-only' icon={powerOutline} />
+				</IonButton>
+			)
+			
+		return (
+			<IonButton
+				color="dark"
+				onClick={() => present()}
+			>
+				<IonIcon slot='icon-only' icon={umbrellaSharp} />
+			</IonButton>
+		)
+	}
+
 	return (
 		<IonPage id="home-page" ref={pageRef}>
 			<IonHeader>
 				<IonToolbar>
 					<IonTitle>Articoli</IonTitle>
 					<IonButtons slot="primary">
-						<IonButton
-							color="dark"
-							onClick={() => present()}
-						>
-							<IonIcon slot='icon-only' icon={umbrellaSharp} />
-						</IonButton>
+						{renderLoginLogout()}
 						<IonButton
 							color="dark"
 							onClick={() => setShowModal(true)}

@@ -11,7 +11,7 @@ export const signUpHandler = () => UseLazyAuthApi('POST', `v1/accounts:signUp?ke
 
 
 export const fetchSignUp = async (data, mode) => {
-	const { email, password } = data;
+	const { email, password, returnSecureToken } = data;
 	let url = mode === 'SIGNUP'
 		? 'signUp'
 		: 'signInWithPassword'
@@ -20,7 +20,7 @@ export const fetchSignUp = async (data, mode) => {
 		body: JSON.stringify({
 			email: email,
 			password: password,
-			returnSecureToken: true
+			returnSecureToken: returnSecureToken
 		}),
 		headers: {
 			'Content-Type': 'application/json'
