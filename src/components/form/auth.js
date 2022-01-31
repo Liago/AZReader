@@ -6,7 +6,7 @@ import { close } from "ionicons/icons";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
-import { setUserToken } from "../../store/actions";
+import { login, setUserToken } from "../../store/actions";
 import { fetchSignUp } from '../../store/rest'
 
 
@@ -111,7 +111,7 @@ const AuthenticationForm = ({ onDismiss }) => {
 									className="bg-white border border-indigo-200 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2"
 									{...register("password", { required: true })}
 								/>
-								 <div className="text-xs text-red-500 font-bold">{errors.password?.message}</div>
+								<div className="text-xs text-red-500 font-bold">{errors.password?.message}</div>
 							</div>
 							{renderPassowrdCheck()}
 						</div>

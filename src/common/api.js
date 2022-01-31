@@ -12,13 +12,13 @@ const wrappedApi = ({ store }) => {
 
 		try {
 			const response = await axios({
-				baseURL: endpoint.api,
+				baseURL: endpoint.firebase_auth,
 				headers: {
-					'Authorization': 'Bearer ' + token
+					'Content-Type': 'application/json'
 				},
 				method,
 				url,
-				data: payload
+				data: JSON.stringify(payload)
 			});
 
 			data = response.data;
@@ -60,8 +60,9 @@ const wrappedApi = ({ store }) => {
 				});
 
 				const response = await axios({
-					baseURL: endpoint.api,
+					baseURL: endpoint.firebase_auth,
 					headers: {
+						'Content-Type': 'application/json',
 						'Authorization': 'Bearer ' + token
 					},
 					method,

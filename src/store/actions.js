@@ -2,6 +2,7 @@ import { wrappedApi } from "../common/api";
 import { store } from "./store";
 import * as actionTypes from "./actionTypes";
 import { isNil, isEmpty } from "lodash"
+import { FIREBASE_API_KEY } from "../config/appSettings";
 
 const { UseRawCall } = wrappedApi({ store });
 
@@ -311,22 +312,6 @@ export const setUserToken = (token) => {
 }
 
 
-export const login = (credentials) => {
-	return async (dispatch) => {
-		let response = await UseRawCall('POST', '/login.php', credentials);
-		if (!response.data.success) {
-			alert('Invalid credentials');
-		} else {
-			console.log(`response`, response)
-
-			dispatch({
-				type: actionTypes.LOGIN,
-				payload: response.data.data[0]
-			});
-		}
-		return Promise.resolve();
-	}
-};
 export const onLogout = () => {
 	return {
 		type: actionTypes.LOGOUT,
