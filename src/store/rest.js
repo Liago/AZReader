@@ -3,12 +3,9 @@ import { store } from "./store";
 import { endpoint, FIREBASE_API_KEY } from "../config/appSettings";
 
 
-const { UseApi, UseLazyApi, UseLazyAuthApi } = wrappedApi({ store });
+const { UseLazyApi, UseLazyServerApi } = wrappedApi({ store });
 
 export const getArticledParsed = (url) => UseLazyApi('GET', `parser?url=${url}`);
-
-export const signUpHandler = () => UseLazyAuthApi('POST', `v1/accounts:signUp?key=${FIREBASE_API_KEY}`)
-
 
 export const fetchSignUp = async (data, mode) => {
 	const { email, password, returnSecureToken } = data;
@@ -36,4 +33,6 @@ export const fetchSignUp = async (data, mode) => {
 			})
 		}
 	})
-}
+};
+
+export const savePostToDb = () => UseLazyServerApi('POST', 'post.json')  

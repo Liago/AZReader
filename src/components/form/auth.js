@@ -6,7 +6,7 @@ import { close } from "ionicons/icons";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
-import { login, setUserToken } from "../../store/actions";
+import { setUserToken } from "../../store/actions";
 import { fetchSignUp } from '../../store/rest'
 
 
@@ -26,7 +26,7 @@ const AuthenticationForm = ({ onDismiss }) => {
 
 	});
 	const formOptions = { resolver: yupResolver(validationSchema) };
-	const { register, handleSubmit, formState: { errors } } = useForm(formOptions);
+	const { register, handleSubmit, formState: { errors } } = useForm(signMode === 'SIGNUP' && formOptions);
 
 
 	const onSubmit = data => {

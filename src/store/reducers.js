@@ -2,7 +2,7 @@
 import * as actionTypes from "./actionTypes";
 import { store } from "./store";
 
-import {isEmpty} from "lodash";
+import { isEmpty } from "lodash";
 
 const initialState = {
 	app: {
@@ -39,6 +39,11 @@ const app = (state = initialState.app, action) => {
 			return {
 				...state,
 				tokenApp: action.payload.token
+			};
+		case actionTypes.LOGOUT:
+			return {
+				...state,
+				tokenApp: null
 			};
 		case actionTypes.APP_START:
 			return {

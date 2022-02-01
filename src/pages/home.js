@@ -8,8 +8,8 @@ import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
 
-import { savePost } from "../store/actions";
-import { getArticledParsed } from "../store/rest";
+import { onLogout, savePost } from "../store/actions";
+import { getArticledParsed, savePostToDb } from "../store/rest";
 
 import "./Home.css";
 
@@ -22,6 +22,7 @@ const Home = () => {
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
+	const [save, { data: postSaved, error }] = savePostToDb();
 
 	const pageRef = useRef();
 
@@ -50,6 +51,10 @@ const Home = () => {
 		dispatch(savePost(articleParsed))
 	}
 
+	const savePostToServer = () => {
+		save(articleParsed)
+	}
+
 	const renderPostList = () => {
 		if (isEmpty(list)) return;
 
@@ -57,7 +62,7 @@ const Home = () => {
 	}
 
 	const renderModalParser = () => {
-		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText }
+		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer }
 
 		return <ModalParser {...modalProps} />
 	}
@@ -67,12 +72,12 @@ const Home = () => {
 			return (
 				<IonButton
 					color="dark"
-					onClick={() => console.log('logout')}
+					onClick={() => dispatch(onLogout())}
 				>
 					<IonIcon slot='icon-only' icon={powerOutline} />
 				</IonButton>
 			)
-			
+
 		return (
 			<IonButton
 				color="dark"

@@ -12,7 +12,7 @@ const wrappedApi = ({ store }) => {
 
 		try {
 			const response = await axios({
-				baseURL: endpoint.firebase_auth,
+				baseURL: endpoint.db,
 				headers: {
 					'Content-Type': 'application/json'
 				},
@@ -60,7 +60,7 @@ const wrappedApi = ({ store }) => {
 				});
 
 				const response = await axios({
-					baseURL: endpoint.firebase_auth,
+					baseURL: endpoint.parser,
 					headers: {
 						'Content-Type': 'application/json',
 						'Authorization': 'Bearer ' + token
@@ -89,7 +89,7 @@ const wrappedApi = ({ store }) => {
 		];
 	}
 
-	const UseLazyAuthApi = (method, url, opts = {}) => {
+	const UseLazyServerApi = (method, url, opts = {}) => {
 		const [error, setError] = useState(null);
 		const [event, setEvent] = useState({
 			loading: true,
@@ -106,7 +106,7 @@ const wrappedApi = ({ store }) => {
 				});
 
 				const response = await axios({
-					baseURL: endpoint.firebase_auth,
+					baseURL: endpoint.api,
 					headers: {
 						'Content-Type': 'application/json'
 					},
@@ -138,7 +138,7 @@ const wrappedApi = ({ store }) => {
 		UseRawCall,
 		UseApi,
 		UseLazyApi,
-		UseLazyAuthApi
+		UseLazyServerApi
 	}
 }
 
