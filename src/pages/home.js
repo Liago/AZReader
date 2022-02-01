@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal } from "@ionic/react";
-import { powerOutline, pulse, umbrellaSharp } from "ionicons/icons";
+import { eyeSharp, powerOutline, pulse, umbrellaSharp } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, savePostToDb } from "../store/rest";
+import { getArticledParsed, getPostFromDb, savePostToDb } from "../store/rest";
 
 import "./Home.css";
 
@@ -23,6 +23,7 @@ const Home = () => {
 	const [searchText, setSearchText] = useState('');
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
 	const [save, { data: postSaved, error }] = savePostToDb();
+	const [getPosts, { data: postFromDb }] = getPostFromDb()
 
 	const pageRef = useRef();
 
@@ -60,7 +61,9 @@ const Home = () => {
 
 		return list.map((item, i) => <MessageListItem key={i} post={item} />)
 	}
-
+	const fetchPostsFromDb = () => {
+		getPosts()
+	}
 	const renderModalParser = () => {
 		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer }
 
@@ -100,6 +103,12 @@ const Home = () => {
 							onClick={() => setShowModal(true)}
 						>
 							<IonIcon slot='icon-only' icon={pulse} />
+						</IonButton>
+						<IonButton
+							color="dark"
+							onClick={() => fetchPostsFromDb()}
+						>
+							<IonIcon slot='icon-only' icon={eyeSharp} />
 						</IonButton>
 					</IonButtons>
 				</IonToolbar>
