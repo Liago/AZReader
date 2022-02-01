@@ -32,8 +32,8 @@ import "./css/main.css";
 setupIonicReact();
 
 const App = () => (
-	<IonApp>
-		<Provider store={store}>
+	<Provider store={store}>
+		<IonApp>
 			<PersistGate loading={null} persistor={persistor}>
 				<IonReactRouter>
 					<IonRouterOutlet>
@@ -46,11 +46,9 @@ const App = () => (
 						</Route>
 					</IonRouterOutlet>
 				</IonReactRouter>
-
 			</PersistGate>
-		</Provider>
-
-	</IonApp>
+		</IonApp>
+	</Provider>
 );
 
 export default App;

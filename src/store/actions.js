@@ -2,6 +2,7 @@ import { wrappedApi } from "../common/api";
 import { store } from "./store";
 import * as actionTypes from "./actionTypes";
 import { isNil, isEmpty } from "lodash"
+import { FIREBASE_API_KEY } from "../config/appSettings";
 
 const { UseRawCall } = wrappedApi({ store });
 
@@ -303,22 +304,14 @@ export const favouritesHandler = (post, action) => {
 	}
 }
 
-export const login = (credentials) => {
-	return async (dispatch) => {
-		let response = await UseRawCall('POST', '/login.php', credentials);
-		if (!response.data.success) {
-			alert('Invalid credentials');
-		} else {
-			console.log(`response`, response)
-
-			dispatch({
-				type: actionTypes.LOGIN,
-				payload: response.data.data[0]
-			});
-		}
-		return Promise.resolve();
+export const setUserToken = (token) => {
+	return {
+		type: actionTypes.LOGIN,
+		payload: token
 	}
-};
+}
+
+
 export const onLogout = () => {
 	return {
 		type: actionTypes.LOGOUT,
@@ -328,8 +321,8 @@ export const onLogout = () => {
 export const savePost = (post) => {
 	const { list } = store.getState()?.posts;
 	let newList = [...list];
-	post['id'] = Date.now(); 
-	isEmpty(list) 
+	post['id'] = Date.now();
+	isEmpty(list)
 		? newList = [post]
 		: newList.push(post)
 
