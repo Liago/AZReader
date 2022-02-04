@@ -37,6 +37,9 @@ const Home = () => {
 		initialBreakpoint: 0.5,
 	});
 
+	useEffect(() => {
+		fetchPostsFromDb()
+	},[])
 
 	const refresh = (e) => {
 		setTimeout(() => {
@@ -64,9 +67,16 @@ const Home = () => {
 	}
 
 	const renderPostList = () => {
-		if (isEmpty(list)) return;
+		if (!isLogged && isEmpty(list)) return;
+		if (isLogged && isEmpty(postFromDb)) return;
 
-		return list.map((item, i) => <MessageListItem key={i} post={item} />)
+		if (isLogged)
+
+		return Object.keys(postFromDb).map((p, i) => {
+			return <MessageListItem key={i} post={postFromDb[p]} isLocal={false} />
+		 })
+
+		return (list || []).map((item, i) => <MessageListItem key={i} post={item} isLocal />)
 	}
 	const fetchPostsFromDb = () => {
 		getPosts()
