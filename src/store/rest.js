@@ -6,8 +6,13 @@ import { endpoint, FIREBASE_API_KEY } from "../config/appSettings";
 const { UseLazyApi, UseLazyServerApi } = wrappedApi({ store });
 
 export const getArticledParsed = (url) => UseLazyApi('GET', `parser?url=${url}`);
+
 export const savePostToDb = () => UseLazyServerApi('POST', 'post.json');
 export const getPostFromDb = () => UseLazyServerApi('GET', 'post.json');
+
+export const registerUser = () =>  UseLazyServerApi('POST', 'users.json');
+
+export const saveReadingList = () => UseLazyServerApi('POST', 'readingList.json');
 
 export const fetchSignUp = async (data, mode) => {
 	const { email, password, returnSecureToken } = data;

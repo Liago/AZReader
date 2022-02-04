@@ -9,7 +9,7 @@ import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, getPostFromDb, savePostToDb } from "../store/rest";
+import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from "../store/rest";
 
 import "./Home.css";
 
@@ -18,12 +18,13 @@ import { isEmpty } from "lodash";
 const Home = () => {
 	const dispatch = useDispatch();
 	const { list } = useSelector(state => state.posts);
-	const { isLogged } = useSelector(state => state.user);
+	const { isLogged, credentials } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
 	const [save, { data: postSaved, error }] = savePostToDb();
-	const [getPosts, { data: postFromDb }] = getPostFromDb()
+	const [getPosts, { data: postFromDb }] = getPostFromDb();
+	const [saveArticleAccess] = saveReadingList();
 
 	const pageRef = useRef();
 
@@ -53,7 +54,13 @@ const Home = () => {
 	}
 
 	const savePostToServer = () => {
-		save(articleParsed)
+		articleParsed['readingList'] = [credentials.id];
+		articleParsed['id'] = Date.now();
+		save(articleParsed);
+		saveArticleAccess({
+			user: credentials.id,
+			docs: [articleParsed.id]
+		})
 	}
 
 	const renderPostList = () => {

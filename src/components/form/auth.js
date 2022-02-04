@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from "@ionic/react";
@@ -7,14 +7,16 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
 import { setUserToken } from "../../store/actions";
-import { fetchSignUp } from '../../store/rest'
+import { fetchSignUp, registerUser } from '../../store/rest'
 
 
 
 const AuthenticationForm = ({ onDismiss }) => {
 	const dispatch = useDispatch();
 	const [error, setError] = useState('');
-	const [signMode, setSignMode] = useState('SIGNIN')
+	const [signMode, setSignMode] = useState('SIGNIN');
+	const [userData, setUserData] = useState();
+	const [signUpUser, { data: signUpResponse, error: signUpError }] = registerUser();
 
 	const validationSchema = Yup.object().shape({
 		password: Yup.string()
@@ -32,18 +34,31 @@ const AuthenticationForm = ({ onDismiss }) => {
 	const onSubmit = data => {
 		data['returnSecureToken'] = true;
 		fetchSignUp(data, signMode).then((response) => {
-			console.log('response', response);
 			if (!response.email) {
 				setError(response)
 			} else {
-				dispatch(setUserToken({
+				setUserData({
 					user: response.email,
 					token: response.idToken
-				}))
-				onDismiss()
+				})				
+				signUpUser({user: response.email})
+				onDismiss();
 			}
 		})
 	}
+
+	useEffect(() => {
+		if (!signUpResponse) return;
+
+		dispatch(setUserToken({
+			user: {
+				mail: userData.user,
+				id: signUpResponse.name
+			},
+			token: userData.token
+		}))
+
+	},[signUpResponse])
 
 	const renderError = () => {
 		if (!error) return;
