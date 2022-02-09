@@ -9,6 +9,8 @@ import * as Yup from 'yup';
 import { setUserToken } from "../../store/actions";
 import { fetchSignUp, registerUser } from '../../store/rest'
 
+import moment from 'moment';
+
 
 
 const AuthenticationForm = ({ onDismiss }) => {
@@ -37,11 +39,9 @@ const AuthenticationForm = ({ onDismiss }) => {
 			if (!response.email) {
 				setError(response)
 			} else {
-				setUserData({
-					user: response.email,
-					token: response.idToken
-				})				
-				signUpUser({user: response.email})
+				signMode === 'SIGNIN'
+					? saveUserInfo(response)
+					: signUpUser({ user: response.email })
 				onDismiss();
 			}
 		})
@@ -57,8 +57,21 @@ const AuthenticationForm = ({ onDismiss }) => {
 			},
 			token: userData.token
 		}))
+	}, [signUpResponse])
 
-	},[signUpResponse])
+	const saveUserInfo = (response) => {
+		const tokenExpiresAt = moment().add(response.expiresIn, 'seconds').unix();
+
+		dispatch(setUserToken({
+			user: {
+				mail: response.email,
+				id: response.idToken
+			},
+			token: response.idToken,
+			expiration: tokenExpiresAt
+		}))
+	}
+
 
 	const renderError = () => {
 		if (!error) return;

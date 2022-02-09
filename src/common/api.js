@@ -96,7 +96,7 @@ const wrappedApi = ({ store }) => {
 			data: null
 		});
 
-		const token = store.getState()?.app?.token || null;
+		const token = store.getState()?.app?.tokenApp || null;
 
 		const func = async (payload = {}) => {
 			try {
@@ -108,7 +108,8 @@ const wrappedApi = ({ store }) => {
 				const response = await axios({
 					baseURL: endpoint.api,
 					headers: {
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer ' + token
 					},
 					method,
 					url,

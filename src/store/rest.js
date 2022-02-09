@@ -7,11 +7,17 @@ const { UseLazyApi, UseLazyServerApi } = wrappedApi({ store });
 
 export const getArticledParsed = (url) => UseLazyApi('GET', `parser?url=${url}`);
 
-export const savePostToDb = () => UseLazyServerApi('POST', 'post.json');
+export const savePostToDb = () => {
+	const { tokenApp } = store.getState().app;
+	return UseLazyServerApi('POST', `post.json?auth=${tokenApp}`)
+};
 
-export const getPostFromDb = () => UseLazyServerApi('GET', 'post.json');
+export const getPostFromDb = () => {
+	const { tokenApp } = store.getState().app
+	return UseLazyServerApi('GET', `post.json?auth=${tokenApp}`)
+};
 
-export const registerUser = () =>  UseLazyServerApi('POST', 'users.json');
+export const registerUser = () => UseLazyServerApi('POST', 'users.json');
 
 export const saveReadingList = () => UseLazyServerApi('POST', 'readingList.json');
 

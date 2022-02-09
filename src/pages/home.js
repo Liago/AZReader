@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal, useIonToast } from "@ionic/react";
 import { eyeSharp, powerOutline, pulse, umbrellaSharp } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
@@ -14,10 +14,12 @@ import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from 
 import "./Home.css";
 
 import { isEmpty } from "lodash";
+import moment from 'moment'
 
 const Home = () => {
 	const dispatch = useDispatch();
 	const { list } = useSelector(state => state.posts);
+	const { tokenExpiration } = useSelector(state => state.app);
 	const { isLogged, credentials } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
@@ -28,8 +30,10 @@ const Home = () => {
 
 	const pageRef = useRef();
 
-	const handleDismiss = () => dismiss();
+	const [showToast, dismissToast] = useIonToast();
 
+
+	const handleDismiss = () => dismiss();
 	const [present, dismiss] = useIonModal(AuthenticationForm, {
 		mode: 'SIGNIN',
 		onDismiss: handleDismiss,
@@ -38,14 +42,26 @@ const Home = () => {
 	});
 
 	useEffect(() => {
-		fetchPostsFromDb()
-	},[])
+		//verifica che il token sia ancora valido
+		if (moment().unix() > tokenExpiration) {
+			dispatch(onLogout());
+			showToast({
+				message: 'Token scaduto. Devi ricollegarti.',
+				onDidDismiss: () => dismissToast,
+				duration: 2000
+			})
+
+		}
+
+		isLogged && fetchPostsFromDb()
+	}, [isLogged])
 
 	const refresh = (e) => {
 		setTimeout(() => {
 			e.detail.complete();
 		}, 3000);
 	};
+
 	useEffect(() => {
 		if (searchText === '') return;
 
@@ -72,9 +88,9 @@ const Home = () => {
 
 		if (isLogged)
 
-		return Object.keys(postFromDb).map((p, i) => {
-			return <MessageListItem key={i} post={postFromDb[p]} isLocal={false} />
-		 })
+			return Object.keys(postFromDb).map((p, i) => {
+				return <MessageListItem key={i} post={postFromDb[p]} isLocal={false} />
+			})
 
 		return (list || []).map((item, i) => <MessageListItem key={i} post={item} isLocal />)
 	}
