@@ -1,8 +1,8 @@
 import { wrappedApi } from "../common/api";
 import { store } from "./store";
-import { endpoint, FIREBASE_API_KEY } from "../config/appSettings";
+import { endpoint, api_keys } from "../config/environment.ts";
 
-
+const { FIREBASE_API_KEY } = api_keys;
 const { UseLazyApi, UseLazyServerApi } = wrappedApi({ store });
 
 export const getArticledParsed = (url) => UseLazyApi('GET', `parser?url=${url}`);

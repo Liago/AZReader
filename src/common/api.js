@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from 'axios';
-import { endpoint } from "../config/appSettings";
+import { endpoint } from "../config/environment";
 
 const wrappedApi = ({ store }) => {
 
