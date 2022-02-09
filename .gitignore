@@ -31,3 +31,8 @@ yarn-error.log*
 /build
 /ios
 /android
+
+# environment
+/src/config/environment.ts
+/set-env.js
+/development.sh
