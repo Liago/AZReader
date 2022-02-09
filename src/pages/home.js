@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal, useIonToast } from "@ionic/react";
-import { eyeSharp, powerOutline, pulse, umbrellaSharp } from "ionicons/icons";
+import { eyeSharp, powerOutline, pulse, umbrellaSharp, alarm } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
@@ -47,10 +47,10 @@ const Home = () => {
 			dispatch(onLogout());
 			showToast({
 				message: 'Token scaduto. Devi ricollegarti.',
-				onDidDismiss: () => dismissToast,
-				duration: 2000
+				buttons: [{ text: 'log in', handler: () => present() }],
+				color: "warning",
+				onDidDismiss: () => dismissToast
 			})
-
 		}
 
 		isLogged && fetchPostsFromDb()
