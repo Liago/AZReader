@@ -1,10 +1,7 @@
-import { wrappedApi } from "../common/api";
 import { store } from "./store";
 import * as actionTypes from "./actionTypes";
-import { isNil, isEmpty } from "lodash"
-import { FIREBASE_API_KEY } from "../config/appSettings";
+import { isEmpty } from "lodash"
 
-const { UseRawCall } = wrappedApi({ store });
 
 export const submitNotificationPost = (postInfo) => {
 	return {
@@ -291,7 +288,7 @@ export const favouritesHandler = (post, action) => {
 
 			break;
 		case 'REMOVE':
-			var filtered = favouritePosts.filter((item) => item.id != postId);
+			var filtered = favouritePosts.filter((item) => item.id !== postId);
 			newList = filtered;
 			break;
 		default:

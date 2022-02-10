@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from "@ionic/react";
@@ -6,15 +6,19 @@ import { close } from "ionicons/icons";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
-import { login, setUserToken } from "../../store/actions";
-import { fetchSignUp } from '../../store/rest'
+import { setUserToken } from "../../store/actions";
+import { fetchSignUp, registerUser } from '../../store/rest'
+
+import moment from 'moment';
 
 
 
 const AuthenticationForm = ({ onDismiss }) => {
 	const dispatch = useDispatch();
 	const [error, setError] = useState('');
-	const [signMode, setSignMode] = useState('SIGNIN')
+	const [signMode, setSignMode] = useState('SIGNIN');
+	const [userData, setUserData] = useState();
+	const [signUpUser, { data: signUpResponse, error: signUpError }] = registerUser();
 
 	const validationSchema = Yup.object().shape({
 		password: Yup.string()
@@ -26,24 +30,48 @@ const AuthenticationForm = ({ onDismiss }) => {
 
 	});
 	const formOptions = { resolver: yupResolver(validationSchema) };
-	const { register, handleSubmit, formState: { errors } } = useForm(formOptions);
+	const { register, handleSubmit, formState: { errors } } = useForm(signMode === 'SIGNUP' && formOptions);
 
 
 	const onSubmit = data => {
 		data['returnSecureToken'] = true;
 		fetchSignUp(data, signMode).then((response) => {
-			console.log('response', response);
 			if (!response.email) {
 				setError(response)
 			} else {
-				dispatch(setUserToken({
-					user: response.email,
-					token: response.idToken
-				}))
-				onDismiss()
+				signMode === 'SIGNIN'
+					? saveUserInfo(response)
+					: signUpUser({ user: response.email })
+				onDismiss();
 			}
 		})
 	}
+
+	useEffect(() => {
+		if (!signUpResponse) return;
+
+		dispatch(setUserToken({
+			user: {
+				mail: userData.user,
+				id: signUpResponse.name
+			},
+			token: userData.token
+		}))
+	}, [signUpResponse])
+
+	const saveUserInfo = (response) => {
+		const tokenExpiresAt = moment().add(response.expiresIn, 'seconds').unix();
+
+		dispatch(setUserToken({
+			user: {
+				mail: response.email,
+				id: response.idToken
+			},
+			token: response.idToken,
+			expiration: tokenExpiresAt
+		}))
+	}
+
 
 	const renderError = () => {
 		if (!error) return;

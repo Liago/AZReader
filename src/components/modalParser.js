@@ -1,8 +1,8 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react"
-import { close, saveOutline } from "ionicons/icons";
+import { close, saveOutline, server } from "ionicons/icons";
 import Article from "./article";
 
-const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText }) => {
+const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer }) => {
 
 	const renderArticle = () => {
 		if (!articleParsed) return;
@@ -28,6 +28,13 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 									onClick={savePostHandler}
 								>
 									<IonIcon slot='icon-only' icon={saveOutline} />
+								</IonButton>
+								<IonButton
+									disabled={!articleParsed && true}
+									color='red'
+									onClick={savePostToServer}
+								>
+									<IonIcon slot='icon-only' icon={server} />
 								</IonButton>
 								<IonButton onClick={() => setShowModal(false)}>
 									<IonIcon slot="icon-only" icon={close} />

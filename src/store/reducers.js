@@ -1,8 +1,5 @@
 
 import * as actionTypes from "./actionTypes";
-import { store } from "./store";
-
-import {isEmpty} from "lodash";
 
 const initialState = {
 	app: {
@@ -10,6 +7,7 @@ const initialState = {
 		devMode: false,
 		notificationSegment: "Subscribed Users",
 		tokenApp: null,
+		tokenExpiration: null,
 	},
 	archive: [],
 	user: {
@@ -38,7 +36,14 @@ const app = (state = initialState.app, action) => {
 		case actionTypes.LOGIN:
 			return {
 				...state,
-				tokenApp: action.payload.token
+				tokenApp: action.payload.token,
+				tokenExpiration: action.payload.expiration
+			};
+		case actionTypes.LOGOUT:
+			return {
+				...state,
+				tokenApp: null,
+				tokenExpiration: null 
 			};
 		case actionTypes.APP_START:
 			return {

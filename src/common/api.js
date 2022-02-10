@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from 'axios';
-import { endpoint } from "../config/appSettings";
+import { endpoint } from "../config/environment";
 
 const wrappedApi = ({ store }) => {
 
@@ -12,7 +12,7 @@ const wrappedApi = ({ store }) => {
 
 		try {
 			const response = await axios({
-				baseURL: endpoint.firebase_auth,
+				baseURL: endpoint.db,
 				headers: {
 					'Content-Type': 'application/json'
 				},
@@ -60,7 +60,7 @@ const wrappedApi = ({ store }) => {
 				});
 
 				const response = await axios({
-					baseURL: endpoint.firebase_auth,
+					baseURL: endpoint.parser,
 					headers: {
 						'Content-Type': 'application/json',
 						'Authorization': 'Bearer ' + token
@@ -89,14 +89,14 @@ const wrappedApi = ({ store }) => {
 		];
 	}
 
-	const UseLazyAuthApi = (method, url, opts = {}) => {
+	const UseLazyServerApi = (method, url, opts = {}) => {
 		const [error, setError] = useState(null);
 		const [event, setEvent] = useState({
 			loading: true,
 			data: null
 		});
 
-		const token = store.getState()?.app?.token || null;
+		const token = store.getState()?.app?.tokenApp || null;
 
 		const func = async (payload = {}) => {
 			try {
@@ -106,9 +106,10 @@ const wrappedApi = ({ store }) => {
 				});
 
 				const response = await axios({
-					baseURL: endpoint.firebase_auth,
+					baseURL: endpoint.api,
 					headers: {
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer ' + token
 					},
 					method,
 					url,
@@ -138,7 +139,7 @@ const wrappedApi = ({ store }) => {
 		UseRawCall,
 		UseApi,
 		UseLazyApi,
-		UseLazyAuthApi
+		UseLazyServerApi
 	}
 }
 
