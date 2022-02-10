@@ -19,7 +19,10 @@ export const getPostFromDb = () => {
 
 export const registerUser = () => UseLazyServerApi('POST', 'users.json');
 
-export const saveReadingList = () => UseLazyServerApi('POST', 'readingList.json');
+export const saveReadingList = () => {
+	const { tokenApp } = store.getState().app
+	return UseLazyServerApi('POST', `readingList.json?auth=${tokenApp}`)
+};
 
 export const fetchSignUp = async (data, mode) => {
 	const { email, password, returnSecureToken } = data;
