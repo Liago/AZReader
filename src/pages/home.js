@@ -58,6 +58,7 @@ const Home = () => {
 
 	const refresh = (e) => {
 		setTimeout(() => {
+			isLogged && fetchPostsFromDb();
 			e.detail.complete();
 		}, 3000);
 	};
@@ -88,8 +89,8 @@ const Home = () => {
 
 		if (isLogged)
 
-			return Object.keys(postFromDb).map((p, i) => {
-				return <MessageListItem key={i} post={postFromDb[p]} isLocal={false} />
+			return Object.keys(postFromDb).map(key => {
+				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} />
 			})
 
 		return (list || []).map((item, i) => <MessageListItem key={i} post={item} isLocal />)
@@ -156,7 +157,7 @@ const Home = () => {
 						<IonTitle size="large">Articoli</IonTitle>
 					</IonToolbar>
 				</IonHeader>
-				<IonList>
+				<IonList className="px-3">
 					{renderPostList()}
 				</IonList>
 				{renderModalParser()}

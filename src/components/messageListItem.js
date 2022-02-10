@@ -1,15 +1,15 @@
-import { IonItem, IonLabel, IonNote, useIonModal } from '@ionic/react';
+import { IonAvatar, IonImg, IonItem, IonLabel, IonNote, IonThumbnail, useIonModal } from '@ionic/react';
 import { getDataFormatted } from '../utility/utils';
 import Article from './article';
 
 import './MessageListItem.css';
 
 
-const MessageListItem = ({ post, isLocal }) => {
+const MessageListItem = ({ post, isLocal, postId }) => {
 	const displayLocalDot = () => {
-		if (isLocal) 
+		if (isLocal)
 			return <div slot="start" className="dot dot-unread"></div>
-		
+
 		return <div slot="start" className="dot dot-unread"></div>
 	}
 
@@ -18,22 +18,22 @@ const MessageListItem = ({ post, isLocal }) => {
 
 	const [present, dismiss] = useIonModal(Article, {
 		articleParsed: post,
+		postId: postId,
 		onDismiss: dismissHandler,
-	  });
+	});
 
 	return (
-		// <IonItem routerLink={`/article/${post.id}`} detail={false}>
-		 <IonItem onClick={() => openArticle()}>
-			{displayLocalDot()}
+		<IonItem onClick={() => openArticle()}>
+			{/* {displayLocalDot()} */}
+			<IonThumbnail slot="start">
+				<IonImg
+					className="rounded-xl shadow-md"
+					src={post.lead_image_url}
+				/>
+			</IonThumbnail>
 			<IonLabel className="ion-text-wrap">
-				<h2>
-					{post.domain}
-					<span className="date">
-						<IonNote>{getDataFormatted(post.date_published, 'DD/MM/YYYY')}</IonNote>
-					</span>
-				</h2>
-				<h3>{post.title}</h3>
-				<p>{post.excerpt}</p>
+				<h2>{post.title}</h2>
+				<p>{post.domain}</p>
 			</IonLabel>
 		</IonItem>
 	);
