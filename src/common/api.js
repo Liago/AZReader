@@ -33,7 +33,7 @@ const wrappedApi = ({ store }) => {
 	}
 
 	const UseApi = (method, url, payload = {}, opts = {}) => {
-		const [func, response] = UseLazyApi(method, url);
+		const [func, response] = UseLazyServerApi(method, url);
 
 		useEffect(() => {
 			(async () => {
@@ -43,6 +43,7 @@ const wrappedApi = ({ store }) => {
 
 		return response;
 	}
+	
 	const UseLazyApi = (method, url, opts = {}) => {
 		const [error, setError] = useState(null);
 		const [event, setEvent] = useState({
@@ -109,7 +110,6 @@ const wrappedApi = ({ store }) => {
 					baseURL: endpoint.api,
 					headers: {
 						'Content-Type': 'application/json',
-						'Authorization': 'Bearer ' + token
 					},
 					method,
 					url,
@@ -121,7 +121,6 @@ const wrappedApi = ({ store }) => {
 					data: response.data
 				});
 			} catch (e) {
-				console.log('[LAZYAPI] :>> ', e);
 				setError(e);
 			}
 		}

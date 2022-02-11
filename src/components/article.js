@@ -1,21 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonFooter, IonHeader, IonIcon, IonImg, IonPage, IonTitle, IonToolbar } from "@ionic/react";
 import { close, pricetags } from "ionicons/icons";
 
 import ModalTags from "./modalTags";
 
+import { saveTagsHandler } from "../store/rest";
+
+import { isEmpty } from 'lodash';
+
 const Article = ({ articleParsed, onDismiss, postId }) => {
 	const { title, content, lead_image_url } = articleParsed;
-	
+
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
+	const [saveTags, {data: isTagsSaved}] = saveTagsHandler();
+
+
+	const dismissTagModalHandler = (tagsSelected) => {
+		if (isEmpty(tagsSelected)) return;
+
+		saveTags({
+			id: postId,
+			tags: tagsSelected
+		})
+	}
+
+	useEffect(() => {})
 
 	const insertTagHandler = () => {
 		setShowModal(true);
 	}
 
 	const renderModalTag = () => {
-		const modalProps = { showModal, setShowModal, searchText, setSearchText }
+		const modalProps = { showModal, dismissTagModalHandler }
 
 		return <ModalTags {...modalProps} />
 	}
