@@ -1,33 +1,43 @@
 import { useEffect, useState } from "react"
-import { IonButton, IonButtons, IonContent, IonItem, IonLabel, IonList, IonModal, IonPage, IonSearchbar, IonToolbar } from "@ionic/react"
+import { IonContent, IonItem, IonLabel, IonModal, IonPage, IonSearchbar, IonToolbar, IonListHeader } from "@ionic/react"
 
 import { getTagsHandler } from "../store/rest";
 
-import { filter } from 'lodash'
+import { filter, isEmpty } from 'lodash'
 
 const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
 	const [searchText, setSearchText] = useState('');
 	const [tags, setTagList] = useState([]);
 	const [articleTags, setArticleTags] = useState([]);
-	const { data: tagList, loading, error } = getTagsHandler();
+	const { data: tagList } = getTagsHandler();
 
-	const renderServerTags = () => {
+	useEffect(() => {
+		if (searchText === '') return;
+
+		setTagList([...tags, searchText])
+	}, [searchText])
+
+	useEffect(() => {
 		if (!tagList) return;
 
+		displayArticleTags(tagList)
+	}, [tagList]);
 
-		console.log('tagList', tagList)
-
-		// let tagsRetrieved = filter(tagList, ['id', postId]);
-		// setArticleTags([...articleTags, tagsRetrieved]);
+	
+	const renderServerTags = () => {
+		if (!tagList) return;
 
 		return Object.keys(tagList).map(key => {
 			const { tags } = tagList[key];
 			return (
 				tags.map(item => {
 					return (
-						<IonItem lines='none' key={item}>
-							<IonLabel>{item}</IonLabel>
-						</IonItem>
+						<div
+							key={item}
+							className="m-1 p-1 bg-blue-300 rounded-lg text-sm text-center text-neutral-50"
+						>
+							<p>{item}</p>
+						</div>
 					)
 				})
 			)
@@ -37,35 +47,33 @@ const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
 	const renderTags = () => {
 		if (!tags) return;
 
-
-		console.log('tagsContent', tags)
-
 		return (
 			tags.map(item => {
 				return (
-					<IonItem lines='none' key={item}>
-						<IonLabel>{item}</IonLabel>
-					</IonItem>
+					<div
+						key={item}
+						className="m-1 p-1 bg-red-500 rounded-lg text-sm text-center text-neutral-50"
+					>
+						{item}
+					</div>
 				)
 			})
 		)
 	}
 
-
-	useEffect(() => {
-		if (searchText === '') return;
-
-		setTagList([...tags, searchText])
-
-	}, [searchText])
-
-	useEffect(() => {
-		if (!tagList) return;
-
+	const displayArticleTags = (tagList) => {
 		let tagsRetrieved = filter(tagList, ['id', postId]);
-		const { tags } = tagsRetrieved[0];
-		setArticleTags(tags);
-	}, [tagList]);
+		if (isEmpty(tagsRetrieved)) return;
+
+		let tagArray = [];
+		tagsRetrieved.map(item => {
+			const { tags } = item;
+			tagArray = [...tagArray, ...tags]
+		})
+		setArticleTags(tagArray);
+	}
+
+
 
 	const renderArticleTags = () => {
 		if (!articleTags) return;
@@ -108,10 +116,19 @@ const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
 							onIonChange={(e) => setSearchText(e.detail.value)}
 						>
 						</IonSearchbar>
-						<IonList>
-							{renderTags()}
-							{renderServerTags()}
-						</IonList>
+						<div className="px-5">
+							<div className="grid grid-cols-4 gap-1">
+								{renderTags()}
+							</div>
+							<IonListHeader
+								className="pt-4 border-b-2"
+							>
+								Tags
+							</IonListHeader>
+							<div className="grid grid-cols-4 gap-1">
+								{renderServerTags()}
+							</div>
+						</div>
 					</IonContent>
 				</IonPage>
 			</IonContent>
