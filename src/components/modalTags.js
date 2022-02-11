@@ -3,11 +3,12 @@ import { IonButton, IonButtons, IonContent, IonItem, IonLabel, IonList, IonModal
 
 import { getTagsHandler } from "../store/rest";
 
-import { isObject } from 'lodash'
+import { filter } from 'lodash'
 
-const ModalTags = ({ showModal, dismissTagModalHandler }) => {
+const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
 	const [searchText, setSearchText] = useState('');
 	const [tags, setTagList] = useState([]);
+	const [articleTags, setArticleTags] = useState([]);
 	const { data: tagList, loading, error } = getTagsHandler();
 
 	const renderServerTags = () => {
@@ -15,6 +16,9 @@ const ModalTags = ({ showModal, dismissTagModalHandler }) => {
 
 
 		console.log('tagList', tagList)
+
+		// let tagsRetrieved = filter(tagList, ['id', postId]);
+		// setArticleTags([...articleTags, tagsRetrieved]);
 
 		return Object.keys(tagList).map(key => {
 			const { tags } = tagList[key];
@@ -58,8 +62,29 @@ const ModalTags = ({ showModal, dismissTagModalHandler }) => {
 	useEffect(() => {
 		if (!tagList) return;
 
-		console.log('tagList :>> ', tagList);
-	}, [])
+		let tagsRetrieved = filter(tagList, ['id', postId]);
+		const { tags } = tagsRetrieved[0];
+		setArticleTags(tags);
+	}, [tagList]);
+
+	const renderArticleTags = () => {
+		if (!articleTags) return;
+
+		return (
+			<div className="flex justify-start">
+				{articleTags.map(tag => {
+					return (
+						<div
+							key={tag}
+							className="m-1 p-1.5 bg-slate-200 rounded-lg">
+							<p className="text-xs text-gray-700">{tag}</p>
+						</div>
+					)
+				})}
+			</div>
+		)
+	}
+
 
 	return (
 		<IonModal
@@ -70,6 +95,9 @@ const ModalTags = ({ showModal, dismissTagModalHandler }) => {
 		>
 			<IonContent>
 				<IonPage>
+					<IonToolbar>
+						{renderArticleTags()}
+					</IonToolbar>
 					<IonContent fullscreen>
 						<IonSearchbar
 							animated

@@ -32,7 +32,7 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 	}
 
 	const renderModalTag = () => {
-		const modalProps = { showModal, dismissTagModalHandler }
+		const modalProps = { showModal, dismissTagModalHandler, postId }
 
 		return <ModalTags {...modalProps} />
 	}
