@@ -34,5 +34,4 @@ yarn-error.log*
 
 # environment
 /src/config/environment.ts
-/set-env.js
 /scripts
