@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal, useIonToast } from "@ionic/react";
-import { eyeSharp, powerOutline, pulse, umbrellaSharp, alarm } from "ionicons/icons";
+import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
@@ -33,8 +33,8 @@ const Home = () => {
 	const [showToast, dismissToast] = useIonToast();
 
 
-	const handleDismiss = () => dismiss();
-	const [present, dismiss] = useIonModal(AuthenticationForm, {
+	const handleDismiss = () => dismissModalLogin();
+	const [showModalLogin, dismissModalLogin] = useIonModal(AuthenticationForm, {
 		mode: 'SIGNIN',
 		onDismiss: handleDismiss,
 		breakpoints: [0.1, 0.5, 1],
@@ -47,8 +47,9 @@ const Home = () => {
 			dispatch(onLogout());
 			showToast({
 				message: 'Token scaduto. Devi ricollegarti.',
-				buttons: [{ text: 'log in', handler: () => present() }],
+				buttons: [{ text: 'log in', handler: () => showModalLogin() }],
 				color: "warning",
+				duration: 5000,
 				onDidDismiss: () => dismissToast
 			})
 		}
@@ -118,9 +119,9 @@ const Home = () => {
 		return (
 			<IonButton
 				color="dark"
-				onClick={() => present()}
+				onClick={() => showModalLogin()}
 			>
-				<IonIcon slot='icon-only' icon={umbrellaSharp} />
+				<IonIcon slot='icon-only' icon={logInOutline} />
 			</IonButton>
 		)
 	}
@@ -136,13 +137,7 @@ const Home = () => {
 							color="dark"
 							onClick={() => setShowModal(true)}
 						>
-							<IonIcon slot='icon-only' icon={pulse} />
-						</IonButton>
-						<IonButton
-							color="dark"
-							onClick={() => fetchPostsFromDb()}
-						>
-							<IonIcon slot='icon-only' icon={eyeSharp} />
+							<IonIcon slot='icon-only' icon={documentTextOutline} />
 						</IonButton>
 					</IonButtons>
 				</IonToolbar>
