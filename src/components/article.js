@@ -17,6 +17,7 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 
 
 	const dismissTagModalHandler = (tagsSelected) => {
+		setShowModal(false);
 		if (isEmpty(tagsSelected)) return;
 
 		saveTags({
@@ -54,9 +55,8 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 						<IonImg src={lead_image_url} />
 						<IonCardHeader>
 							<IonCardSubtitle>{title}</IonCardSubtitle>
-							<IonCardTitle></IonCardTitle>
 						</IonCardHeader>
-						<IonCardContent className="text-sm text-justify">
+						<IonCardContent className="text-justify">
 							<div dangerouslySetInnerHTML={{ __html: content }}></div>
 						</IonCardContent>
 					</IonCard>
@@ -70,8 +70,8 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 							</IonButtons>
 						</IonToolbar>
 					</IonFooter>
+					{renderModalTag()}
 				</IonPage>
-				{renderModalTag()}
 			</IonContent>
 		</>
 	)
