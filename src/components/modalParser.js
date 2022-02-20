@@ -3,12 +3,17 @@ import { close, saveOutline, server } from "ionicons/icons";
 import Article from "./article";
 
 const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer }) => {
+	
+	const onDismissHandler = () => {
+		setSearchText('');
+	}
 
 	const renderArticle = () => {
-		if (!articleParsed) return;
+		if (!articleParsed || !searchText) return;
 
-		return <Article articleParsed={articleParsed} />
+		return <Article articleParsed={articleParsed} onDismiss={onDismissHandler} />
 	}
+
 
 	return (
 		<IonModal
