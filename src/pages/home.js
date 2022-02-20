@@ -66,12 +66,13 @@ const Home = () => {
 
 	useEffect(() => {
 		if (searchText === '') return;
-
+		
 		parseArticle();
 	}, [searchText])
 
 	const savePostHandler = () => {
-		dispatch(savePost(articleParsed))
+		dispatch(savePost(articleParsed));
+		setSearchText('');
 	}
 
 	const savePostToServer = () => {
@@ -81,7 +82,10 @@ const Home = () => {
 		saveArticleAccess({
 			user: credentials.id,
 			docs: [articleParsed.id]
-		})
+		});
+		if(!error){
+			setSearchText('');
+		}
 	}
 
 	const renderPostList = () => {
