@@ -23,7 +23,7 @@ const Home = () => {
 	const { isLogged, credentials } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
-	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
+	const [parseArticle, { data: articleParsed, loading, error: notParsed }] = getArticledParsed(searchText);
 	const [save, { data: postSaved, error }] = savePostToDb();
 	const [getPosts, { data: postFromDb }] = getPostFromDb();
 	const [saveArticleAccess] = saveReadingList();
@@ -64,11 +64,42 @@ const Home = () => {
 		}, 3000);
 	};
 
+
+	const customExtractor = {
+		domain: 'www.lescienze.it',
+		title: {
+			selectors: ['h1', '.detail_title'],
+		},
+		author: {
+			selectors: ['.detail_author'],
+		},
+		content: {
+			selectors: ['detail-body'],
+		},
+	};
+
+
+
 	useEffect(() => {
 		if (searchText === '') return;
-		
-		parseArticle();
+
+		parseArticle({
+			extractors: customExtractor
+		});
 	}, [searchText])
+
+	useEffect(() => {
+		console.log('notParsed', notParsed)
+	}, [notParsed])
+
+	useEffect(() => {
+		console.log('first', {
+			articleParsed: articleParsed,
+			loading: loading,
+			notParsed: notParsed,
+		})
+	}, [])
+
 
 	const savePostHandler = () => {
 		dispatch(savePost(articleParsed));
@@ -83,7 +114,7 @@ const Home = () => {
 			user: credentials.id,
 			docs: [articleParsed.id]
 		});
-		if(!error){
+		if (!error) {
 			setSearchText('');
 		}
 	}
@@ -104,7 +135,7 @@ const Home = () => {
 		getPosts()
 	}
 	const renderModalParser = () => {
-		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer }
+		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }
 
 		return <ModalParser {...modalProps} />
 	}

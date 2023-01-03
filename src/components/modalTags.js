@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { IonContent, IonItem, IonLabel, IonModal, IonPage, IonSearchbar, IonToolbar, IonListHeader } from "@ionic/react"
+import { IonContent, IonModal, IonPage, IonSearchbar, IonToolbar, IonListHeader, IonButtons, IonButton } from "@ionic/react"
 
 import { getTagsHandler } from "../store/rest";
 
 import { filter, isEmpty } from 'lodash'
+import { flattenServerTagList } from "../utility/utils";
 
-const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
+const ModalTags = ({ showModal, dismissTagModalHandler, postId, clickme }) => {
 	const [searchText, setSearchText] = useState('');
 	const [tags, setTagList] = useState([]);
 	const [articleTags, setArticleTags] = useState([]);
@@ -14,7 +15,15 @@ const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
 	useEffect(() => {
 		if (searchText === '') return;
 
-		setTagList([...tags, searchText])
+		//search tag on server list
+		console.log('tagList', tagList);
+		const tagValues = flattenServerTagList(tagList);
+		console.log('tagValues :>> ', tagValues);
+
+		// let tagSearchedIndex = indexOf(tagValues, searchText, 0)
+		// tagSearchedIndex <= 0 
+		// 	? setTagList([...tags, searchText])
+		// 	: setTagList([...tags, tagValues[tagSearchedIndex]])
 	}, [searchText])
 
 	useEffect(() => {
@@ -23,26 +32,27 @@ const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
 		displayArticleTags(tagList)
 	}, [tagList]);
 
-	
+	const tagClickHandler = () => {
+		console.log('click')
+	}
+
 	const renderServerTags = () => {
 		if (!tagList) return;
 
-		return Object.keys(tagList).map(key => {
-			const { tags } = tagList[key];
+		const tagValues = flattenServerTagList(tagList);
+
+		return tagValues.map(item => {
 			return (
-				tags.map(item => {
-					return (
-						<div
-							key={item}
-							className="m-1 p-1 bg-blue-300 rounded-lg text-sm text-center text-neutral-50"
-						>
-							<p>{item}</p>
-						</div>
-					)
-				})
+				<IonButton
+					key={item}
+					className="m-1 p-1 bg-blue-300 rounded-lg text-sm text-center text-neutral-50"
+					// onClick={() => tagClickHandler()}
+					onClick={() => console.log('click')}
+				>
+					<p>{item}</p>
+				</IonButton>
 			)
 		})
-
 	}
 	const renderTags = () => {
 		if (!tags) return;
@@ -93,46 +103,36 @@ const ModalTags = ({ showModal, dismissTagModalHandler, postId }) => {
 		)
 	}
 
-
 	return (
-		<IonModal
-			isOpen={showModal}
-			breakpoints={[0.1, 0.5, 1]}
-			initialBreakpoint={0.5}
-			onDidDismiss={() => dismissTagModalHandler(tags)}
-		>
-			<IonContent>
-				<IonPage>
-					<IonToolbar>
-						{renderArticleTags()}
-					</IonToolbar>
-					<IonContent fullscreen>
-						<IonSearchbar
-							animated
-							className="py-10"
-							value={searchText}
-							placeholder="cerca un tag o inseriscine uno nuovo"
-							debounce={1000}
-							onIonChange={(e) => setSearchText(e.detail.value)}
-						>
-						</IonSearchbar>
-						<div className="px-5">
-							<div className="grid grid-cols-4 gap-1">
-								{renderTags()}
-							</div>
-							<IonListHeader
-								className="pt-4 border-b-2"
-							>
-								Tags
-							</IonListHeader>
-							<div className="grid grid-cols-4 gap-1">
-								{renderServerTags()}
-							</div>
-						</div>
-					</IonContent>
-				</IonPage>
+		<>
+			<IonToolbar>
+				{renderArticleTags()}
+			</IonToolbar>
+			<IonContent fullscreen>
+				<IonSearchbar
+					animated
+					className="py-10"
+					value={searchText}
+					placeholder="cerca un tag o inseriscine uno nuovo"
+					debounce={1000}
+					onIonChange={(e) => setSearchText(e.detail.value)}
+				>
+				</IonSearchbar>
+				<div className="px-5">
+					<div className="grid grid-cols-4 gap-1">
+						{renderTags()}
+					</div>
+					<IonListHeader
+						className="py-4 border-b-2"
+					>
+						Tags
+					</IonListHeader>
+					<div className="grid grid-cols-4 gap-1">
+						{renderServerTags()}
+					</div>
+				</div>
 			</IonContent>
-		</IonModal>
+		</>
 	)
 }
 export default ModalTags;

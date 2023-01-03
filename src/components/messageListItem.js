@@ -1,5 +1,4 @@
-import { IonAvatar, IonImg, IonItem, IonLabel, IonNote, IonThumbnail, useIonModal } from '@ionic/react';
-import { getDataFormatted } from '../utility/utils';
+import { IonImg, IonItem, IonLabel, IonThumbnail, useIonModal } from '@ionic/react';
 import Article from './article';
 
 import './MessageListItem.css';
@@ -33,7 +32,7 @@ const MessageListItem = ({ post, isLocal, postId }) => {
 			</IonThumbnail>
 			<IonLabel className="ion-text-wrap">
 				<h2>{post.title}</h2>
-				<p>{post.domain}</p>
+				<p>{post.domain} - {post.word_count} parole</p> 
 			</IonLabel>
 		</IonItem>
 	);

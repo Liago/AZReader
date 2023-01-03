@@ -1,9 +1,12 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react"
 import { close, saveOutline, server } from "ionicons/icons";
+
 import Article from "./article";
 
-const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer }) => {
-	
+import Spinner from './ui/spinner';
+
+const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
+
 	const onDismissHandler = () => {
 		setSearchText('');
 	}
@@ -12,6 +15,13 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 		if (!articleParsed || !searchText) return;
 
 		return <Article articleParsed={articleParsed} onDismiss={onDismissHandler} />
+	}
+
+	const renderSpinner = () => {
+		console.log('loading', loading)
+		if (!loading) return;
+		
+		return <Spinner />
 	}
 
 
@@ -56,6 +66,7 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 							onIonChange={(e) => setSearchText(e.detail.value)}
 						>
 						</IonSearchbar>
+						{renderSpinner()}
 						{renderArticle()}
 					</IonContent>
 				</IonPage>
