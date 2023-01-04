@@ -22,7 +22,11 @@ const MessageListItem = ({ post, isLocal, postId }) => {
 	});
 
 	return (
-		<IonItem onClick={() => openArticle()}>
+		<IonItem
+			lines="none"
+			className="py-3"
+			onClick={() => openArticle()}
+		>
 			{/* {displayLocalDot()} */}
 			<IonThumbnail slot="start">
 				<IonImg
@@ -30,10 +34,10 @@ const MessageListItem = ({ post, isLocal, postId }) => {
 					src={post.lead_image_url}
 				/>
 			</IonThumbnail>
-			<IonLabel className="ion-text-wrap">
-				<h2>{post.title}</h2>
-				<p>{post.domain} - {post.word_count} parole</p> 
-			</IonLabel>
+			<div>
+				<h2 className="text-sm font-bold font-[montserrat]">{post.title}</h2>
+				<p className="font-light text-xs ">{post.domain} - {post.word_count} parole</p>
+			</div>
 		</IonItem>
 	);
 };
