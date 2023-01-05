@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms, IonHeader } from "@ionic/react";
 import { pricetags } from "ionicons/icons";
 
 
@@ -8,7 +8,6 @@ import ModalTags from "./modalTags";
 import { saveTagsHandler } from "../store/rest";
 
 import { isEmpty } from 'lodash';
-import FlatHeader from "./ui/flatHeader";
 
 const Article = ({ articleParsed, onDismiss, postId }) => {
 	const { title, content, lead_image_url } = articleParsed;
@@ -74,13 +73,17 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 
 	return (
 		<>
-			<FlatHeader
-				dismiss={onDismiss}
-				title=""
-				platforms={platforms}
-			/>
+			<IonHeader>
+				<IonToolbar>
+					<IonButtons slot="end">
+						<IonButton onClick={onDismiss}>
+							chiudi
+						</IonButton>
+					</IonButtons>
+				</IonToolbar>
+			</IonHeader>
 			<IonContent fullscreen>
-				<div className="px-4 mt-32">
+				<div className="p-4">
 					<div className="rounded-md">
 						{/* <img className="w-full" alt="" src={lead_image_url} /> */}
 					</div>
