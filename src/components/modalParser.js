@@ -1,5 +1,5 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react"
-import { close, saveOutline, server } from "ionicons/icons";
+import { close, saveOutline, shareSocial } from "ionicons/icons";
 
 import Article from "./article";
 
@@ -18,9 +18,8 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 	}
 
 	const renderSpinner = () => {
-		console.log('loading', loading)
 		if (!loading) return;
-		
+
 		return <Spinner />
 	}
 
@@ -35,8 +34,8 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 				<IonPage>
 					<IonHeader>
 						<IonToolbar>
-							<IonTitle>Post parser</IonTitle>
-							<IonButtons slot="end">
+							<IonTitle slot="start">Post parser</IonTitle>
+							<IonButtons slot="start">
 								<IonButton
 									disabled={!articleParsed && true}
 									color='dark'
@@ -46,11 +45,13 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 								</IonButton>
 								<IonButton
 									disabled={!articleParsed && true}
-									color='red'
+									color='dark'
 									onClick={savePostToServer}
 								>
-									<IonIcon slot='icon-only' icon={server} />
+									<IonIcon slot='icon-only' icon={shareSocial} />
 								</IonButton>
+							</IonButtons>
+							<IonButtons slot="end">
 								<IonButton onClick={() => setShowModal(false)}>
 									<IonIcon slot="icon-only" icon={close} />
 								</IonButton>

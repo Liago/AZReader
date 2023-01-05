@@ -7,3 +7,6 @@
 p {
 	line-height: 1.6em;
 }
+iframe {
+	width: 100%;
+}

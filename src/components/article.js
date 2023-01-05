@@ -1,16 +1,18 @@
-import { useEffect, useState } from "react";
-import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonFooter, IonHeader, IonIcon, IonImg, IonModal, IonPage, IonTitle, IonToolbar } from "@ionic/react";
-import { close, pricetags } from "ionicons/icons";
+import { useState } from "react";
+import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms } from "@ionic/react";
+import { pricetags } from "ionicons/icons";
+
 
 import ModalTags from "./modalTags";
 
 import { saveTagsHandler } from "../store/rest";
 
 import { isEmpty } from 'lodash';
+import FlatHeader from "./ui/flatHeader";
 
 const Article = ({ articleParsed, onDismiss, postId }) => {
 	const { title, content, lead_image_url } = articleParsed;
-
+	const platforms = getPlatforms()
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [saveTags, { data: isTagsSaved }] = saveTagsHandler();
@@ -38,13 +40,48 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 		return <ModalTags {...modalProps} />
 	}
 
+	// const renderModalTag = () => {
+	// 	return (
+	// 		<IonModal
+	// 			isOpen={showModal}
+	// 			breakpoints={[0.1, 0.5, 1]}
+	// 			initialBreakpoint={0.5}
+	// 			onDidDismiss={() => dismissTagModalHandler()}
+	// 		>
+	// 			<ModalTags postId={postId} />
+
+	// 		</IonModal>
+	// 	)
+	// }
+
+	const renderFooter = () => {
+		return;
+
+		return (
+			<IonFooter>
+				<IonToolbar color="light">
+					<IonButtons slot="primary">
+						<IonButton
+							onClick={() => insertTagHandler()} >
+							<IonIcon slot="icon-only" icon={pricetags} />
+						</IonButton>
+					</IonButtons>
+				</IonToolbar>
+			</IonFooter>
+		)
+	}
+
+
+
 	return (
 		<>
-			<IonContent>
-				<IonHeader className="flex justify-end">
-					<IonButton fill="clear" onClick={() => onDismiss()}>chiudi</IonButton>
-				</IonHeader>
-				<div className="p-4">
+			<FlatHeader
+				dismiss={onDismiss}
+				title=""
+				platforms={platforms}
+			/>
+			<IonContent fullscreen>
+				<div className="px-4 mt-32">
 					<div className="rounded-md">
 						{/* <img className="w-full" alt="" src={lead_image_url} /> */}
 					</div>
@@ -55,33 +92,8 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 							dangerouslySetInnerHTML={{ __html: content }} />
 					</div>
 				</div>
-
-
-
-
-
-
-
-				{/* <IonFooter>
-						<IonToolbar color="dark">
-							<IonButtons slot="primary">
-								<IonButton
-									onClick={() => insertTagHandler()} >
-									<IonIcon slot="icon-only" icon={pricetags} />
-								</IonButton>
-							</IonButtons>
-						</IonToolbar>
-					</IonFooter> */}
+				{renderFooter()}
 				{/* {renderModalTag()} */}
-				<IonModal
-					isOpen={showModal}
-					breakpoints={[0.1, 0.5, 1]}
-					initialBreakpoint={0.5}
-					onDidDismiss={() => dismissTagModalHandler()}
-				>
-					<ModalTags postId={postId} />
-
-				</IonModal>
 			</IonContent>
 		</>
 	)

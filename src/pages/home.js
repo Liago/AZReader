@@ -9,12 +9,13 @@ import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from "../store/rest";
+import { getArticledParsed, getPostFromDb, postArticoleParsed, savePostToDb, saveReadingList } from "../store/rest";
 
 import "./Home.css";
 
 import { isEmpty } from "lodash";
 import moment from 'moment'
+import Spinner from "../components/ui/spinner";
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -64,33 +65,11 @@ const Home = () => {
 		}, 3000);
 	};
 
-
-	const customExtractor = {
-		domain: 'www.lescienze.it',
-		title: {
-			selectors: ['h1', '.detail_title'],
-		},
-		author: {
-			selectors: ['.detail_author'],
-		},
-		content: {
-			selectors: ['detail-body'],
-		},
-	};
-
-
-
 	useEffect(() => {
 		if (searchText === '') return;
 
-		parseArticle({
-			extractors: customExtractor
-		});
+		parseArticle();
 	}, [searchText])
-
-	useEffect(() => {
-		console.log('notParsed', notParsed)
-	}, [notParsed])
 
 	useEffect(() => {
 		console.log('first', {
@@ -120,11 +99,10 @@ const Home = () => {
 	}
 
 	const renderPostList = () => {
-		if (!isLogged && isEmpty(list)) return;
-		if (isLogged && isEmpty(postFromDb)) return;
+		if (!isLogged && isEmpty(list)) return <Spinner />;
+		if (isLogged && isEmpty(postFromDb)) return <Spinner />;
 
 		if (isLogged)
-
 			return Object.keys(postFromDb).map(key => {
 				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} />
 			})
@@ -161,11 +139,31 @@ const Home = () => {
 		)
 	}
 
+	const my_custom_extractor = {
+		domain: 'www.lescienze.it',
+		title: {
+			selectors: ['h1', '.detail_title'],
+		},
+		author: {
+			selectors: ['.detail_author'],
+		},
+		content: {
+			selectors: ['div#detail-body'],
+		},
+	};
+
+	const renderTitle = () => {
+		console.log('isLogged', isLogged)
+		return isLogged
+			? 'Articoli condivisi'
+			: 'I miei articoli'
+	}
+
 	return (
 		<IonPage id="home-page" ref={pageRef}>
 			<IonHeader>
 				<IonToolbar>
-					<IonTitle>Articoli</IonTitle>
+					<IonTitle>{renderTitle()}</IonTitle>
 					<IonButtons slot="primary">
 						{renderLoginLogout()}
 						<IonButton
@@ -184,7 +182,7 @@ const Home = () => {
 
 				<IonHeader collapse="condense">
 					<IonToolbar>
-						<IonTitle size="large">Articoli</IonTitle>
+						<IonTitle size="large">{renderTitle()}</IonTitle>
 					</IonToolbar>
 				</IonHeader>
 				<IonList className="px-3">
