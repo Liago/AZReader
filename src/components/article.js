@@ -9,7 +9,7 @@ import { saveTagsHandler } from "../store/rest";
 
 import { isEmpty } from 'lodash';
 
-const Article = ({ articleParsed, onDismiss, postId }) => {
+const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 	const { title, content, lead_image_url } = articleParsed;
 	const platforms = getPlatforms()
 	const [showModal, setShowModal] = useState(false);
@@ -69,12 +69,12 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 		)
 	}
 
+	const renderButton = () => {
+		if (displayFrom !== '') return;
 
-
-	return (
-		<>
+		return (
 			<IonHeader>
-				<IonToolbar>
+				<IonToolbar color="light">
 					<IonButtons slot="end">
 						<IonButton onClick={onDismiss}>
 							chiudi
@@ -82,6 +82,12 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
+		)
+	}
+
+	return (
+		<>
+			{renderButton()}
 			<IonContent fullscreen>
 				<div className="p-4">
 					<div className="rounded-md">

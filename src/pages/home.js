@@ -71,22 +71,12 @@ const Home = () => {
 		parseArticle();
 	}, [searchText])
 
-	useEffect(() => {
-		console.log('first', {
-			articleParsed: articleParsed,
-			loading: loading,
-			notParsed: notParsed,
-		})
-	}, [])
-
-
 	const savePostHandler = () => {
 		dispatch(savePost(articleParsed));
 		setSearchText('');
 	}
 
 	const savePostToServer = () => {
-		console.log('saved post to server');
 		articleParsed['readingList'] = [credentials.id];
 		articleParsed['id'] = Date.now();
 		save(articleParsed);

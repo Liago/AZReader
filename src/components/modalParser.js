@@ -1,9 +1,12 @@
+import { useEffect } from "react";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react"
 import { close, saveOutline, shareSocial } from "ionicons/icons";
 
+import Spinner from './ui/spinner';
 import Article from "./article";
 
-import Spinner from './ui/spinner';
+import { isNil } from 'lodash';
+
 
 const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
 
@@ -11,18 +14,40 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 		setSearchText('');
 	}
 
-	const renderArticle = () => {
+	const dismissModalHandler = () => {
+		setSearchText('');
+		setShowModal(false);
+	}
+
+	const renderArticlePreview = () => {
 		if (!articleParsed || !searchText) return;
 
-		return <Article articleParsed={articleParsed} onDismiss={onDismissHandler} />
+		return <Article
+			articleParsed={articleParsed}
+			onDismiss={onDismissHandler}
+			displayFrom="modalPreview"
+		/>
 	}
 
 	const renderSpinner = () => {
-		if (!loading) return;
+		if ((loading && searchText === '') || articleParsed) return;
 
 		return <Spinner />
 	}
 
+	const renderSearchBar = () => {
+		if (searchText !== '') return;
+
+		return (
+			<IonSearchbar
+				animated
+				value={searchText}
+				placeholder="Url articolo"
+				debounce={1000}
+				onIonChange={(e) => setSearchText(e.detail.value)}
+			/>
+		)
+	}
 
 	return (
 		<IonModal
@@ -37,14 +62,14 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 							<IonTitle slot="start">Post parser</IonTitle>
 							<IonButtons slot="start">
 								<IonButton
-									disabled={!articleParsed && true}
+									disabled={isNil(articleParsed) || searchText === ''}
 									color='dark'
 									onClick={savePostHandler}
 								>
 									<IonIcon slot='icon-only' icon={saveOutline} />
 								</IonButton>
 								<IonButton
-									disabled={!articleParsed && true}
+									disabled={isNil(articleParsed) || searchText === ''}
 									color='dark'
 									onClick={savePostToServer}
 								>
@@ -52,23 +77,16 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 								</IonButton>
 							</IonButtons>
 							<IonButtons slot="end">
-								<IonButton onClick={() => setShowModal(false)}>
+								<IonButton onClick={() => dismissModalHandler()}>
 									<IonIcon slot="icon-only" icon={close} />
 								</IonButton>
 							</IonButtons>
 						</IonToolbar>
 					</IonHeader>
 					<IonContent fullscreen>
-						<IonSearchbar
-							animated
-							value={searchText}
-							placeholder="Url articolo"
-							debounce={1000}
-							onIonChange={(e) => setSearchText(e.detail.value)}
-						>
-						</IonSearchbar>
+						{renderSearchBar()}
 						{renderSpinner()}
-						{renderArticle()}
+						{renderArticlePreview()}
 					</IonContent>
 				</IonPage>
 			</IonContent>

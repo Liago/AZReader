@@ -24,7 +24,7 @@ const MessageListItem = ({ post, isLocal, postId }) => {
 	return (
 		<IonItem
 			lines="none"
-			className="py-3"
+			className="py-3 border-b border-gray-200"
 			onClick={() => openArticle()}
 		>
 			{/* {displayLocalDot()} */}
