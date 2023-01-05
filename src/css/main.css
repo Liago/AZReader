@@ -1,3 +1,12 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+@import url("https://fonts.googleapis.com/css2?family=Gentium+Book+Basic:wght@300;400;600;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Montserrat:wght@300;400;600;900&family=Open+Sans:wght@300;400;600;900&family=Roboto+Slab:wght@300;400;600;900&display=swap");
+
+p {
+	line-height: 1.6em;
+}
+iframe {
+	width: 100%;
+}

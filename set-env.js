@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const environmentFile = `export const endpoint = {
-	parser: '${process.env.PARSER_ENDPOINT}',
+	parser: '${process.env.CORS_PROXY}/${process.env.PARSER_ENDPOINT}',
 	api: '${process.env.API_ENDPOINT}',
 	firebase_auth: '${process.env.FIREBASE_AUTH}',
   	test_mode: ${process.env.DEBUG},
