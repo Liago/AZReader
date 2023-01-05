@@ -86,6 +86,7 @@ const Home = () => {
 	}
 
 	const savePostToServer = () => {
+		console.log('saved post to server');
 		articleParsed['readingList'] = [credentials.id];
 		articleParsed['id'] = Date.now();
 		save(articleParsed);
@@ -93,9 +94,11 @@ const Home = () => {
 			user: credentials.id,
 			docs: [articleParsed.id]
 		});
-		if (!error) {
-			setSearchText('');
-		}
+		!error && setSearchText('');
+		setShowModal(false);
+		setTimeout(() => {
+			fetchPostsFromDb();
+		}, 500)
 	}
 
 	const renderPostList = () => {

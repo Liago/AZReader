@@ -14,7 +14,6 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 	const { title, content, lead_image_url } = articleParsed;
 	const platforms = getPlatforms()
 	const [showModal, setShowModal] = useState(false);
-	const [searchText, setSearchText] = useState('');
 	const [saveTags, { data: isTagsSaved }] = saveTagsHandler();
 
 
