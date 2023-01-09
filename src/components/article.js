@@ -70,7 +70,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 	}
 
 	const renderButton = () => {
-		if (displayFrom !== '') return;
+		if (displayFrom === 'modalPreview') return;
 
 		return (
 			<IonHeader>
@@ -94,7 +94,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 						{/* <img className="w-full" alt="" src={lead_image_url} /> */}
 					</div>
 					<div className="px-3">
-						<h1 className="py-1 text-2xl font-bold text-justify leading-6 font-['roboto']">{title}</h1>
+						<h1 className="py-1 text-2xl font-bold text-justify leading-6 font-[roboto]">{title}</h1>
 						<div
 							className="py-10 text-md text-justify font-normal font-[montserrat]"
 							dangerouslySetInnerHTML={{ __html: content }} />

@@ -7,15 +7,16 @@ import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons"
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
+import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, getPostFromDb, postArticoleParsed, savePostToDb, saveReadingList } from "../store/rest";
+import { getArticledParsed, getPostFromDb,  savePostToDb, saveReadingList } from "../store/rest";
+import { millisToMinutesAndSeconds } from '../utility/utils'
 
 import "./Home.css";
 
 import { isEmpty } from "lodash";
-import moment from 'moment'
-import Spinner from "../components/ui/spinner";
+import moment from 'moment';
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -92,6 +93,7 @@ const Home = () => {
 	}
 
 	const renderPostList = () => {
+		if (isEmpty(list) && isEmpty(postFromDb)) return;
 		if (!isLogged && isEmpty(list)) return <Spinner />;
 		if (isLogged && isEmpty(postFromDb)) return <Spinner />;
 
@@ -132,30 +134,44 @@ const Home = () => {
 		)
 	}
 
-	const my_custom_extractor = {
-		domain: 'www.lescienze.it',
-		title: {
-			selectors: ['h1', '.detail_title'],
-		},
-		author: {
-			selectors: ['.detail_author'],
-		},
-		content: {
-			selectors: ['div#detail-body'],
-		},
-	};
-
 	const renderTitle = () => {
-		console.log('isLogged', isLogged)
 		return isLogged
 			? 'Articoli condivisi'
 			: 'I miei articoli'
+	}
+
+	const renderTokenExpiration = () => {
+		if (!tokenExpiration) 
+			return <span>Sessione locale.</span>
+
+		const unixDiff = tokenExpiration - moment(new Date()).unix();
+		
+		const diff = millisToMinutesAndSeconds(tokenExpiration - moment().unix())
+		
+		console.log('pippo', {
+			nowMoment: moment(new Date()).unix(),
+			token: tokenExpiration,
+			unixDiff: unixDiff
+			// timeDiff: diff,
+			// tokenExp: moment(new Date(parseInt(tokenExpiration) * 1000)).format('HH:mm'),
+			// tokenExpTS: moment(new Date(parseInt(tokenExpiration) * 1000)).toString(),
+			// now: moment(new Date()).format('HH:mm'),
+			// nowTS: moment(new Date()).toString(),
+			// diff: tokenExpiration - moment().unix(),
+			// diffMin: tokenExpiration - moment().unix(),
+			//  minutes: diff
+		})
+
+		return (
+			<span className="text-xs font-[lato]">Sessione valida {diff}</span>
+		)
 	}
 
 	return (
 		<IonPage id="home-page" ref={pageRef}>
 			<IonHeader>
 				<IonToolbar>
+					{renderTokenExpiration()}
 					<IonTitle>{renderTitle()}</IonTitle>
 					<IonButtons slot="primary">
 						{renderLoginLogout()}
