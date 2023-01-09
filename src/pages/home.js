@@ -10,7 +10,7 @@ import AuthenticationForm from "../components/form/auth";
 import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, getPostFromDb,  savePostToDb, saveReadingList } from "../store/rest";
+import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from "../store/rest";
 import { millisToMinutesAndSeconds } from '../utility/utils'
 
 import "./Home.css";
@@ -140,31 +140,24 @@ const Home = () => {
 			: 'I miei articoli'
 	}
 
+	const [remainingMinutes, setRemainingMinutes] = useState()
+
+	const calculateToken = () => {
+		const currentTime = moment().unix();
+		const _remainingMinutes = moment.duration(tokenExpiration - currentTime, 'seconds').minutes();
+		setRemainingMinutes(_remainingMinutes);
+	}
+
+	useEffect(() => {
+        const comInterval = setInterval(calculateToken, 60000); 
+        return () => clearInterval(comInterval)
+      },[])
+
 	const renderTokenExpiration = () => {
-		if (!tokenExpiration) 
+		if (!tokenExpiration)
 			return <span>Sessione locale.</span>
 
-		const unixDiff = tokenExpiration - moment(new Date()).unix();
-		
-		const diff = millisToMinutesAndSeconds(tokenExpiration - moment().unix())
-		
-		console.log('pippo', {
-			nowMoment: moment(new Date()).unix(),
-			token: tokenExpiration,
-			unixDiff: unixDiff
-			// timeDiff: diff,
-			// tokenExp: moment(new Date(parseInt(tokenExpiration) * 1000)).format('HH:mm'),
-			// tokenExpTS: moment(new Date(parseInt(tokenExpiration) * 1000)).toString(),
-			// now: moment(new Date()).format('HH:mm'),
-			// nowTS: moment(new Date()).toString(),
-			// diff: tokenExpiration - moment().unix(),
-			// diffMin: tokenExpiration - moment().unix(),
-			//  minutes: diff
-		})
-
-		return (
-			<span className="text-xs font-[lato]">Sessione valida {diff}</span>
-		)
+		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
 	}
 
 	return (
