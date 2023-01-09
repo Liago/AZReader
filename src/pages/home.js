@@ -98,7 +98,7 @@ const Home = () => {
 		if (isLogged && isEmpty(postFromDb)) return <Spinner />;
 
 		if (isLogged)
-			return Object.keys(postFromDb).map(key => {
+			return Object.keys(postFromDb).reverse().map(key => {
 				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} />
 			})
 
