@@ -8,7 +8,7 @@ import Article from "./article";
 import { isNil } from 'lodash';
 
 
-const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
+const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
 
 	const onDismissHandler = () => {
 		setSearchText('');
@@ -20,17 +20,17 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 	}
 
 	const renderArticlePreview = () => {
-		if (!articleParsed || !searchText) return;
+		if (!theArticleParsed || !searchText) return;
 
 		return <Article
-			articleParsed={articleParsed}
+			articleParsed={theArticleParsed}
 			onDismiss={onDismissHandler}
 			displayFrom="modalPreview"
 		/>
 	}
 
 	const renderSpinner = () => {
-		if ((loading && searchText === '') || articleParsed) return;
+		if ((loading && searchText === '') || theArticleParsed) return;
 
 		return <Spinner />
 	}
@@ -62,14 +62,14 @@ const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setSh
 							<IonTitle slot="start">Post parser</IonTitle>
 							<IonButtons slot="start">
 								<IonButton
-									disabled={isNil(articleParsed) || searchText === ''}
+									disabled={isNil(theArticleParsed) || searchText === ''}
 									color='dark'
 									onClick={savePostHandler}
 								>
 									<IonIcon slot='icon-only' icon={saveOutline} />
 								</IonButton>
 								<IonButton
-									disabled={isNil(articleParsed) || searchText === ''}
+									disabled={isNil(theArticleParsed) || searchText === ''}
 									color='dark'
 									onClick={savePostToServer}
 								>

@@ -11,12 +11,13 @@ import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
 import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from "../store/rest";
-import { millisToMinutesAndSeconds } from '../utility/utils'
+import { personalScraper } from "../common/scraper";
 
 import "./Home.css";
 
 import { isEmpty } from "lodash";
 import moment from 'moment';
+import { getScraperParmas } from "../config/scraperConfig";
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -25,6 +26,9 @@ const Home = () => {
 	const { isLogged, credentials } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
+	const [customArticleParsed, setCustomArticleParsed] = useState();
+	const [isParsing, setIsParsing] = useState(false);
+
 	const [parseArticle, { data: articleParsed, loading, error: notParsed }] = getArticledParsed(searchText);
 	const [save, { data: postSaved, error }] = savePostToDb();
 	const [getPosts, { data: postFromDb }] = getPostFromDb();
@@ -68,22 +72,40 @@ const Home = () => {
 
 	useEffect(() => {
 		if (searchText === '') return;
+		setIsParsing(true);
+		setCustomArticleParsed(null);
+
+		if (getScraperParmas(searchText)) {
+			personalScraper(searchText)
+				.then(resp => {
+					console.log('articolo', resp[0])
+					setCustomArticleParsed(resp[0])
+				});
+			setIsParsing(false);
+			return;
+		}
 
 		parseArticle();
+		setIsParsing(false)
+
 	}, [searchText])
 
 	const savePostHandler = () => {
-		dispatch(savePost(articleParsed));
+		const theArticleParsed = customArticleParsed ? customArticleParsed : articleParsed;
+
+		dispatch(savePost(theArticleParsed));
 		setSearchText('');
 	}
 
 	const savePostToServer = () => {
-		articleParsed['readingList'] = [credentials.id];
-		articleParsed['id'] = Date.now();
-		save(articleParsed);
+		const theArticleParsed = customArticleParsed ? customArticleParsed : articleParsed;
+
+		theArticleParsed['readingList'] = [credentials.id];
+		theArticleParsed['id'] = Date.now();
+		save(theArticleParsed);
 		saveArticleAccess({
 			user: credentials.id,
-			docs: [articleParsed.id]
+			docs: [theArticleParsed.id]
 		});
 		!error && setSearchText('');
 		setShowModal(false);
@@ -108,7 +130,11 @@ const Home = () => {
 		getPosts()
 	}
 	const renderModalParser = () => {
-		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }
+		if (isParsing) return;
+
+		const theArticleParsed = customArticleParsed ? customArticleParsed : articleParsed;
+
+		const modalProps = { theArticleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }
 
 		return <ModalParser {...modalProps} />
 	}
@@ -149,9 +175,9 @@ const Home = () => {
 	}
 
 	useEffect(() => {
-        const comInterval = setInterval(calculateToken, 60000); 
-        return () => clearInterval(comInterval)
-      },[])
+		const comInterval = setInterval(calculateToken, 60000);
+		return () => clearInterval(comInterval)
+	}, [])
 
 	const renderTokenExpiration = () => {
 		if (!tokenExpiration)

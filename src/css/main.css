@@ -10,3 +10,26 @@ p {
 iframe {
 	width: 100%;
 }
+
+/* EXTRA CSS TO CLEAN UP BETTER */
+figcaption {
+	margin: 0 0 10px 0;
+	text-align: left;
+	font-size: 10px;
+}
+
+/* IL POST */
+.ilpostShare {
+	display: none;
+}
+.leggi-anche {
+	display: block;
+	color: blue;
+	font-weight: 900;
+	text-align: left;
+	margin: 10px 0;
+}
+
+figure.wp-block-image {
+	padding: 20px 0;
+}
