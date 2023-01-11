@@ -1,11 +1,3 @@
-import { find } from "lodash";
-
-export const getScraperParmas = (searchText) => {
-	const url = new URL(searchText);
-	return find(scraperConfig, ["url", url.hostname ]) 
-}
-
-
 export const scraperConfig = [
 	{
 		"url": "www.lescienze.it",
@@ -24,7 +16,8 @@ export const scraperConfig = [
 		"items": {
 			"title": "h1",
 			"author": "",
-			"content": ".content"
+			"content": "article",
+			"lead_image": "newsletter-box"
 		}
 	}
 ]

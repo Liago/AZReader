@@ -17,7 +17,7 @@ import "./Home.css";
 
 import { isEmpty } from "lodash";
 import moment from 'moment';
-import { getScraperParmas } from "../config/scraperConfig";
+import { getScraperParmas } from "../utility/utils";
 
 const Home = () => {
 	const dispatch = useDispatch();

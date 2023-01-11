@@ -1,13 +1,12 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-import { getScraperParmas } from '../config/scraperConfig';
+import { getScraperParmas } from '../utility/utils';
 
 
 export const personalScraper = (url) => {
 
 	const scraperParams = getScraperParmas(url);
-	console.log('scraperParams', scraperParams)
 	
 	return axios(`https://parser-373014.uc.r.appspot.com/${url}`)
 		.then(response => {
@@ -24,7 +23,7 @@ export const personalScraper = (url) => {
 				const direction = 'ltr';
 				const domain = scraperParams.url;
 				const excerpt =  $(this).find(scraperParams.items.excerpt).text();
-				const lead_image_url = $(this).find('picture').find('img').attr('src');
+				const lead_image_url = $(this).find(scraperParams.items.lead_image).find('img').attr('src');
 				const next_page_url = null;
 				const rendered_pages = 1;
 				const total_pages = 1;
