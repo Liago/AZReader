@@ -10,14 +10,20 @@ export const personalScraper = (url) => {
 	
 	return axios(`https://parser-373014.uc.r.appspot.com/${url}`)
 		.then(response => {
-			const html = response.data
-			const $ = cheerio.load(html)
-			const article = []
+			const html = response.data;
+			const $ = cheerio.load(html);
+			const article = [];
+			let _content;
 			$(scraperParams.container, html).each(function () {
 				console.log('$(this)', $(this))
 				const title = $(this).find(scraperParams.items.title).text();
 				const author = $(this).find(scraperParams.items.author).text();
-				const content = $(this).find(scraperParams.items.content).text().replaceAll('\n', '<div class="py-2">');
+				if (scraperParams.isHTML) {
+					_content = $(this).find(scraperParams.items.content).html().replaceAll('iframe', '');
+				} else {
+					_content = $(this).find(scraperParams.items.content).text().replaceAll('\n', '<div class="py-1">');
+				}
+				const content = _content;					
 				const date_published = $(this).find(scraperParams.items.data_published).text();
 				const dek = null;
 				const direction = 'ltr';
@@ -27,7 +33,7 @@ export const personalScraper = (url) => {
 				const next_page_url = null;
 				const rendered_pages = 1;
 				const total_pages = 1;
-				const word_count = content.trim().split(/\s+/).length;
+				const word_count = _content.trim().split(/\s+/).length;
 				article.push({
 					author,
 					content,

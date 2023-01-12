@@ -30,6 +30,73 @@ figcaption {
 	margin: 10px 0;
 }
 
+a {
+	display: block;
+	color: rgb(144, 182, 214);
+	font-weight: 900;
+}
+
 figure.wp-block-image {
 	padding: 20px 0;
+}
+
+/*UNAPAROLAALGIORNO*/
+.content > .word-commento > p > a.linked-word {
+	display: inline;
+	text-decoration: solid;
+	text-decoration-color: #d92929 !important;
+	color: #d92929 !important;
+}
+.content > .word-etimo {
+	padding: 10px 0;
+}
+.content > .word-datapub,
+.content > #word-message,
+.col.col-md-10.offset-md-1.col-lg-8.offset-lg-2 > h1 {
+	display: none;
+}
+
+/*ULTIMO UOMO*/
+
+.post_content > p > b {
+	display: block;
+	margin-top: 20px;
+}
+
+/* TWEET */
+.twitter-tweet {
+	padding: 20px;
+	background-color: white;
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+	margin: 25px 0;
+}
+.twitter-tweet > p {
+	font-size: 0.8rem;
+}
+.twitter-tweet > p > a {
+	color: rgba(0, 0, 0, 0.7);
+}
+
+/* APPLE INSIDER*/
+
+h1.h1-adjust,
+.avatarLG-article.img-circle.no-left-gutters,
+#hero-cap,
+#article-social,
+.embed,
+.feat {
+	display: none;
+}
+
+.row > .article-lead {
+	padding-top: 20px;
+}
+.row > .article-lead > a,
+.col-sm-12 > p > a {
+	display: inline;
+}
+.col-sm-12 > figure {
+	padding: 20px 0 10px;
 }

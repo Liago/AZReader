@@ -95,6 +95,7 @@ const Home = () => {
 
 		dispatch(savePost(theArticleParsed));
 		setSearchText('');
+		setShowModal(false);
 	}
 
 	const savePostToServer = () => {
