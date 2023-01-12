@@ -6,6 +6,7 @@ import Spinner from './ui/spinner';
 import Article from "./article";
 
 import { isNil } from 'lodash';
+import { isValidUrl } from "../utility/utils";
 
 
 const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
@@ -35,6 +36,15 @@ const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, se
 		return <Spinner />
 	}
 
+	const checkValid = (textString) => {
+		if (!isValidUrl(textString)) {
+			setSearchText('');
+			return;
+		};
+
+		setSearchText(textString);
+	}
+
 	const renderSearchBar = () => {
 		if (searchText !== '') return;
 
@@ -44,7 +54,7 @@ const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, se
 				value={searchText}
 				placeholder="Url articolo"
 				debounce={1000}
-				onIonChange={(e) => setSearchText(e.detail.value)}
+				onIonChange={(e) => checkValid(e.detail.value)}
 			/>
 		)
 	}
