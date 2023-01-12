@@ -96,6 +96,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 					<div className="px-3">
 						<h1 className="py-1 text-2xl font-bold text-justify leading-6 font-[roboto]">{title}</h1>
 						<div
+							id="main-content"
 							className="py-10 text-md text-justify font-normal font-[montserrat]"
 							dangerouslySetInnerHTML={{ __html: content }} />
 					</div>

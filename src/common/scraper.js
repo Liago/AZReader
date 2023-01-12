@@ -14,6 +14,7 @@ export const personalScraper = (url) => {
 			const $ = cheerio.load(html);
 			const article = [];
 			let _content;
+			let _lead_image_url;
 			$(scraperParams.container, html).each(function () {
 				console.log('$(this)', $(this))
 				const title = $(this).find(scraperParams.items.title).text();
@@ -29,7 +30,12 @@ export const personalScraper = (url) => {
 				const direction = 'ltr';
 				const domain = scraperParams.url;
 				const excerpt =  $(this).find(scraperParams.items.excerpt).text();
-				const lead_image_url = $(this).find(scraperParams.items.lead_image).find('img').attr('src');
+				if (scraperParams.url === 'www.lescienze.it') {
+					_lead_image_url = $(this).find(scraperParams.items.lead_image).find('img').attr('data-src');
+				} else {
+					_lead_image_url = $(this).find(scraperParams.items.lead_image).find('img').attr('src');
+				}
+				const lead_image_url = _lead_image_url;
 				const next_page_url = null;
 				const rendered_pages = 1;
 				const total_pages = 1;

@@ -125,7 +125,7 @@ const Home = () => {
 				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} />
 			})
 
-		return (list || []).map((item, i) => <MessageListItem key={i} post={item} isLocal />)
+		return (list || []).reverse().map((item, i) => <MessageListItem key={i} post={item} isLocal />)
 	}
 	const fetchPostsFromDb = () => {
 		getPosts()

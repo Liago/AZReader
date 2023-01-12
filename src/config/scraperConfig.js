@@ -2,13 +2,14 @@ export const scraperConfig = [
 	{
 		"url": "www.lescienze.it",
 		"container": "main",
-		"isHTML": false,
+		"isHTML": true,
 		"items": {
 			"title": "h1.detail_title",
 			"author": ".detail_author",
 			"content": "#detail-body",
 			"data_published": ".detail_date",
-			"excerpt": "¶detail-body-paywall"
+			"excerpt": "¶detail-body-paywall",
+			"lead_image": ".inline-article_media"
 		},
 	},
 	{
@@ -23,14 +24,14 @@ export const scraperConfig = [
 		}
 	},
 	{
-		"url": "comedonchisciotte.org",
-		"container": ".single-container",
-		"isHTML": false,
+		"url": "www.macrumors.com",
+		"container": "#maincontent",
+		"isHTML": true,
 		"items": {
-			"title": ".post-title",
-			"author": ".post-author-name",
-			"content": "entry-content",
-			"lead_image": "img.b-loaded"
+			"title": ".heading--1cooZo6n.heading--h5--3l5xQ3lN.heading--white--2vAPsAl1.heading--noMargin--mnRHPAnD",
+			"author": ".authorLink--3Zlx7Owv",
+			"content": ".js-content",
+			"lead_image": ".ugc--2nTu61bm.minor--3O_9dH4U"
 		}
 	},
 	{
@@ -41,7 +42,7 @@ export const scraperConfig = [
 			"title": "h1.h1-adjust",
 			"author": ".avatar-link",
 			"content": ".row",
-			"lead_image": "#article-hero"
+			"lead_image": "#article-hero > a"
 		}
 	},
 ]
