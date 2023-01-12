@@ -86,7 +86,8 @@ h1.h1-adjust,
 #hero-cap,
 #article-social,
 .embed,
-.feat {
+.feat, 
+#main-content .ad-disclaimer-container {
 	display: none;
 }
 
@@ -103,7 +104,8 @@ h1.h1-adjust,
 
 
 #main-content > a,
-#main-content > .ugc--2nTu61bm.minor--3O_9dH4U > p > a {
+#main-content > .ugc--2nTu61bm.minor--3O_9dH4U > p > a,
+#main-content > .post-body a {
 	display: inline;
 }
 #main-content > div > .linkback {
@@ -122,4 +124,14 @@ h1.h1-adjust,
 }
 #main-content img.aligncenter.size-full {
 	padding: 30px 0 10px;
+}
+
+
+
+/**9 to mac*/
+#main-content .ytp-cued-thumbnail-overlay-image {
+	background-size: contain !important;
+}
+#main-content .post-body p {
+	padding: 10px 0;
 }
