@@ -86,17 +86,25 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 			</IonHeader>
 		)
 	}
+	const renderImage = () => {
+		if (domain !== 'unaparolaalgiorno.it') return;
+		
+		return <img className="w-full" alt="" src={lead_image_url} />
+	}
+	const renderTitle = () => {
+		if (domain === 'unaparolaalgiorno.it') return;
+
+		return <h1 className="py-1 text-2xl font-bold text-justify leading-6 font-[montserrat]">{title}</h1>
+	}
 
 	return (
 		<>
 			{renderButton()}
 			<IonContent fullscreen>
 				<div className="p-4">
-					<div className="rounded-md">
-						{/* <img className="w-full" alt="" src={topImage} /> */}
-					</div>
+					<div className="rounded-md">{renderImage()}</div>
 					<div className="px-3">
-						<h1 className="py-1 text-2xl font-bold text-justify leading-6 font-[montserrat]">{title}</h1>
+						{renderTitle()}
 						<div className="mt-2 border-l-4 border-red-600">
 							<div className="pl-3">
 								<h4 className="pt-1 text-xs font-light font-[montserrat]">{renderArticleDatePublished(date || date_published)}</h4>
