@@ -32,7 +32,7 @@ figcaption {
 
 a {
 	display: inline;
-	color: rgb(144, 182, 214);
+	color: rgba(220, 38, 38, .9);
 	font-weight: 900;
 }
 

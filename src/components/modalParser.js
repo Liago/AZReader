@@ -7,9 +7,11 @@ import Article from "./article";
 
 import { isNil } from 'lodash';
 import { isValidUrl } from "../utility/utils";
+import { useSelector } from "react-redux";
 
 
 const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
+	const { tokenExpiration } = useSelector(state => state.app);
 
 	const onDismissHandler = () => {
 		setSearchText('');
@@ -82,6 +84,7 @@ const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, se
 									disabled={isNil(theArticleParsed) || searchText === ''}
 									color='dark'
 									onClick={savePostToServer}
+									className={`${!tokenExpiration && 'hidden' }`}
 								>
 									<IonIcon slot='icon-only' icon={shareSocial} />
 								</IonButton>
