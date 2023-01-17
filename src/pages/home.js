@@ -11,13 +11,14 @@ import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
 import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from "../store/rest";
-import { personalScraper } from "../common/scraper";
+import { personalScraper, rapidApiScraper } from "../common/scraper";
 
 import "./Home.css";
 
 import { isEmpty } from "lodash";
 import moment from 'moment';
 import { getScraperParmas } from "../utility/utils";
+// import firebase from '../common/firebase';
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const Home = () => {
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [customArticleParsed, setCustomArticleParsed] = useState();
+	const [rapidArticleParsed, setRapidArticleParsed] = useState();
 	const [isParsing, setIsParsing] = useState(false);
 
 	const [parseArticle, { data: articleParsed, loading, error: notParsed }] = getArticledParsed(searchText);
@@ -38,7 +40,6 @@ const Home = () => {
 
 	const [showToast, dismissToast] = useIonToast();
 
-
 	const handleDismiss = () => dismissModalLogin();
 	const [showModalLogin, dismissModalLogin] = useIonModal(AuthenticationForm, {
 		mode: 'SIGNIN',
@@ -46,6 +47,23 @@ const Home = () => {
 		breakpoints: [0.1, 0.5, 1],
 		initialBreakpoint: 0.5,
 	});
+
+	useEffect(() => {
+		// const fetchData = async () => {
+		// 	const db = firebase.firestore();
+		// 	const data = await db.collection('post').get();
+		// 	const temp = data.map(doc => doc.data())
+		// 	console.log('temp', temp)
+		// }
+		// fetchData()
+		// return db.collection('post').onSnapshot((snapshot) => {
+		// 	const postData = [];
+		// 	snapshot.forEach((doc) => postData.push({ ...doc.data(), id: doc.id }));
+		// 	console.log(postData);
+		// 	// setPosts(postData);
+		// });
+	}, [])
+
 
 	useEffect(() => {
 		//verifica che il token sia ancora valido
@@ -74,24 +92,47 @@ const Home = () => {
 		if (searchText === '') return;
 		setIsParsing(true);
 		setCustomArticleParsed(null);
+		setRapidArticleParsed(null);
 
-		if (getScraperParmas(searchText)) {
-			personalScraper(searchText)
-				.then(resp => {
-					console.log('articolo', resp[0])
-					setCustomArticleParsed(resp[0])
-				});
+		const parserParams = getScraperParmas(searchText);
+
+		if (!parserParams?.parser) {
+			parseArticle();
 			setIsParsing(false);
 			return;
 		}
+		switch (parserParams.parser) {
+			case 'personal':
+				personalScraper(searchText)
+					.then(resp => {
+						console.log('articolo', resp[0])
+						setCustomArticleParsed(resp[0])
+					});
+				break;
+			case 'rapidApi':
+				rapidApiScraper(searchText)
+					.then(resp => {
+						console.log('resp', resp)
+						setRapidArticleParsed(resp);
+					});
+				break;
+			default:
+				parseArticle();
+		}
 
-		parseArticle();
-		setIsParsing(false)
-
+		setIsParsing(false);
 	}, [searchText])
 
+	useEffect(() => {
+		console.log('isParsing', isParsing)
+	}, [isParsing])
+
 	const savePostHandler = () => {
-		const theArticleParsed = customArticleParsed ? customArticleParsed : articleParsed;
+		if (rapidArticleParsed) {
+			const url = new URL(rapidArticleParsed.url);
+			rapidArticleParsed['domain'] = url.hostname;
+		}
+		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
 
 		dispatch(savePost(theArticleParsed));
 		setSearchText('');
@@ -99,7 +140,11 @@ const Home = () => {
 	}
 
 	const savePostToServer = () => {
-		const theArticleParsed = customArticleParsed ? customArticleParsed : articleParsed;
+		if (rapidArticleParsed) {
+			const url = new URL(rapidArticleParsed.url);
+			rapidArticleParsed['domain'] = url.hostname;
+		}
+		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
 
 		theArticleParsed['readingList'] = [credentials.id];
 		theArticleParsed['id'] = Date.now();
@@ -133,7 +178,7 @@ const Home = () => {
 	const renderModalParser = () => {
 		if (isParsing) return;
 
-		const theArticleParsed = customArticleParsed ? customArticleParsed : articleParsed;
+		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
 
 		const modalProps = { theArticleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }
 

@@ -15,6 +15,7 @@ export const flattenServerTagList = (tagList) => {
 
 export const getScraperParmas = (searchText) => {
 	const url = new URL(searchText);
+	console.log('url.hostname', url.hostname)
 	return find(scraperConfig, ["url", url.hostname])
 }
 
@@ -26,4 +27,12 @@ export const isValidUrl = urlString => {
 		'(\\?[;&a-z\\d%_.~+=-]*)?' + // validate query string
 		'(\\#[-a-z\\d_]*)?$', 'i'); // validate fragment locator
 	return !!urlPattern.test(urlString);
+}
+
+export const renderArticleDatePublished = date => {
+	if (!date) return;
+
+	// console.log('date', moment(date))
+
+	return <>Pubblicato il {moment(date).format('DD MMMM YYYY')}</>;
 }

@@ -31,12 +31,12 @@ const MessageListItem = ({ post, isLocal, postId }) => {
 			<IonThumbnail slot="start">
 				<IonImg
 					className="rounded-xl shadow-md"
-					src={post.lead_image_url}
+					src={post.lead_image_url || post.topImage}
 				/>
 			</IonThumbnail>
 			<div>
 				<h2 className="text-sm font-bold font-[montserrat]">{post.title}</h2>
-				<p className="font-light text-xs ">{post.domain} - {post.word_count} parole</p>
+				<p className="font-light text-xs ">{post.domain} - {post.word_count || post.length} parole</p>
 			</div>
 		</IonItem>
 	);

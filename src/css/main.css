@@ -31,15 +31,59 @@ figcaption {
 }
 
 a {
-	display: block;
+	display: inline;
 	color: rgb(144, 182, 214);
 	font-weight: 900;
 }
 
-figure.wp-block-image {
-	padding: 20px 0;
+#singleBody a {
+	display: inline;
+}
+#singleBody p strong {
+	display: none;
+}
+#singleBody .leggi-anche {
+	position: relative;
+	display: block;
+	font-size: 0.8rem;
+	padding: 25px 20px 25px;
+	color: rgb(144, 182, 214);
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+}
+#singleBody .leggi-anche::before {
+	content: "leggi anche";
+	position: absolute;
+	top: 0;
+	left: 5px;
+	color: rgba(144, 182, 214, 0.7);
+}
+#singleBody .wp-caption,
+#main-content .wp-caption,
+.wp-block-image {
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+	margin: 20px 0;
+}
+#singleBody .wp-caption img,
+#main-content .wp-caption img,
+.wp-block-image img {
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+#singleBody .wp-caption .wp-caption-text,
+#main-content .wp-caption .wp-caption-text,
+.wp-block-image .wp-element-caption {
+	font-size: 0.7rem;
+	padding: 10px;
 }
 
+/*RIMINI TODAY*/
+.l-entry__byline.u-flex {
+	display: none;
+}
 /*UNAPAROLAALGIORNO*/
 .content > .word-commento > p > a.linked-word {
 	display: inline;
@@ -86,7 +130,7 @@ h1.h1-adjust,
 #hero-cap,
 #article-social,
 .embed,
-.feat, 
+.feat,
 #main-content .ad-disclaimer-container {
 	display: none;
 }
@@ -101,7 +145,6 @@ h1.h1-adjust,
 .col-sm-12 > figure {
 	padding: 20px 0 10px;
 }
-
 
 #main-content > a,
 #main-content > .ugc--2nTu61bm.minor--3O_9dH4U > p > a,
@@ -126,12 +169,41 @@ h1.h1-adjust,
 	padding: 30px 0 10px;
 }
 
-
-
 /**9 to mac*/
 #main-content .ytp-cued-thumbnail-overlay-image {
 	background-size: contain !important;
 }
 #main-content .post-body p {
 	padding: 10px 0;
+}
+
+/*le scienze*/
+#main-content .inline-article {
+	width: 100%;
+	max-width: none;
+	margin-top: 20px;
+	clear: left;
+	margin: 30px 0;
+}
+#main-content .inline-article article {
+	display: flex;
+	padding: 20px;
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+}
+#main-content .inline-article article .inline-article_content {
+	font-size: 0.8rem;
+	margin-left: 10px;
+}
+#main-content .inline-article article .inline-article_content .inline-article_author {
+	font-size: 0.7rem;
+}
+#main-content .inline-article article figure {
+	flex-basis: 230px;
+	max-width: 230px;
+}
+#main-content .inline-article figure img {
+	display: block;
+	width: 100%;
 }

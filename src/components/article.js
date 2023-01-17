@@ -8,9 +8,11 @@ import ModalTags from "./modalTags";
 import { saveTagsHandler } from "../store/rest";
 
 import { isEmpty } from 'lodash';
+import moment from 'moment';
+import { renderArticleDatePublished } from "../utility/utils";
 
 const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
-	const { title, content, lead_image_url } = articleParsed;
+	const { title, content, lead_image_url, html: htmlContent, date, date_published, topImage, domain } = articleParsed;
 	const platforms = getPlatforms()
 	const [showModal, setShowModal] = useState(false);
 	const [saveTags, { data: isTagsSaved }] = saveTagsHandler();
@@ -91,14 +93,20 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 			<IonContent fullscreen>
 				<div className="p-4">
 					<div className="rounded-md">
-						{/* <img className="w-full" alt="" src={lead_image_url} /> */}
+						{/* <img className="w-full" alt="" src={topImage} /> */}
 					</div>
 					<div className="px-3">
 						<h1 className="py-1 text-2xl font-bold text-justify leading-6 font-[montserrat]">{title}</h1>
+						<div className="mt-2 border-l-4 border-red-600">
+							<div className="pl-3">
+								<h4 className="pt-1 text-xs font-light font-[montserrat]">{renderArticleDatePublished(date || date_published)}</h4>
+								<h4 className="text-xs font-light font-[montserrat]">{domain}</h4>
+							</div>
+						</div>
 						<div
 							id="main-content"
 							className="py-10 text-md text-justify font-normal font-[montserrat]"
-							dangerouslySetInnerHTML={{ __html: content }} />
+							dangerouslySetInnerHTML={{ __html: content || htmlContent }} />
 					</div>
 				</div>
 				{renderFooter()}
