@@ -7,15 +7,18 @@ import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons"
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
+import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, getPostFromDb, postArticoleParsed, savePostToDb, saveReadingList } from "../store/rest";
+import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from "../store/rest";
+import { personalScraper, rapidApiScraper } from "../common/scraper";
 
 import "./Home.css";
 
 import { isEmpty } from "lodash";
-import moment from 'moment'
-import Spinner from "../components/ui/spinner";
+import moment from 'moment';
+import { getScraperParmas } from "../utility/utils";
+// import firebase from '../common/firebase';
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -24,6 +27,10 @@ const Home = () => {
 	const { isLogged, credentials } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
+	const [customArticleParsed, setCustomArticleParsed] = useState();
+	const [rapidArticleParsed, setRapidArticleParsed] = useState();
+	const [isParsing, setIsParsing] = useState(false);
+
 	const [parseArticle, { data: articleParsed, loading, error: notParsed }] = getArticledParsed(searchText);
 	const [save, { data: postSaved, error }] = savePostToDb();
 	const [getPosts, { data: postFromDb }] = getPostFromDb();
@@ -33,7 +40,6 @@ const Home = () => {
 
 	const [showToast, dismissToast] = useIonToast();
 
-
 	const handleDismiss = () => dismissModalLogin();
 	const [showModalLogin, dismissModalLogin] = useIonModal(AuthenticationForm, {
 		mode: 'SIGNIN',
@@ -41,6 +47,7 @@ const Home = () => {
 		breakpoints: [0.1, 0.5, 1],
 		initialBreakpoint: 0.5,
 	});
+
 
 	useEffect(() => {
 		//verifica che il token sia ancora valido
@@ -67,53 +74,97 @@ const Home = () => {
 
 	useEffect(() => {
 		if (searchText === '') return;
+		setIsParsing(true);
+		setCustomArticleParsed(null);
+		setRapidArticleParsed(null);
 
-		parseArticle();
+		const parserParams = getScraperParmas(searchText);
+
+		if (!parserParams?.parser) {
+			parseArticle();
+			setIsParsing(false);
+			return;
+		}
+		switch (parserParams.parser) {
+			case 'personal':
+				personalScraper(searchText)
+					.then(resp => {
+						console.log('articolo', resp[0])
+						setCustomArticleParsed(resp[0])
+					});
+				break;
+			case 'rapidApi':
+				rapidApiScraper(searchText)
+					.then(resp => {
+						console.log('resp', resp)
+						setRapidArticleParsed(resp);
+					});
+				break;
+			default:
+				parseArticle();
+		}
+
+		setIsParsing(false);
 	}, [searchText])
 
 	useEffect(() => {
-		console.log('first', {
-			articleParsed: articleParsed,
-			loading: loading,
-			notParsed: notParsed,
-		})
-	}, [])
-
+		console.log('isParsing', isParsing)
+	}, [isParsing])
 
 	const savePostHandler = () => {
-		dispatch(savePost(articleParsed));
+		if (rapidArticleParsed) {
+			const url = new URL(rapidArticleParsed.url);
+			rapidArticleParsed['domain'] = url.hostname;
+		}
+		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
+
+		dispatch(savePost(theArticleParsed));
 		setSearchText('');
+		setShowModal(false);
 	}
 
 	const savePostToServer = () => {
-		articleParsed['readingList'] = [credentials.id];
-		articleParsed['id'] = Date.now();
-		save(articleParsed);
+		if (rapidArticleParsed) {
+			const url = new URL(rapidArticleParsed.url);
+			rapidArticleParsed['domain'] = url.hostname;
+		}
+		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
+
+		theArticleParsed['readingList'] = [credentials.id];
+		theArticleParsed['id'] = Date.now();
+		save(theArticleParsed);
 		saveArticleAccess({
 			user: credentials.id,
-			docs: [articleParsed.id]
+			docs: [theArticleParsed.id]
 		});
-		if (!error) {
-			setSearchText('');
-		}
+		!error && setSearchText('');
+		setShowModal(false);
+		setTimeout(() => {
+			fetchPostsFromDb();
+		}, 500)
 	}
 
 	const renderPostList = () => {
+		if (isEmpty(list) && isEmpty(postFromDb)) return;
 		if (!isLogged && isEmpty(list)) return <Spinner />;
 		if (isLogged && isEmpty(postFromDb)) return <Spinner />;
 
 		if (isLogged)
-			return Object.keys(postFromDb).map(key => {
+			return Object.keys(postFromDb).reverse().map(key => {
 				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} />
 			})
 
-		return (list || []).map((item, i) => <MessageListItem key={i} post={item} isLocal />)
+		return (list || []).reverse().map((item, i) => <MessageListItem key={i} post={item} isLocal />)
 	}
 	const fetchPostsFromDb = () => {
 		getPosts()
 	}
 	const renderModalParser = () => {
-		const modalProps = { articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }
+		if (isParsing) return;
+
+		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
+
+		const modalProps = { theArticleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }
 
 		return <ModalParser {...modalProps} />
 	}
@@ -139,30 +190,37 @@ const Home = () => {
 		)
 	}
 
-	const my_custom_extractor = {
-		domain: 'www.lescienze.it',
-		title: {
-			selectors: ['h1', '.detail_title'],
-		},
-		author: {
-			selectors: ['.detail_author'],
-		},
-		content: {
-			selectors: ['div#detail-body'],
-		},
-	};
-
 	const renderTitle = () => {
-		console.log('isLogged', isLogged)
 		return isLogged
 			? 'Articoli condivisi'
 			: 'I miei articoli'
+	}
+
+	const [remainingMinutes, setRemainingMinutes] = useState()
+
+	const calculateToken = () => {
+		const currentTime = moment().unix();
+		const _remainingMinutes = moment.duration(tokenExpiration - currentTime, 'seconds').minutes();
+		setRemainingMinutes(_remainingMinutes);
+	}
+
+	useEffect(() => {
+		const comInterval = setInterval(calculateToken, 60000);
+		return () => clearInterval(comInterval)
+	}, [])
+
+	const renderTokenExpiration = () => {
+		if (!tokenExpiration)
+			return <span>Sessione locale.</span>
+
+		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
 	}
 
 	return (
 		<IonPage id="home-page" ref={pageRef}>
 			<IonHeader>
 				<IonToolbar>
+					{renderTokenExpiration()}
 					<IonTitle>{renderTitle()}</IonTitle>
 					<IonButtons slot="primary">
 						{renderLoginLogout()}
