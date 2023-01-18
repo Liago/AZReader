@@ -48,22 +48,6 @@ const Home = () => {
 		initialBreakpoint: 0.5,
 	});
 
-	useEffect(() => {
-		// const fetchData = async () => {
-		// 	const db = firebase.firestore();
-		// 	const data = await db.collection('post').get();
-		// 	const temp = data.map(doc => doc.data())
-		// 	console.log('temp', temp)
-		// }
-		// fetchData()
-		// return db.collection('post').onSnapshot((snapshot) => {
-		// 	const postData = [];
-		// 	snapshot.forEach((doc) => postData.push({ ...doc.data(), id: doc.id }));
-		// 	console.log(postData);
-		// 	// setPosts(postData);
-		// });
-	}, [])
-
 
 	useEffect(() => {
 		//verifica che il token sia ancora valido
