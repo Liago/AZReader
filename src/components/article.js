@@ -89,7 +89,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 	const renderImage = () => {
 		if (domain !== 'unaparolaalgiorno.it') return;
 		
-		return <img className="w-full" alt="" src={lead_image_url} />
+		return <img className="w-full rounded-md" alt="" src={lead_image_url} />
 	}
 	const renderTitle = () => {
 		if (domain === 'unaparolaalgiorno.it') return;
@@ -102,7 +102,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 			{renderButton()}
 			<IonContent fullscreen>
 				<div className="p-4">
-					<div className="rounded-md">{renderImage()}</div>
+					<div className="rounded-md shadow-md">{renderImage()}</div>
 					<div className="px-3">
 						{renderTitle()}
 						<div className="mt-2 border-l-4 border-red-600">

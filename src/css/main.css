@@ -32,7 +32,7 @@ figcaption {
 
 a {
 	display: inline;
-	color: rgba(220, 38, 38, .9);
+	color: rgba(220, 38, 38, 0.9);
 	font-weight: 900;
 }
 
@@ -50,7 +50,9 @@ a {
 	color: rgb(144, 182, 214);
 	border: 1px solid #ececec;
 	border-radius: 5px;
-	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 #singleBody .leggi-anche::before {
 	content: "leggi anche";
@@ -61,15 +63,19 @@ a {
 }
 #singleBody .wp-caption,
 #main-content .wp-caption,
-.wp-block-image {
+.wp-block-image,
+#main-content .article_image {
 	border: 1px solid #ececec;
 	border-radius: 5px;
-	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 	margin: 20px 0;
 }
 #singleBody .wp-caption img,
 #main-content .wp-caption img,
-.wp-block-image img {
+.wp-block-image img,
+#main-content .article_image img {
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 }
@@ -99,6 +105,40 @@ a {
 .col.col-md-10.offset-md-1.col-lg-8.offset-lg-2 > h1 {
 	display: none;
 }
+#word-esempi {
+	margin: 0.8rem 0;
+	background: #effdff;
+	padding: 0.6rem 1rem;
+	font-size: 0.8rem;
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+#word-esempi li span:before {
+	content: "es. ";
+	font-style: italic;
+	font-size: 0.7rem;
+	margin-top: 0.2rem;
+	color: #18a2b8;
+}
+#main-content .word-sillabe {
+	font-size: 1.4rem;
+	font-weight: 600;
+}
+#main-content .word-significato,
+#main-content .word-etimo {
+	font-size: 0.9rem;
+	text-align: left;
+	color: rgba(0, 0, 0, 0.7) !important;
+}
+#main-content .word-significato .crit-ss,
+#main-content .word-etimo .crit-ss {
+	font-weight: 600;
+	color: rgba(0, 0, 0, 0.7) !important;
+	background-color: rgba(255, 255, 255, 1) !important;
+}
 
 /*ULTIMO UOMO*/
 
@@ -113,7 +153,9 @@ a {
 	background-color: white;
 	border: 1px solid #ececec;
 	border-radius: 5px;
-	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 	margin: 25px 0;
 }
 .twitter-tweet > p {
@@ -158,7 +200,9 @@ h1.h1-adjust,
 	justify-content: space-between;
 	border: 1px solid #ececec;
 	border-radius: 5px;
-	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 	padding: 10px;
 	margin: 10px 0;
 }
@@ -187,10 +231,13 @@ h1.h1-adjust,
 }
 #main-content .inline-article article {
 	display: flex;
+	align-items: center;
 	padding: 20px;
 	border: 1px solid #ececec;
 	border-radius: 5px;
-	box-shadow: 5px 5px 5px 0px rgb(227 227 227 / 75%);
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 #main-content .inline-article article .inline-article_content {
 	font-size: 0.8rem;
@@ -206,4 +253,5 @@ h1.h1-adjust,
 #main-content .inline-article figure img {
 	display: block;
 	width: 100%;
+	border-radius: 5px;
 }
