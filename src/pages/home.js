@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonModal, useIonToast } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonToast } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
@@ -10,7 +10,7 @@ import AuthenticationForm from "../components/form/auth";
 import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, getPostFromDb, savePostToDb, saveReadingList } from "../store/rest";
+import { getArticledParsed, saveReadingList } from "../store/rest";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
 
 import "./Home.css";
@@ -19,6 +19,8 @@ import { isEmpty } from "lodash";
 import moment from 'moment';
 import { getScraperParmas } from "../utility/utils";
 // import firebase from '../common/firebase';
+
+import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -30,15 +32,15 @@ const Home = () => {
 	const [customArticleParsed, setCustomArticleParsed] = useState();
 	const [rapidArticleParsed, setRapidArticleParsed] = useState();
 	const [isParsing, setIsParsing] = useState(false);
+	const [postFromDb, setPostFromDb] = useState([]);
 
-	const [parseArticle, { data: articleParsed, loading, error: notParsed }] = getArticledParsed(searchText);
-	const [save, { data: postSaved, error }] = savePostToDb();
-	const [getPosts, { data: postFromDb }] = getPostFromDb();
+	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
 	const [saveArticleAccess] = saveReadingList();
 
 	const pageRef = useRef();
 
 	const [showToast, dismissToast] = useIonToast();
+	const [confirm] = useIonActionSheet();
 
 	const handleDismiss = () => dismissModalLogin();
 	const [showModalLogin, dismissModalLogin] = useIonModal(AuthenticationForm, {
@@ -132,17 +134,56 @@ const Home = () => {
 
 		theArticleParsed['readingList'] = [credentials.id];
 		theArticleParsed['id'] = Date.now();
-		save(theArticleParsed);
+
 		saveArticleAccess({
 			user: credentials.id,
 			docs: [theArticleParsed.id]
 		});
-		!error && setSearchText('');
+
+
+		savePostToFirestore(theArticleParsed)
+			.then(response => {
+				console.log('response :>> ', response);
+			})
+			.catch(err => {
+				console.log('err :>> ', err);
+			})
+
+
+		setSearchText('');
 		setShowModal(false);
 		setTimeout(() => {
 			fetchPostsFromDb();
 		}, 500)
 	}
+
+	const onDeletePostHandler = (postId) => {
+		confirm(
+			{
+				header: 'Sei sicuro?',
+				subHeader: 'La cancellazione è irreversibile, non sarà possibile recuperare l\'articolo',
+				cssClass: 'action-sheet-custom',
+				buttons: [{
+					text: 'Sì, cancella',
+					role: 'destructive',
+					data: {
+						type: 'delete'
+					},
+					handler: () => onDeletePost(postId)
+				}, {
+					text: 'No, annulla',
+					role: 'cancel'
+				}],
+			})
+	}
+
+	const onDeletePost = (postId) => {
+		deletePostFromFirestore(postId)
+			.then(() => setTimeout(() => fetchPostsFromDb(), 1000))
+			.catch((err) => console.error(err));
+	}
+
+
 
 	const renderPostList = () => {
 		if (isEmpty(list) && isEmpty(postFromDb)) return;
@@ -151,13 +192,16 @@ const Home = () => {
 
 		if (isLogged)
 			return Object.keys(postFromDb).reverse().map(key => {
-				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} />
+				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} deletePost={onDeletePostHandler} />
 			})
 
 		return (list || []).reverse().map((item, i) => <MessageListItem key={i} post={item} isLocal />)
 	}
 	const fetchPostsFromDb = () => {
-		getPosts()
+		getPostList().then(response => {
+			console.log('postsList :>> ', response);
+			setPostFromDb(response);
+		});
 	}
 	const renderModalParser = () => {
 		if (isParsing) return;
