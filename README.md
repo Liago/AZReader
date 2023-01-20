@@ -2,9 +2,10 @@
 formerly called EZReader, developed in React under IonicFramework
 
 # Prerequisites
-You must have installed Ionic v6
+- You must have installed Ionic v6
+- You need a Firestore Realtime Database
 
-**Installation**
+*Installation*
 clone the project and run 
 <pre>npm i</pre>
 
@@ -15,7 +16,13 @@ export DEBUG=true &&
 export PARSER_ENDPOINT=http://localhost:PORT && 
 export API_ENDPOINT=https://database-name.firebaseio.com/ && 
 export FIREBASE_AUTH=https://identitytoolkit.googleapis.com/ && 
-export FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY && 
+export FIREBASE_API_KEY=FIREABASE-API-KEY && 
+export FIREBASE_AUTH_DOMAIN=FIREBASE-AUTH-DOMAIN &&
+export FIREBASE_DB_URL=FIREBASE-DB-URL &&
+export FIREBASE_PROJECT_ID=FIREBASE-PROJECT-ID &&
+export FIREBASE_STORAGE_BUCKET=FIREBASE-STORAGE-BUCKET &&
+export FIREBASE_SENDER_ID=FIREBASE-SENDER-ID &&
+export FIREBASE_APP_ID=FIREBASE-APP-ID && 
 npm run config
 </pre> 
 # Run the project
