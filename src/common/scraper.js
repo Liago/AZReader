@@ -17,16 +17,6 @@ export const personalScraper = (url) => {
 			let _lead_image_url;
 			let _date_published;
 
-			if (scraperParams.url === 'unaparolaalgiorno.it') {
-				console.log('Esempio =>', {
-					etimo: $('.word-etimo').text(),
-					titolo: $(scraperParams.items.title).html(),
-					contenutop: $(scraperParams.items.content).html().replaceAll('iframe', ''),
-					pageTitle: $("meta[property='og:image']").attr("content")
-				})
-				// _lead_image_url = $(this).find('meta[property="og:image"]').attr('content')
-			}
-
 			const title = $(scraperParams.items.title).text();
 			const author = $(scraperParams.items.author).text();
 			const dek = null;
