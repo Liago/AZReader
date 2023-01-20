@@ -14,16 +14,17 @@ import {
 	deleteDoc
 } from "firebase/firestore";
 import { getAuth, signInAnonymously } from "firebase/auth";
+import { api_keys, firebase } from "../config/environment";
 import moment from "moment";
 
 const firebaseConfig = {
-	apiKey: "AIzaSyA632E4gGYfpSpHkmTN54PMtmbrPMV6otM",
-	authDomain: "ezreader-91cdd.firebaseapp.com",
-	databaseURL: "https://ezreader-91cdd.firebaseio.com",
-	projectId: "ezreader-91cdd",
-	storageBucket: "ezreader-91cdd.appspot.com",
-	messagingSenderId: "745384371074",
-	appId: "1:745384371074:web:f93f1e2adadb7ea0c7259b"
+	apiKey: api_keys.FIREBASE_API_KEY, 
+	authDomain: firebase.AUTH_DOMAIN, 
+	databaseURL: firebase.DB_URL, 
+	projectId: firebase.PROJECT_ID, 
+	storageBucket: firebase.STORAGE_BUCKET, 
+	messagingSenderId: firebase.SENDER_ID, 
+	appId: firebase.APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -36,7 +37,7 @@ export const authenticateAnonymously = () => {
 
 export const getPostList = async () => {
 	const postsSnapshot = await getDocs(postsCol);
-	const postsList = postsSnapshot.docs.map(post => ({...post.data(), id: post.id}));
+	const postsList = postsSnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
 	return postsList;
 }
 
@@ -50,7 +51,7 @@ export const updatePostToFirestore = async (postId, payload) => {
 	return await updateDoc(postDoc, payload);
 }
 
-export const deletePostFromFirestore = async (postId) =>  {
+export const deletePostFromFirestore = async (postId) => {
 	const postDoc = doc(db, 'posts', postId);
 	return await deleteDoc(postDoc);
 }
