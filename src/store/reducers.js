@@ -36,8 +36,8 @@ const app = (state = initialState.app, action) => {
 		case actionTypes.LOGIN:
 			return {
 				...state,
-				tokenApp: action.payload.token,
-				tokenExpiration: action.payload.expiration
+				tokenApp: action.payload.accessToken,
+				tokenExpiration: action.payload.stsTokenManager.expirationTime
 			};
 		case actionTypes.LOGOUT:
 			return {
@@ -78,7 +78,7 @@ const user = (state = initialState.user, action) => {
 			return {
 				...state,
 				isLogged: true,
-				credentials: action.payload.user
+				credentials: action.payload
 			};
 		case actionTypes.LOGOUT:
 			return {

@@ -10,6 +10,7 @@ import { setUserToken } from "../../store/actions";
 import { fetchSignUp, registerUser } from '../../store/rest'
 
 import moment from 'moment';
+import { userRegistration } from "../../common/firestore";
 
 
 
@@ -34,17 +35,28 @@ const AuthenticationForm = ({ onDismiss }) => {
 
 
 	const onSubmit = data => {
-		data['returnSecureToken'] = true;
-		fetchSignUp(data, signMode).then((response) => {
-			if (!response.email) {
-				setError(response)
-			} else {
-				signMode === 'SIGNIN'
-					? saveUserInfo(response)
-					: signUpUser({ user: response.email })
-				onDismiss();
-			}
-		})
+		if (signMode === 'SIGNUP') {
+			userRegistration(data.email, data.password)
+				.then(res => {
+					console.log('res :>> ', res);
+					dispatch(setUserToken(res));
+					onDismiss();
+				})
+		}
+
+
+
+		// data['returnSecureToken'] = true;
+		// fetchSignUp(data, signMode).then((response) => {
+		// 	if (!response.email) {
+		// 		setError(response)
+		// 	} else {
+		// 		signMode === 'SIGNIN'
+		// 			? saveUserInfo(response)
+		// 			: signUpUser({ user: response.email })
+		// 		onDismiss();
+		// 	}
+		// })
 	}
 
 	useEffect(() => {

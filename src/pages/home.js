@@ -1,7 +1,7 @@
 import { cloneElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonToast } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonMenuToggle, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonToast } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
@@ -19,6 +19,7 @@ import { isEmpty } from "lodash";
 import moment from 'moment';
 import { getScraperParmas } from "../utility/utils";
 import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
+import MainMenu from "../components/ui/menu";
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -258,38 +259,44 @@ const Home = () => {
 	}
 
 	return (
-		<IonPage id="home-page" ref={pageRef}>
-			<IonHeader>
-				<IonToolbar>
-					{renderTokenExpiration()}
-					<IonTitle>{renderTitle()}</IonTitle>
-					<IonButtons slot="primary">
-						{renderLoginLogout()}
-						<IonButton
-							color="dark"
-							onClick={() => setShowModal(true)}
-						>
-							<IonIcon slot='icon-only' icon={documentTextOutline} />
-						</IonButton>
-					</IonButtons>
-				</IonToolbar>
-			</IonHeader>
-			<IonContent fullscreen>
-				<IonRefresher slot="fixed" onIonRefresh={refresh}>
-					<IonRefresherContent></IonRefresherContent>
-				</IonRefresher>
-
-				<IonHeader collapse="condense">
+		<>
+			<MainMenu />
+			<IonPage id="home-page" ref={pageRef}>
+				<IonHeader>
 					<IonToolbar>
-						<IonTitle size="large">{renderTitle()}</IonTitle>
+						{renderTokenExpiration()}
+						<IonButtons slot="start">
+							<IonMenuButton></IonMenuButton>
+						</IonButtons>
+						<IonTitle>{renderTitle()}</IonTitle>
+						<IonButtons slot="primary">
+							{renderLoginLogout()}
+							<IonButton
+								color="dark"
+								onClick={() => setShowModal(true)}
+							>
+								<IonIcon slot='icon-only' icon={documentTextOutline} />
+							</IonButton>
+						</IonButtons>
 					</IonToolbar>
 				</IonHeader>
-				<IonList className="px-3">
-					{renderPostList()}
-				</IonList>
-				{renderModalParser()}
-			</IonContent >
-		</IonPage >
+				<IonContent fullscreen>
+					<IonRefresher slot="fixed" onIonRefresh={refresh}>
+						<IonRefresherContent></IonRefresherContent>
+					</IonRefresher>
+
+					<IonHeader collapse="condense">
+						<IonToolbar>
+							<IonTitle size="large">{renderTitle()}</IonTitle>
+						</IonToolbar>
+					</IonHeader>
+					<IonList className="px-3">
+						{renderPostList()}
+					</IonList>
+					{renderModalParser()}
+				</IonContent >
+			</IonPage >
+		</>
 	);
 };
 

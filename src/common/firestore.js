@@ -13,7 +13,7 @@ import {
 	arrayUnion,
 	deleteDoc,
 } from "firebase/firestore";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth, signInAnonymously, createUserWithEmailAndPassword } from "firebase/auth";
 import { api_keys, firebase } from "../config/environment";
 import moment from "moment";
 
@@ -40,6 +40,15 @@ const executeQuery = async (query) => {
 export const authenticateAnonymously = () => {
 	return signInAnonymously(getAuth(app));
 };
+
+export const userRegistration = async (email, password) => {
+	return await createUserWithEmailAndPassword(getAuth(app), email, password)
+		.then((res) => {
+			console.log(res.user)
+			return res.user
+		})
+		.catch(err => console.log(err.message))
+}
 
 export const getPostList = async (field, order) => {
 	const postsQuery = query(postsCollection, orderBy(field, order));
