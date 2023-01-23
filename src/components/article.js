@@ -75,7 +75,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 		if (displayFrom === 'modalPreview') return;
 
 		return (
-			<IonHeader>
+			<IonHeader translucent={true}>
 				<IonToolbar color="light">
 					<IonButtons slot="end">
 						<IonButton onClick={onDismiss}>
