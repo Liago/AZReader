@@ -41,7 +41,7 @@ const MessageListItem = ({ post, isLocal, postId, deletePost }) => {
 				</div>
 			</IonItem>
 			<IonItemOptions>
-				<IonItemOption>Favorite</IonItemOption>
+				{/* <IonItemOption>Favorite</IonItemOption> */}
 				<IonItemOption color="danger" onClick={() => deletePost(post.id)}>Delete</IonItemOption>
 			</IonItemOptions>
 		</IonItemSliding>

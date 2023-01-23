@@ -11,39 +11,44 @@ import {
 	doc,
 	serverTimestamp,
 	arrayUnion,
-	deleteDoc
+	deleteDoc,
 } from "firebase/firestore";
 import { getAuth, signInAnonymously } from "firebase/auth";
 import { api_keys, firebase } from "../config/environment";
 import moment from "moment";
 
 const firebaseConfig = {
-	apiKey: api_keys.FIREBASE_API_KEY, 
-	authDomain: firebase.AUTH_DOMAIN, 
-	databaseURL: firebase.DB_URL, 
-	projectId: firebase.PROJECT_ID, 
-	storageBucket: firebase.STORAGE_BUCKET, 
-	messagingSenderId: firebase.SENDER_ID, 
+	apiKey: api_keys.FIREBASE_API_KEY,
+	authDomain: firebase.AUTH_DOMAIN,
+	databaseURL: firebase.DB_URL,
+	projectId: firebase.PROJECT_ID,
+	storageBucket: firebase.STORAGE_BUCKET,
+	messagingSenderId: firebase.SENDER_ID,
 	appId: firebase.APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app)
-const postsCol = collection(db, 'posts');
+const postsCollection = collection(db, 'posts');
+
+const executeQuery = async (query) => {
+	const querySnapshot = await getDocs(query);
+	const response = querySnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
+	return response;
+}
 
 export const authenticateAnonymously = () => {
 	return signInAnonymously(getAuth(app));
 };
 
-export const getPostList = async () => {
-	const postsSnapshot = await getDocs(postsCol);
-	const postsList = postsSnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
-	return postsList;
-}
+export const getPostList = async (field, order) => {
+	const postsQuery = query(postsCollection, orderBy(field, order));
+	return executeQuery(postsQuery);
+};
 
 export const savePostToFirestore = async (post) => {
 	if (!post.date_published) post['date_published'] = moment().format();
-	return await addDoc(postsCol, post);
+	return await addDoc(postsCollection, post);
 }
 
 export const updatePostToFirestore = async (postId, payload) => {

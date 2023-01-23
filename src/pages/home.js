@@ -18,8 +18,6 @@ import "./Home.css";
 import { isEmpty } from "lodash";
 import moment from 'moment';
 import { getScraperParmas } from "../utility/utils";
-// import firebase from '../common/firebase';
-
 import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
 
 const Home = () => {
@@ -133,7 +131,7 @@ const Home = () => {
 		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
 
 		theArticleParsed['readingList'] = [credentials.id];
-		theArticleParsed['id'] = Date.now();
+		theArticleParsed['created'] = Date.now();
 
 		saveArticleAccess({
 			user: credentials.id,
@@ -191,17 +189,16 @@ const Home = () => {
 		if (isLogged && isEmpty(postFromDb)) return <Spinner />;
 
 		if (isLogged)
-			return Object.keys(postFromDb).reverse().map(key => {
+			return Object.keys(postFromDb).map(key => {
 				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} deletePost={onDeletePostHandler} />
 			})
 
 		return (list || []).reverse().map((item, i) => <MessageListItem key={i} post={item} isLocal />)
 	}
 	const fetchPostsFromDb = () => {
-		getPostList().then(response => {
-			console.log('postsList :>> ', response);
-			setPostFromDb(response);
-		});
+		setPostFromDb([]);
+		getPostList('date_published', 'desc')
+			.then(response => setPostFromDb(response));
 	}
 	const renderModalParser = () => {
 		if (isParsing) return;
