@@ -1,8 +1,8 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-import { getScraperParmas } from '../utility/utils';
-
+import { getScraperParmas, manipulateDateFromString } from '../utility/utils';
+import moment from 'moment';
 
 export const personalScraper = (url) => {
 
@@ -31,6 +31,9 @@ export const personalScraper = (url) => {
 					break;
 				case 'unaparolaalgiorno.it':
 					_lead_image_url = $("meta[property='og:image']").attr("content");
+					let $data = $('.word-datapub').text().replace('Parola pubblicata il', '').trim();
+					let temp = manipulateDateFromString($data);
+					_date_published = moment(temp, 'MM-DD-YYYY').toISOString().toString(); 
 					break;
 				default:
 					_lead_image_url = $(scraperParams.items.lead_image).find('img').attr('src');
@@ -43,7 +46,7 @@ export const personalScraper = (url) => {
 			const next_page_url = null;
 			const rendered_pages = 1;
 			const total_pages = 1;
-
+ 
 			scraperParams.isHTML
 				? _content = $(scraperParams.items.content).html().replaceAll('iframe', '')
 				: _content = $(scraperParams.items.content).text().replaceAll('\n', '<div class="py-1">');
