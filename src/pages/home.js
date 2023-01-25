@@ -1,7 +1,7 @@
-import { cloneElement, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonMenuToggle, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonToast } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonToast } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
@@ -41,10 +41,15 @@ const Home = () => {
 	const [showToast, dismissToast] = useIonToast();
 	const [confirm] = useIonActionSheet();
 
-	const handleDismiss = () => dismissModalLogin();
+	const handleDismiss = () => {
+		
+		dismissModalLogin()
+	};
 	const [showModalLogin, dismissModalLogin] = useIonModal(AuthenticationForm, {
 		mode: 'SIGNIN',
-		onDismiss: handleDismiss,
+		onDismiss: () => {
+			handleDismiss()
+		},
 		breakpoints: [0.1, 0.5, 1],
 		initialBreakpoint: 0.5,
 	});
@@ -257,7 +262,6 @@ const Home = () => {
 
 		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
 	}
-
 	return (
 		<>
 			<MainMenu />

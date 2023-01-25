@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonRouter } from "@ionic/react";
 import { close } from "ionicons/icons";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
 import { setUserToken } from "../../store/actions";
-import { fetchSignUp, registerUser } from '../../store/rest'
+import { registerUser } from '../../store/rest'
 
 import moment from 'moment';
-import { userRegistration } from "../../common/firestore";
+import { userLogin, userRegistration } from "../../common/firestore";
+import { useAuthValue } from "../auth/authContext";
 
 
 
@@ -20,6 +21,8 @@ const AuthenticationForm = ({ onDismiss }) => {
 	const [signMode, setSignMode] = useState('SIGNIN');
 	const [userData, setUserData] = useState();
 	const [signUpUser, { data: signUpResponse, error: signUpError }] = registerUser();
+	const { setTimeActive } = useAuthValue();
+	const router = useIonRouter();
 
 	const validationSchema = Yup.object().shape({
 		password: Yup.string()
@@ -33,15 +36,31 @@ const AuthenticationForm = ({ onDismiss }) => {
 	const formOptions = { resolver: yupResolver(validationSchema) };
 	const { register, handleSubmit, formState: { errors } } = useForm(signMode === 'SIGNUP' && formOptions);
 
-
 	const onSubmit = data => {
+		const { email, password } = data;
+
 		if (signMode === 'SIGNUP') {
-			userRegistration(data.email, data.password)
+			userRegistration(email, password)
 				.then(res => {
-					console.log('res :>> ', res);
-					dispatch(setUserToken(res));
+					console.log('return of createMailetcetc :>> ', res);
+
+					setTimeActive(true);
 					onDismiss();
+					router.push('/verify-email');
+
+					//queste vanno passate alla verify email
+					//dispatch(setUserToken(res));
+					//onDismiss();
 				})
+		} else {
+			userLogin(email, password)
+				.then(res => {
+					alert('res :>> ', res);
+					if (!res.success) {
+						setError('res.code')
+					}
+				})
+
 		}
 
 

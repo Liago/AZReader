@@ -13,9 +13,10 @@ import {
 	arrayUnion,
 	deleteDoc,
 } from "firebase/firestore";
-import { getAuth, signInAnonymously, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { api_keys, firebase } from "../config/environment";
 import moment from "moment";
+
 
 const firebaseConfig = {
 	apiKey: api_keys.FIREBASE_API_KEY,
@@ -28,8 +29,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app)
+const auth = getAuth(app);
+const db = getFirestore(app);
 const postsCollection = collection(db, 'posts');
+
+
+export { auth }
 
 const executeQuery = async (query) => {
 	const querySnapshot = await getDocs(query);
@@ -37,15 +42,40 @@ const executeQuery = async (query) => {
 	return response;
 }
 
-export const authenticateAnonymously = () => {
-	return signInAnonymously(getAuth(app));
-};
+
+export const userLogin = async (email, password) => {
+	return await signInWithEmailAndPassword(auth, email, password)
+		.then((response) => {
+			if (!auth.currentUser.emailVerified) {
+				sendEmailVerification(app.currentUser)
+					.then(() => {
+						console.log('sendEmailVerification :>> ', response);
+						return response
+						//   setTimeActive(true)
+						//   history.push('/verify-email')
+					})
+					.catch(err => console.log(err.message))
+			} else {
+				console.log('signInWithEmailAndPassword :>> ', response);
+				// history.push('/')
+				return response
+			}
+		}).catch(err => {
+			return { success: false, message: err.message, code: err.code }
+		})
+}
 
 export const userRegistration = async (email, password) => {
-	return await createUserWithEmailAndPassword(getAuth(app), email, password)
+	return await createUserWithEmailAndPassword(auth, email, password)
 		.then((res) => {
-			console.log(res.user)
-			return res.user
+			console.log('createUserWithEmailAndPassword', {
+				response: res.user,
+				currentUser: auth.currentUser
+			})
+			sendEmailVerification(auth.currentUser)
+				.then(() => {
+					return { success: true }
+				})
 		})
 		.catch(err => console.log(err.message))
 }
@@ -72,6 +102,16 @@ export const deletePostFromFirestore = async (postId) => {
 
 
 
+
+
+
+
+
+
+
+export const authenticateAnonymously = () => {
+	return signInAnonymously(getAuth(app));
+};
 
 export const getGroceryListItems = (groceryListId) => {
 	const itemsColRef = collection(db, 'groceryLists', groceryListId, 'items')
