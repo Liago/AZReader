@@ -46,6 +46,7 @@ const executeQuery = async (query) => {
 export const userLogin = async (email, password) => {
 	return await signInWithEmailAndPassword(auth, email, password)
 		.then((response) => {
+			/*
 			if (!auth.currentUser.emailVerified) {
 				sendEmailVerification(app.currentUser)
 					.then(() => {
@@ -55,11 +56,12 @@ export const userLogin = async (email, password) => {
 						//   history.push('/verify-email')
 					})
 					.catch(err => console.log(err.message))
-			} else {
-				console.log('signInWithEmailAndPassword :>> ', response);
-				// history.push('/')
-				return response
-			}
+					*/
+			// } else {
+			console.log('signInWithEmailAndPassword :>> ', response);
+			// history.push('/')
+			return response
+			// }
 		}).catch(err => {
 			return { success: false, message: err.message, code: err.code }
 		})
@@ -67,14 +69,10 @@ export const userLogin = async (email, password) => {
 
 export const userRegistration = async (email, password) => {
 	return await createUserWithEmailAndPassword(auth, email, password)
-		.then((res) => {
-			console.log('createUserWithEmailAndPassword', {
-				response: res.user,
-				currentUser: auth.currentUser
-			})
-			sendEmailVerification(auth.currentUser)
+		.then(() => {
+			return sendEmailVerification(auth.currentUser)
 				.then(() => {
-					return { success: true }
+					return { success: true, currentUser: auth.currentUser }
 				})
 		})
 		.catch(err => console.log(err.message))

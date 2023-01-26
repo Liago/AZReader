@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonToast } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonRouter, useIonToast } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
 import MessageListItem from "../components/messageListItem";
@@ -23,6 +23,7 @@ import MainMenu from "../components/ui/menu";
 
 const Home = () => {
 	const dispatch = useDispatch();
+	const router = useIonRouter();
 	const { list } = useSelector(state => state.posts);
 	const { tokenExpiration } = useSelector(state => state.app);
 	const { isLogged, credentials } = useSelector(state => state.user);
@@ -41,15 +42,19 @@ const Home = () => {
 	const [showToast, dismissToast] = useIonToast();
 	const [confirm] = useIonActionSheet();
 
-	const handleDismiss = () => {
-		
+	const handleDismiss = (res) => {
+		if (res.success) {
+			dismissModalLogin()
+			router.push('/verify-email');
+			return;
+		}
+
 		dismissModalLogin()
+
 	};
 	const [showModalLogin, dismissModalLogin] = useIonModal(AuthenticationForm, {
 		mode: 'SIGNIN',
-		onDismiss: () => {
-			handleDismiss()
-		},
+		onDismiss: handleDismiss,
 		breakpoints: [0.1, 0.5, 1],
 		initialBreakpoint: 0.5,
 	});
