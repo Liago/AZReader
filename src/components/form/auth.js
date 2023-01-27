@@ -40,7 +40,7 @@ const AuthenticationForm = ({ onDismiss }) => {
 		} else {
 			userLogin(email, password)
 				.then(response => {
-					// console.log('response', response)
+					console.log('response', response)
 					if (!response.success) setError(response.code)
 
 					saveUserInfo(response.data)
@@ -55,7 +55,8 @@ const AuthenticationForm = ({ onDismiss }) => {
 		dispatch(setUserToken({
 			user: {
 				mail: response.email,
-				id: response.reloadUserInfo.localId
+				id: response.uid,
+				meta: response.metadata
 			},
 			token: response.stsTokenManager.accessToken,
 			expiration: tokenExpiresAt

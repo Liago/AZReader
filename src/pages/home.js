@@ -35,7 +35,7 @@ const Home = () => {
 	const [postFromDb, setPostFromDb] = useState([]);
 
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
-	const [saveArticleAccess] = saveReadingList();
+	// const [saveArticleAccess] = saveReadingList();
 
 	const pageRef = useRef();
 
@@ -137,14 +137,10 @@ const Home = () => {
 		}
 		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
 
-		theArticleParsed['readingList'] = [credentials.id];
+
+		theArticleParsed['readingList'] = [credentials.user.id];
+		theArticleParsed['savedBy'] = credentials.user.id;
 		theArticleParsed['created'] = Date.now();
-
-		saveArticleAccess({
-			user: credentials.id,
-			docs: [theArticleParsed.id]
-		});
-
 
 		savePostToFirestore(theArticleParsed)
 			.then(response => {
