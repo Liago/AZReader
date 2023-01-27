@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonRouter } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonToast } from "@ionic/react";
 import { close } from "ionicons/icons";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
 import { setUserToken } from "../../store/actions";
-import { registerUser } from '../../store/rest'
 
 import moment from 'moment';
 import { userLogin, userRegistration } from "../../common/firestore";
@@ -18,9 +17,7 @@ const AuthenticationForm = ({ onDismiss }) => {
 	const dispatch = useDispatch();
 	const [error, setError] = useState('');
 	const [signMode, setSignMode] = useState('SIGNIN');
-	const [userData, setUserData] = useState();
-	const [signUpUser, { data: signUpResponse, error: signUpError }] = registerUser();
-	const router = useIonRouter();
+	const [showToast, dismissToast] = useIonToast();
 
 	const validationSchema = Yup.object().shape({
 		password: Yup.string()
@@ -39,71 +36,46 @@ const AuthenticationForm = ({ onDismiss }) => {
 
 		if (signMode === 'SIGNUP') {
 			userRegistration(email, password)
-				.then(response => {
-					onDismiss(response);
-					// router.push('/verify-email');
-
-					//queste vanno passate alla verify email
-					//dispatch(setUserToken(res));
-					//onDismiss();
-				})
+				.then(response => onDismiss(response))
 		} else {
 			userLogin(email, password)
-				.then(res => {
-					alert('res :>> ', res);
-					if (!res.success) {
-						setError('res.code')
-					}
+				.then(response => {
+					// console.log('response', response)
+					if (!response.success) setError(response.code)
+
+					saveUserInfo(response.data)
+					onDismiss();
 				})
-
 		}
-
-
-
-		// data['returnSecureToken'] = true;
-		// fetchSignUp(data, signMode).then((response) => {
-		// 	if (!response.email) {
-		// 		setError(response)
-		// 	} else {
-		// 		signMode === 'SIGNIN'
-		// 			? saveUserInfo(response)
-		// 			: signUpUser({ user: response.email })
-		// 		onDismiss();
-		// 	}
-		// })
 	}
 
-	useEffect(() => {
-		if (!signUpResponse) return;
-
-		dispatch(setUserToken({
-			user: {
-				mail: userData.user,
-				id: signUpResponse.name
-			},
-			token: userData.token
-		}))
-	}, [signUpResponse])
-
 	const saveUserInfo = (response) => {
-		const tokenExpiresAt = moment().add(response.expiresIn, 'seconds').unix();
+		const tokenExpiresAt = moment().add(response.stsTokenManager.expirationTime, 'seconds').unix();
 
 		dispatch(setUserToken({
 			user: {
 				mail: response.email,
-				id: response.idToken
+				id: response.reloadUserInfo.localId
 			},
-			token: response.idToken,
+			token: response.stsTokenManager.accessToken,
 			expiration: tokenExpiresAt
 		}))
 	}
 
-
-	const renderError = () => {
+	useEffect(() => {
 		if (!error) return;
 
-		return <p>{error.message}</p>
-	}
+		let _error = error.replace('auth/wrong-password', 'utenza o password errata')
+
+		showToast({
+			message: _error,
+			color: "danger",
+			duration: 5000,
+			onDidDismiss: () => dismissToast
+		})
+
+
+	}, [error])
 
 	const switchSigningMode = () => {
 		signMode === 'SIGNIN'
@@ -173,7 +145,7 @@ const AuthenticationForm = ({ onDismiss }) => {
 				</div>
 
 				{errors.exampleRequired && <span>This field is required</span>}
-				{renderError()}
+
 				<div className="p-4 text-center">
 					<button
 						type="submit"

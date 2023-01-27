@@ -46,22 +46,7 @@ const executeQuery = async (query) => {
 export const userLogin = async (email, password) => {
 	return await signInWithEmailAndPassword(auth, email, password)
 		.then((response) => {
-			/*
-			if (!auth.currentUser.emailVerified) {
-				sendEmailVerification(app.currentUser)
-					.then(() => {
-						console.log('sendEmailVerification :>> ', response);
-						return response
-						//   setTimeActive(true)
-						//   history.push('/verify-email')
-					})
-					.catch(err => console.log(err.message))
-					*/
-			// } else {
-			console.log('signInWithEmailAndPassword :>> ', response);
-			// history.push('/')
-			return response
-			// }
+			return { success: true, data: response.user }
 		}).catch(err => {
 			return { success: false, message: err.message, code: err.code }
 		})

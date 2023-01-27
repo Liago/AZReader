@@ -36,8 +36,8 @@ const app = (state = initialState.app, action) => {
 		case actionTypes.LOGIN:
 			return {
 				...state,
-				tokenApp: action.payload.accessToken,
-				tokenExpiration: action.payload.stsTokenManager.expirationTime
+				tokenApp: action.payload.token,
+				tokenExpiration: action.payload.expiration
 			};
 		case actionTypes.LOGOUT:
 			return {

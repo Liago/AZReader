@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonRouter, useIonToast } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
+import MainMenu from "../components/ui/menu";
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
@@ -12,14 +13,13 @@ import Spinner from "../components/ui/spinner";
 import { onLogout, savePost } from "../store/actions";
 import { getArticledParsed, saveReadingList } from "../store/rest";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
-
-import "./Home.css";
+import { getScraperParmas } from "../utility/utils";
+import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
 
 import { isEmpty } from "lodash";
 import moment from 'moment';
-import { getScraperParmas } from "../utility/utils";
-import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
-import MainMenu from "../components/ui/menu";
+
+import "./Home.css";
 
 const Home = () => {
 	const dispatch = useDispatch();
@@ -43,7 +43,7 @@ const Home = () => {
 	const [confirm] = useIonActionSheet();
 
 	const handleDismiss = (res) => {
-		if (res.success) {
+		if (res?.success) {
 			dismissModalLogin()
 			router.push('/verify-email');
 			return;
