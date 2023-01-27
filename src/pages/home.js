@@ -118,10 +118,6 @@ const Home = () => {
 		setIsParsing(false);
 	}, [searchText])
 
-	useEffect(() => {
-		console.log('isParsing', isParsing)
-	}, [isParsing])
-
 	const savePostHandler = () => {
 		if (rapidArticleParsed) {
 			const url = new URL(rapidArticleParsed.url);
