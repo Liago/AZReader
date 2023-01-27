@@ -249,6 +249,9 @@ const Home = () => {
 	const calculateToken = () => {
 		const currentTime = moment().unix();
 		const _remainingMinutes = moment.duration(tokenExpiration - currentTime, 'seconds').minutes();
+		if (_remainingMinutes < 0)
+			dispatch(onLogout())
+
 		setRemainingMinutes(_remainingMinutes);
 	}
 
