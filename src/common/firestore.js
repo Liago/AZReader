@@ -12,6 +12,7 @@ import {
 	serverTimestamp,
 	arrayUnion,
 	deleteDoc,
+	writeBatch
 } from "firebase/firestore";
 import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { api_keys, firebase } from "../config/environment";
@@ -38,8 +39,8 @@ export { auth }
 
 const executeQuery = async (query) => {
 	const querySnapshot = await getDocs(query);
-	const response = querySnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
-	return response;
+	const queryResponse = querySnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
+	return queryResponse;
 }
 
 
@@ -83,7 +84,26 @@ export const deletePostFromFirestore = async (postId) => {
 	return await deleteDoc(postDoc);
 }
 
+export const batchEditing = async () => {
+	const batch = writeBatch(db);
+	// const nycRef = doc(db, "posts", '3EEeF5T5tSU0PL35LRye');
 
+	// console.log('nycRef :>> ', nycRef);
+	// batch.update(nycRef, {"savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"});
+	// await batch.commit();
+
+	getPostList('date_published', 'asc')
+	.then((resp) => {
+		resp.forEach( async (doc) => {
+			// doc.data() contains the document data
+			console.log('id', doc.id);
+			const postRef = doc(db, "posts", doc.id);
+			batch.update(postRef, {"savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"});
+			await batch.commit()
+		});
+	});
+
+}
 
 
 
