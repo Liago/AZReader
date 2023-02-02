@@ -139,7 +139,7 @@ const Home = () => {
 
 
 		theArticleParsed['readingList'] = [credentials.user.id];
-		theArticleParsed['savedBy'] = credentials.user.id;
+		theArticleParsed['savedBy'] = { userId: credentials.user.id, userEmail: credentials.user.mail };
 		theArticleParsed['savedOn'] = Date.now();
 
 		savePostToFirestore(theArticleParsed)
