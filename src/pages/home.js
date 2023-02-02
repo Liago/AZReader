@@ -11,7 +11,7 @@ import AuthenticationForm from "../components/form/auth";
 import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed, saveReadingList } from "../store/rest";
+import { getArticledParsed } from "../store/rest";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
 import { getScraperParmas } from "../utility/utils";
 import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
@@ -245,6 +245,7 @@ const Home = () => {
 	const calculateToken = () => {
 		const currentTime = moment().unix();
 		const _remainingMinutes = moment.duration(tokenExpiration - currentTime, 'seconds').minutes();
+
 		if (_remainingMinutes < 0)
 			dispatch(onLogout())
 
@@ -252,9 +253,11 @@ const Home = () => {
 	}
 
 	useEffect(() => {
+		if (!tokenExpiration) return; 
+
 		const comInterval = setInterval(calculateToken, 60000);
 		return () => clearInterval(comInterval)
-	}, [])
+	}, [tokenExpiration])
 
 	const renderTokenExpiration = () => {
 		if (!tokenExpiration)

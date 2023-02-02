@@ -19,7 +19,7 @@ const MainMenu = () => {
 	const { credentials } = useSelector(state => state.user);
 	const { tokenApp } = useSelector(state => state.app);
 	const { user } = credentials;
-	const lastLogin = moment(parseInt(user.meta.lastLoginAt)).format('DD/MM/GG HH:mm');
+	const lastLogin = moment(parseInt(user?.meta?.lastLoginAt)).format('DD/MM/GG HH:mm');
 
 
 	const renderUserInfo = () => {
