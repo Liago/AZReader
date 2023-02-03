@@ -37,7 +37,7 @@ const MessageListItem = ({ post, isLocal, postId, deletePost }) => {
 				</IonThumbnail>
 				<div>
 					<h2 className="text-sm font-bold font-[montserrat]">{post.title}</h2>
-					<p className="font-light text-xs ">{post.domain} - {post.word_count || post.length} parole</p>
+					<p className="font-light text-xs w-full">{post.domain} - {post.word_count || post.length} parole</p>
 				</div>
 			</IonItem>
 			<IonItemOptions>

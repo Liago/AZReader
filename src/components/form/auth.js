@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonToast } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonLoading, useIonToast } from "@ionic/react";
 import { close } from "ionicons/icons";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
@@ -18,6 +18,7 @@ const AuthenticationForm = ({ onDismiss }) => {
 	const [error, setError] = useState('');
 	const [signMode, setSignMode] = useState('SIGNIN');
 	const [showToast, dismissToast] = useIonToast();
+	const [isLogin, dismiss] = useIonLoading();
 
 	const validationSchema = Yup.object().shape({
 		password: Yup.string()
@@ -33,18 +34,27 @@ const AuthenticationForm = ({ onDismiss }) => {
 
 	const onSubmit = data => {
 		const { email, password } = data;
+		isLogin({
+			message: 'Attendere...',
+			duration: 30000,
+			spinner: 'crescent'
+		})
 
 		if (signMode === 'SIGNUP') {
 			userRegistration(email, password)
-				.then(response => onDismiss(response))
+				.then(response => {
+					onDismiss(response);
+					dismiss();
+				})
 		} else {
 			userLogin(email, password)
 				.then(response => {
 					console.log('response', response)
 					if (!response.success) setError(response.code)
 
-					saveUserInfo(response.data)
+					saveUserInfo(response.data);
 					onDismiss();
+					dismiss();
 				})
 		}
 	}
