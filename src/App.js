@@ -8,6 +8,7 @@ import { persistor, store } from "./store/store";
 
 import Home from "./pages/home";
 import ViewMessage from "./pages/viewMessage";
+import VerifyEmail from "./pages/verifyEmail";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -28,27 +29,44 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./css/main.css";
+import { AuthProvider } from "./components/auth/authContext";
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./common/firestore";
 
 setupIonicReact();
 
-const App = () => (
-	<Provider store={store}>
-		<IonApp>
-			<PersistGate loading={null} persistor={persistor}>
-				<IonReactRouter>
-					<IonRouterOutlet>
-						<Route path="/home" exact={true} component={Home}>
-						</Route>
-						<Route path="/article/:id" component={ViewMessage}>
-						</Route>
-						<Route path="/" exact={true}>
-							<Redirect to="/home" />
-						</Route>
-					</IonRouterOutlet>
-				</IonReactRouter>
-			</PersistGate>
-		</IonApp>
-	</Provider>
-);
+
+const App = () => {
+	const [currentUser, setCurrentUser] = useState(null)
+
+	useEffect(() => {
+		onAuthStateChanged(auth, (user) => {
+			setCurrentUser(user)
+		})
+	}, [])
+
+	return (
+		<Provider store={store}>
+			<IonApp>
+				<PersistGate loading={null} persistor={persistor}>
+					<IonReactRouter>
+						<IonRouterOutlet>
+							<AuthProvider value={{ currentUser }}>
+								<Route path="/home" exact={true} component={Home} />
+								<Route path="/article/:id" component={ViewMessage} />
+								<Route exact path="/verify-email" component={VerifyEmail} />
+								<Route path="/" exact={true}>
+									<Redirect to="/home" />
+								</Route>
+							</AuthProvider>
+						</IonRouterOutlet>
+					</IonReactRouter>
+				</PersistGate>
+			</IonApp>
+		</Provider>
+	)
+
+};
 
 export default App;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms, IonHeader } from "@ionic/react";
 import { pricetags } from "ionicons/icons";
 
 
@@ -8,13 +8,13 @@ import ModalTags from "./modalTags";
 import { saveTagsHandler } from "../store/rest";
 
 import { isEmpty } from 'lodash';
-import FlatHeader from "./ui/flatHeader";
+import moment from 'moment';
+import { renderArticleDatePublished } from "../utility/utils";
 
-const Article = ({ articleParsed, onDismiss, postId }) => {
-	const { title, content, lead_image_url } = articleParsed;
+const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
+	const { title, content, lead_image_url, html: htmlContent, date, date_published, topImage, domain } = articleParsed;
 	const platforms = getPlatforms()
 	const [showModal, setShowModal] = useState(false);
-	const [searchText, setSearchText] = useState('');
 	const [saveTags, { data: isTagsSaved }] = saveTagsHandler();
 
 
@@ -71,25 +71,50 @@ const Article = ({ articleParsed, onDismiss, postId }) => {
 		)
 	}
 
+	const renderButton = () => {
+		if (displayFrom === 'modalPreview') return;
 
+		return (
+			<IonHeader translucent={true}>
+				<IonToolbar color="light">
+					<IonButtons slot="end">
+						<IonButton onClick={onDismiss}>
+							chiudi
+						</IonButton>
+					</IonButtons>
+				</IonToolbar>
+			</IonHeader>
+		)
+	}
+	const renderImage = () => {
+		if (domain !== 'unaparolaalgiorno.it') return;
+		
+		return <img className="w-full rounded-md" alt="" src={lead_image_url} />
+	}
+	const renderTitle = () => {
+		if (domain === 'unaparolaalgiorno.it') return;
+
+		return <h1 className="py-1 text-2xl font-bold text-justify leading-6 font-[montserrat]">{title}</h1>
+	}
 
 	return (
 		<>
-			<FlatHeader
-				dismiss={onDismiss}
-				title=""
-				platforms={platforms}
-			/>
+			{renderButton()}
 			<IonContent fullscreen>
-				<div className="px-4 mt-32">
-					<div className="rounded-md">
-						{/* <img className="w-full" alt="" src={lead_image_url} /> */}
-					</div>
+				<div className="p-4">
+					<div className="rounded-md shadow-md">{renderImage()}</div>
 					<div className="px-3">
-						<h1 className="py-1 text-2xl font-bold text-justify leading-6 font-['roboto']">{title}</h1>
+						{renderTitle()}
+						<div className="mt-2 border-l-4 border-red-600">
+							<div className="pl-3">
+								<h4 className="pt-1 text-xs font-light font-[montserrat]">{renderArticleDatePublished(date || date_published)}</h4>
+								<h4 className="text-xs font-light font-[montserrat]">{domain}</h4>
+							</div>
+						</div>
 						<div
+							id="main-content"
 							className="py-10 text-md text-justify font-normal font-[montserrat]"
-							dangerouslySetInnerHTML={{ __html: content }} />
+							dangerouslySetInnerHTML={{ __html: content || htmlContent }} />
 					</div>
 				</div>
 				{renderFooter()}

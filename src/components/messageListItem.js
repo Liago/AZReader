@@ -1,10 +1,10 @@
-import { IonImg, IonItem, IonLabel, IonThumbnail, useIonModal } from '@ionic/react';
+import { IonImg, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonThumbnail, useIonModal } from '@ionic/react';
 import Article from './article';
 
 import './MessageListItem.css';
 
 
-const MessageListItem = ({ post, isLocal, postId }) => {
+const MessageListItem = ({ post, isLocal, postId, deletePost }) => {
 	const displayLocalDot = () => {
 		if (isLocal)
 			return <div slot="start" className="dot dot-unread"></div>
@@ -22,23 +22,29 @@ const MessageListItem = ({ post, isLocal, postId }) => {
 	});
 
 	return (
-		<IonItem
-			lines="none"
-			className="py-3"
-			onClick={() => openArticle()}
-		>
-			{/* {displayLocalDot()} */}
-			<IonThumbnail slot="start">
-				<IonImg
-					className="rounded-xl shadow-md"
-					src={post.lead_image_url}
-				/>
-			</IonThumbnail>
-			<div>
-				<h2 className="text-sm font-bold font-[montserrat]">{post.title}</h2>
-				<p className="font-light text-xs ">{post.domain} - {post.word_count} parole</p>
-			</div>
-		</IonItem>
+		<IonItemSliding>
+			<IonItem
+				lines="none"
+				className="py-3 border-b border-gray-200"
+				onClick={() => openArticle()}
+			>
+				{/* {displayLocalDot()} */}
+				<IonThumbnail slot="start">
+					<IonImg
+						className="rounded-xl shadow-md"
+						src={post.lead_image_url || post.topImage}
+					/>
+				</IonThumbnail>
+				<div>
+					<h2 className="text-sm font-bold font-[montserrat]">{post.title}</h2>
+					<p className="font-light text-xs w-full">{post.domain} - {post.word_count || post.length} parole</p>
+				</div>
+			</IonItem>
+			<IonItemOptions>
+				{/* <IonItemOption>Favorite</IonItemOption> */}
+				<IonItemOption color="danger" onClick={() => deletePost(post.id)}>Delete</IonItemOption>
+			</IonItemOptions>
+		</IonItemSliding>
 	);
 };
 

@@ -78,7 +78,7 @@ const user = (state = initialState.user, action) => {
 			return {
 				...state,
 				isLogged: true,
-				credentials: action.payload.user
+				credentials: action.payload
 			};
 		case actionTypes.LOGOUT:
 			return {

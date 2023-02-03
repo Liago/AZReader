@@ -301,10 +301,10 @@ export const favouritesHandler = (post, action) => {
 	}
 }
 
-export const setUserToken = (token) => {
+export const setUserToken = (payload) => {
 	return {
 		type: actionTypes.LOGIN,
-		payload: token
+		payload: payload
 	}
 }
 

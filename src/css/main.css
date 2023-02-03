@@ -10,3 +10,259 @@ p {
 iframe {
 	width: 100%;
 }
+
+/* EXTRA CSS TO CLEAN UP BETTER */
+figcaption {
+	margin: 0 0 10px 0;
+	text-align: left;
+	font-size: 10px;
+}
+
+/*YOUTUBE WRAPPER*/
+.youtube-wrap {
+	display: block;
+	margin: 30px 0;
+	border: 10px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+/* IL POST */
+.ilpostShare {
+	display: none;
+}
+.leggi-anche {
+	display: block;
+	color: blue;
+	font-weight: 900;
+	text-align: left;
+	margin: 10px 0;
+}
+
+a {
+	display: inline;
+	color: rgba(220, 38, 38, 0.9);
+	font-weight: 900;
+}
+
+#singleBody a {
+	display: inline;
+}
+#singleBody p strong {
+	display: none;
+}
+#singleBody .leggi-anche {
+	position: relative;
+	display: block;
+	font-size: 0.8rem;
+	padding: 25px 20px 25px;
+	color: rgb(144, 182, 214);
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+#singleBody .leggi-anche::before {
+	content: "leggi anche";
+	position: absolute;
+	top: 0;
+	left: 5px;
+	color: rgba(144, 182, 214, 0.7);
+}
+#singleBody .wp-caption,
+#main-content .wp-caption,
+.wp-block-image,
+#main-content .article_image {
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+	margin: 20px 0;
+}
+#singleBody .wp-caption img,
+#main-content .wp-caption img,
+.wp-block-image img,
+#main-content .article_image img {
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+#singleBody .wp-caption .wp-caption-text,
+#main-content .wp-caption .wp-caption-text,
+.wp-block-image .wp-element-caption {
+	font-size: 0.7rem;
+	padding: 10px;
+}
+
+/*RIMINI TODAY*/
+.l-entry__byline.u-flex {
+	display: none;
+}
+/*UNAPAROLAALGIORNO*/
+.content > .word-commento > p > a.linked-word {
+	display: inline;
+	text-decoration: solid;
+	text-decoration-color: #d92929 !important;
+	color: #d92929 !important;
+}
+.content > .word-etimo {
+	padding: 10px 0;
+}
+.content > .word-datapub,
+.content > #word-message,
+.col.col-md-10.offset-md-1.col-lg-8.offset-lg-2 > h1 {
+	display: none;
+}
+#word-esempi {
+	margin: 0.8rem 0;
+	background: #effdff;
+	padding: 0.6rem 1rem;
+	font-size: 0.8rem;
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+#word-esempi li span:before {
+	content: "es. ";
+	font-style: italic;
+	font-size: 0.7rem;
+	margin-top: 0.2rem;
+	color: #18a2b8;
+}
+#main-content .word-sillabe {
+	font-size: 1.4rem;
+	font-weight: 600;
+}
+#main-content .word-significato,
+#main-content .word-etimo {
+	font-size: 0.9rem;
+	text-align: left;
+	color: rgba(0, 0, 0, 0.7) !important;
+}
+#main-content .word-significato .crit-ss,
+#main-content .word-etimo .crit-ss {
+	font-weight: 600;
+	color: rgba(0, 0, 0, 0.7) !important;
+	background-color: rgba(255, 255, 255, 1) !important;
+}
+
+/*ULTIMO UOMO*/
+
+.post_content > p > b {
+	display: block;
+	margin-top: 20px;
+}
+
+/* TWEET */
+.twitter-tweet {
+	padding: 20px;
+	background-color: white;
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+	margin: 25px 0;
+}
+.twitter-tweet > p {
+	font-size: 0.8rem;
+}
+.twitter-tweet > p > a {
+	color: rgba(0, 0, 0, 0.7);
+}
+
+/* APPLE INSIDER*/
+
+h1.h1-adjust,
+.avatarLG-article.img-circle.no-left-gutters,
+#hero-cap,
+#article-social,
+.embed,
+.feat,
+#main-content .ad-disclaimer-container {
+	display: none;
+}
+
+.row > .article-lead {
+	padding-top: 20px;
+}
+.row > .article-lead > a,
+.col-sm-12 > p > a {
+	display: inline;
+}
+.col-sm-12 > figure {
+	padding: 20px 0 10px;
+}
+
+#main-content > a,
+#main-content > .ugc--2nTu61bm.minor--3O_9dH4U > p > a,
+#main-content > .post-body a {
+	display: inline;
+}
+#main-content > div > .linkback {
+	font-size: 12px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+	padding: 10px;
+	margin: 10px 0;
+}
+#main-content > div > .linkback:first-of-type {
+	margin-top: 25px;
+}
+#main-content img.aligncenter.size-full {
+	padding: 30px 0 10px;
+}
+
+/**9 to mac*/
+#main-content .ytp-cued-thumbnail-overlay-image {
+	background-size: contain !important;
+}
+#main-content .post-body p {
+	padding: 10px 0;
+}
+
+/*le scienze*/
+#main-content .inline-article {
+	width: 100%;
+	max-width: none;
+	margin-top: 20px;
+	clear: left;
+	margin: 30px 0;
+}
+#main-content .inline-article article {
+	display: flex;
+	align-items: center;
+	padding: 20px;
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+#main-content .inline-article article .inline-article_content {
+	font-size: 0.8rem;
+	margin-left: 10px;
+}
+#main-content .inline-article article .inline-article_content .inline-article_author {
+	font-size: 0.7rem;
+}
+#main-content .inline-article article figure {
+	flex-basis: 230px;
+	max-width: 230px;
+}
+#main-content .inline-article figure img {
+	display: block;
+	width: 100%;
+	border-radius: 5px;
+}
