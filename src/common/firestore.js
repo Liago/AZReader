@@ -45,18 +45,12 @@ const executeQuery = async (query) => {
 
 
 export const userLogin = async (email, password) => {
-	console.log('signInWithEmailAndPassword started', { email: email, password: password })
-	try {
-		return await signInWithEmailAndPassword(auth, email, password)
-			.then((response) => {
-				console.log('success!', { data: response.user })
-				return { success: true, data: response.user }
-			}).catch(err => {
-				return { success: false, message: err.message, code: err.code }
-			})
-	} catch (err) {
-		console.log('err :>> ', err);
-	}
+	return await signInWithEmailAndPassword(auth, email, password)
+		.then((response) => {
+			return { success: true, data: response.user }
+		}).catch(err => {
+			return { success: false, message: err.message, code: err.code }
+		})
 }
 
 export const userRegistration = async (email, password) => {
