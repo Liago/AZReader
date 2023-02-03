@@ -36,3 +36,23 @@ export const renderArticleDatePublished = date => {
 
 	return <>Pubblicato il {moment(date).format('DD MMMM YYYY')}</>;
 }
+
+export const manipulateDateFromString = $date => {
+	var arr = $date.split(' ');
+	const dateHash = {
+		Gennaio: 1,
+		Febbraio: 2,
+		Marzo: 3,
+		Aprile: 4,
+		Maggio: 5,
+		Giugno: 6,
+		Luglio: 7,
+		Agosto: 8,
+		Settembre: 9,
+		Ottonre: 10,
+		Novembre: 11,
+		Dicembre: 12
+	};
+
+	return dateHash[arr[1]] + '-' + arr[0] + '-' + arr[2];
+}

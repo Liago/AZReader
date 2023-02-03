@@ -61,4 +61,8 @@ export const scraperConfig = [
 		"url": "it.wikipedia.org",
 		"parser": "rapidApi",
 	},
+	{
+		"url": "www.engadget.com",
+		"parser": "rapidApi",
+	},
 ]
