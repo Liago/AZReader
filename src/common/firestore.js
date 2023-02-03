@@ -1,20 +1,16 @@
 import { initializeApp } from "firebase/app";
+import { Capacitor } from '@capacitor/core';
 import {
-	getFirestore,
-	query,
-	orderBy,
-	onSnapshot,
-	collection,
-	getDocs,
-	addDoc,
-	updateDoc,
-	doc,
-	serverTimestamp,
-	arrayUnion,
-	deleteDoc,
+	getFirestore, query, orderBy, onSnapshot,
+	collection, getDocs, addDoc, updateDoc,
+	doc, serverTimestamp, arrayUnion, deleteDoc,
 	writeBatch
 } from "firebase/firestore";
-import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import {
+	getAuth, signInAnonymously, createUserWithEmailAndPassword,
+	signInWithEmailAndPassword, sendEmailVerification, indexedDBLocalPersistence,
+	initializeAuth
+} from "firebase/auth";
 import { api_keys, firebase } from "../config/environment";
 import moment from "moment";
 
@@ -30,6 +26,9 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+if (Capacitor.isNativePlatform)
+	initializeAuth(app, { persistence: indexedDBLocalPersistence });
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 const postsCollection = collection(db, 'posts');
@@ -40,17 +39,24 @@ export { auth }
 const executeQuery = async (query) => {
 	const querySnapshot = await getDocs(query);
 	const queryResponse = querySnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
+	console.log('queryResponse :>> ', queryResponse);
 	return queryResponse;
 }
 
 
 export const userLogin = async (email, password) => {
-	return await signInWithEmailAndPassword(auth, email, password)
-		.then((response) => {
-			return { success: true, data: response.user }
-		}).catch(err => {
-			return { success: false, message: err.message, code: err.code }
-		})
+	console.log('signInWithEmailAndPassword started', { email: email, password: password })
+	try {
+		return await signInWithEmailAndPassword(auth, email, password)
+			.then((response) => {
+				console.log('success!', { data: response.user })
+				return { success: true, data: response.user }
+			}).catch(err => {
+				return { success: false, message: err.message, code: err.code }
+			})
+	} catch (err) {
+		console.log('err :>> ', err);
+	}
 }
 
 export const userRegistration = async (email, password) => {
@@ -93,15 +99,15 @@ export const batchEditing = async () => {
 	// await batch.commit();
 
 	getPostList('date_published', 'asc')
-	.then((resp) => {
-		resp.forEach( async (doc) => {
-			// doc.data() contains the document data
-			console.log('id', doc.id);
-			const postRef = doc(db, "posts", doc.id);
-			batch.update(postRef, {"savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"});
-			await batch.commit()
+		.then((resp) => {
+			resp.forEach(async (doc) => {
+				// doc.data() contains the document data
+				console.log('id', doc.id);
+				const postRef = doc(db, "posts", doc.id);
+				batch.update(postRef, { "savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2" });
+				await batch.commit()
+			});
 		});
-	});
 
 }
 
