@@ -151,6 +151,35 @@ a {
 	background-color: rgba(255, 255, 255, 1) !important;
 }
 
+#main-content blockquote {
+	--tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+	--tw-text-opacity: 1;
+	color: rgb(75 85 99 / var(--tw-text-opacity));
+	padding: 1.25rem;
+	margin: 1.25rem 0;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	border-radius: 0.5rem;
+	background-color: rgb(240, 249, 255);
+}
+
+#main-content .word-collaboration--details {
+	position: relative;
+	display: block;
+	font-size: 0.8rem;
+	padding: 25px 20px 25px;
+	color: rgb(75 85 99 / var(--tw-text-opacity));
+	border: 1px solid #ececec;
+	border-radius: 5px;
+	margin-top: 15px;
+	--tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+	background: rgba(0, 0, 0, 0.1);
+}
+
 /*ULTIMO UOMO*/
 
 .post_content > p > b {
