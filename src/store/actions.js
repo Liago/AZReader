@@ -328,3 +328,16 @@ export const savePost = (post) => {
 		payload: newList,
 	};
 }
+
+export const onSortingBy = (sortBy) => {
+	return {
+		type: actionTypes.SET_SORT_BY,
+		payload: sortBy
+	}
+}
+export const onSortingDirection = (direction) => {
+	return {
+		type: actionTypes.SET_SORT_DIRECTION,
+		payload: direction
+	}
+} 

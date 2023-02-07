@@ -8,6 +8,7 @@ import MainMenu from "../components/ui/menu";
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
+import { FilterAndSort } from "../components/toolbar/filterAndSort";
 import Spinner from "../components/ui/spinner";
 
 import { onLogout, savePost } from "../store/actions";
@@ -21,11 +22,12 @@ import moment from 'moment';
 
 import "./Home.css";
 
+
 const Home = () => {
 	const dispatch = useDispatch();
 	const router = useIonRouter();
 	const { list } = useSelector(state => state.posts);
-	const { tokenExpiration } = useSelector(state => state.app);
+	const { tokenExpiration, sort } = useSelector(state => state.app);
 	const { isLogged, credentials } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
@@ -33,7 +35,6 @@ const Home = () => {
 	const [rapidArticleParsed, setRapidArticleParsed] = useState();
 	const [isParsing, setIsParsing] = useState(false);
 	const [postFromDb, setPostFromDb] = useState([]);
-
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
 	// const [saveArticleAccess] = saveReadingList();
 
@@ -59,7 +60,6 @@ const Home = () => {
 		initialBreakpoint: 0.5,
 	});
 
-
 	useEffect(() => {
 		//verifica che il token sia ancora valido
 		if (moment().unix() > tokenExpiration) {
@@ -74,7 +74,7 @@ const Home = () => {
 		}
 
 		isLogged && fetchPostsFromDb()
-	}, [isLogged])
+	}, [isLogged, sort])
 
 	const refresh = (e) => {
 		setTimeout(() => {
@@ -129,7 +129,6 @@ const Home = () => {
 		setSearchText('');
 		setShowModal(false);
 	}
-
 	const savePostToServer = () => {
 		if (rapidArticleParsed) {
 			const url = new URL(rapidArticleParsed.url);
@@ -157,7 +156,6 @@ const Home = () => {
 			fetchPostsFromDb();
 		}, 500)
 	}
-
 	const onDeletePostHandler = (postId) => {
 		confirm(
 			{
@@ -177,15 +175,11 @@ const Home = () => {
 				}],
 			})
 	}
-
 	const onDeletePost = (postId) => {
 		deletePostFromFirestore(postId)
 			.then(() => setTimeout(() => fetchPostsFromDb(), 1000))
 			.catch((err) => console.error(err));
 	}
-
-
-
 	const renderPostList = () => {
 		if (isEmpty(list) && isEmpty(postFromDb)) return;
 		if (!isLogged && isEmpty(list)) return <Spinner />;
@@ -200,7 +194,7 @@ const Home = () => {
 	}
 	const fetchPostsFromDb = () => {
 		setPostFromDb([]);
-		getPostList('date_published', 'desc')
+		getPostList(sort?.by, sort?.asc)
 			.then(response => setPostFromDb(response));
 	}
 	const renderModalParser = () => {
@@ -253,7 +247,7 @@ const Home = () => {
 	}
 
 	useEffect(() => {
-		if (!tokenExpiration) return; 
+		if (!tokenExpiration) return;
 
 		const comInterval = setInterval(calculateToken, 60000);
 		return () => clearInterval(comInterval)
@@ -265,6 +259,8 @@ const Home = () => {
 
 		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
 	}
+
+
 	return (
 		<>
 			<MainMenu />
@@ -296,6 +292,7 @@ const Home = () => {
 						<IonToolbar>
 							<IonTitle size="large">{renderTitle()}</IonTitle>
 						</IonToolbar>
+						<FilterAndSort />
 					</IonHeader>
 					<IonList className="px-3">
 						{renderPostList()}

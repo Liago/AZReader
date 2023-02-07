@@ -65,7 +65,7 @@ export const userRegistration = async (email, password) => {
 }
 
 export const getPostList = async (field, order) => {
-	const postsQuery = query(postsCollection, orderBy(field, order));
+	const postsQuery = query(postsCollection, orderBy(field, order ? 'asc' : 'desc'));
 	return executeQuery(postsQuery);
 };
 

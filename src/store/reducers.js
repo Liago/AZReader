@@ -8,6 +8,10 @@ const initialState = {
 		notificationSegment: "Subscribed Users",
 		tokenApp: null,
 		tokenExpiration: null,
+		sort: {
+			by: 'date_published',
+			asc: true
+		}
 	},
 	archive: [],
 	user: {
@@ -43,12 +47,28 @@ const app = (state = initialState.app, action) => {
 			return {
 				...state,
 				tokenApp: null,
-				tokenExpiration: null 
+				tokenExpiration: null
 			};
 		case actionTypes.APP_START:
 			return {
 				...state,
 				configuration: action.payload
+			};
+		case actionTypes.SET_SORT_BY:
+			return {
+				...state,
+				sort: {
+					...state.sort,
+					by: action.payload
+				}
+			};
+		case actionTypes.SET_SORT_DIRECTION:
+			return {
+				...state,
+				sort: {
+					...state.sort,
+					asc: action.payload
+				}
 			};
 		case actionTypes.DARK_MODE_SET:
 			return {
