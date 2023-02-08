@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms, IonHeader } from "@ionic/react";
-import { pricetags } from "ionicons/icons";
+import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms, IonHeader, IonPopover } from "@ionic/react";
+import { informationCircleSharp, pricetags } from "ionicons/icons";
 
 
 import ModalTags from "./modalTags";
@@ -12,7 +12,7 @@ import moment from 'moment';
 import { renderArticleDatePublished } from "../utility/utils";
 
 const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
-	const { title, content, lead_image_url, html: htmlContent, date, date_published, topImage, domain } = articleParsed;
+	const { title, content, lead_image_url, html: htmlContent, date, date_published, topImage, domain, savedBy, savedOn } = articleParsed;
 	const platforms = getPlatforms()
 	const [showModal, setShowModal] = useState(false);
 	const [saveTags, { data: isTagsSaved }] = saveTagsHandler();
@@ -55,21 +55,30 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 	// }
 
 	const renderFooter = () => {
-		return;
+		// return (
+		// 	<IonFooter>
+		// 		<IonToolbar color="light">
+		// 			<IonButtons slot="primary">
+		// 				<IonButton
+		// 					onClick={() => insertTagHandler()} >
+		// 					<IonIcon slot="icon-only" icon={pricetags} />
+		// 				</IonButton>
+		// 			</IonButtons>
+		// 		</IonToolbar>
+		// 	</IonFooter>
+		// )
+	}
 
+	const renderContent = () => {
 		return (
-			<IonFooter>
-				<IonToolbar color="light">
-					<IonButtons slot="primary">
-						<IonButton
-							onClick={() => insertTagHandler()} >
-							<IonIcon slot="icon-only" icon={pricetags} />
-						</IonButton>
-					</IonButtons>
-				</IonToolbar>
-			</IonFooter>
+			<div className="p-2 text-xs">
+				<h4 className="font-bold">Aggiunto</h4>
+				<p>da: {savedBy.userEmail} </p>
+				<p>il: {moment(savedOn).format('D MMMM YYYY HH:mm')}</p>
+			</div>
 		)
 	}
+
 
 	const renderButton = () => {
 		if (displayFrom === 'modalPreview') return;
@@ -77,10 +86,18 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 		return (
 			<IonHeader translucent={true}>
 				<IonToolbar color="light">
-					<IonButtons slot="end">
-						<IonButton onClick={onDismiss}>
-							chiudi
+					<IonButtons slot="start">
+						<IonButton id="info-popover">
+							<IonIcon slot="icon-only" color="primary" icon={informationCircleSharp}></IonIcon>
 						</IonButton>
+						<IonPopover trigger="info-popover" side="right" alignment="start">
+							<IonContent class="ion-padding">
+								{renderContent()}
+							</IonContent>
+						</IonPopover>
+					</IonButtons>
+					<IonButtons slot="end">
+						<IonButton onClick={onDismiss}>chiudi</IonButton>
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
@@ -88,7 +105,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 	}
 	const renderImage = () => {
 		if (domain !== 'unaparolaalgiorno.it') return;
-		
+
 		return <img className="w-full rounded-md" alt="" src={lead_image_url} />
 	}
 	const renderTitle = () => {
