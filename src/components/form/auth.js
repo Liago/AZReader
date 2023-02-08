@@ -56,6 +56,10 @@ const AuthenticationForm = ({ onDismiss }) => {
 					onDismiss();
 					dismiss();
 				})
+				.catch((e) => {
+					console.log('error', e.message);
+					dismiss();
+				})
 		}
 	}
 
