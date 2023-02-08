@@ -28,7 +28,8 @@ const Home = () => {
 	const router = useIonRouter();
 	const { list } = useSelector(state => state.posts);
 	const { tokenExpiration, sort } = useSelector(state => state.app);
-	const { isLogged, credentials } = useSelector(state => state.user);
+	const { isLogged } = useSelector(state => state.user);
+	const { user } = useSelector(state => state.user?.credentials);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [customArticleParsed, setCustomArticleParsed] = useState();
@@ -37,7 +38,6 @@ const Home = () => {
 	const [postFromDb, setPostFromDb] = useState([]);
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
 	// const [saveArticleAccess] = saveReadingList();
-
 	const pageRef = useRef();
 
 	const [showToast, dismissToast] = useIonToast();
@@ -137,8 +137,8 @@ const Home = () => {
 		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
 
 
-		theArticleParsed['readingList'] = [credentials.user.id];
-		theArticleParsed['savedBy'] = { userId: credentials.user.id, userEmail: credentials.user.mail };
+		theArticleParsed['readingList'] = [user.id];
+		theArticleParsed['savedBy'] = { userId: user.id, userEmail: user.mail };
 		theArticleParsed['savedOn'] = Date.now();
 
 		savePostToFirestore(theArticleParsed)
@@ -259,6 +259,7 @@ const Home = () => {
 
 		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
 	}
+
 
 
 	return (

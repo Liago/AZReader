@@ -71,10 +71,9 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 
 	const renderContent = () => {
 		return (
-			<div className="p-2 text-xs">
-				<h4 className="font-bold">Aggiunto</h4>
-				<p>da: {savedBy.userEmail} </p>
-				<p>il: {moment(savedOn).format('D MMMM YYYY HH:mm')}</p>
+			<div className="px-2 text-xs border-l-4 border-indigo-400">
+				<p>Aggiunto il {moment(savedOn).format('D MMMM YYYY')} alle {moment(savedOn).format('HH:mm')}</p>
+				<p>da {savedBy.userEmail} </p>
 			</div>
 		)
 	}
