@@ -1,9 +1,6 @@
 import { IonImg, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonThumbnail, useIonModal } from '@ionic/react';
 import Article from './article';
 
-import './MessageListItem.css';
-
-
 const MessageListItem = ({ post, isLocal, postId, deletePost }) => {
 	const displayLocalDot = () => {
 		if (isLocal)
