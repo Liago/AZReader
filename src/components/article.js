@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IonButton, IonButtons, IonContent, IonFooter, IonIcon, IonToolbar, getPlatforms, IonHeader, IonPopover } from "@ionic/react";
-import { informationCircleSharp, pricetags } from "ionicons/icons";
+import { closeOutline, informationCircleSharp, pricetags } from "ionicons/icons";
 
 
 import ModalTags from "./modalTags";
@@ -71,7 +71,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 
 	const renderContent = () => {
 		return (
-			<div className="px-2 text-xs border-l-4 border-indigo-400">
+			<div className="px-2 text-xs border-l-4 border-sky-500">
 				<p>Aggiunto il {moment(savedOn).format('D MMMM YYYY')} alle {moment(savedOn).format('HH:mm')}</p>
 				<p>da {savedBy.userEmail} </p>
 			</div>
@@ -96,7 +96,9 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 						</IonPopover>
 					</IonButtons>
 					<IonButtons slot="end">
-						<IonButton onClick={onDismiss}>chiudi</IonButton>
+						<IonButton onClick={onDismiss}>
+							<IonIcon slot="icon-only" color="primary" icon={closeOutline}></IonIcon>
+						</IonButton>
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
