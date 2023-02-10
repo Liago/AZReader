@@ -4,7 +4,8 @@ import {
 	getFirestore, query, orderBy, onSnapshot,
 	collection, getDocs, addDoc, updateDoc,
 	doc, serverTimestamp, arrayUnion, deleteDoc,
-	writeBatch
+	writeBatch,
+	where
 } from "firebase/firestore";
 import {
 	getAuth, signInAnonymously, createUserWithEmailAndPassword,
@@ -33,8 +34,17 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const postsCollection = collection(db, 'posts');
 
-
 export { auth }
+
+
+export const getCollection = async () => {
+	const postsQuery = query(
+		postsCollection,
+		where('savedBy', '==', "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"),
+		orderBy('savedOn', 'desc')
+	);
+	return executeQuery(postsQuery);
+}
 
 const executeQuery = async (query) => {
 	const querySnapshot = await getDocs(query);
