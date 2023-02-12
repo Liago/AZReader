@@ -73,7 +73,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 		return (
 			<div className="px-2 text-xs border-l-4 border-sky-500">
 				<p>Aggiunto il {moment(savedOn).format('D MMMM YYYY')} alle {moment(savedOn).format('HH:mm')}</p>
-				<p>da {savedBy.userEmail} </p>
+				<p>da {savedBy?.userEmail} </p>
 			</div>
 		)
 	}
