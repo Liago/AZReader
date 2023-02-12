@@ -234,41 +234,12 @@ const Home = () => {
 			: 'I miei articoli'
 	}
 
-	const [remainingMinutes, setRemainingMinutes] = useState()
-
-	const calculateToken = () => {
-		const currentTime = moment().unix();
-		const _remainingMinutes = moment.duration(tokenExpiration - currentTime, 'seconds').minutes();
-
-		if (_remainingMinutes < 0)
-			dispatch(onLogout())
-
-		setRemainingMinutes(_remainingMinutes);
-	}
-
-	useEffect(() => {
-		if (!tokenExpiration) return;
-
-		const comInterval = setInterval(calculateToken, 60000);
-		return () => clearInterval(comInterval)
-	}, [tokenExpiration])
-
-	const renderTokenExpiration = () => {
-		if (!tokenExpiration)
-			return <span>Sessione locale.</span>
-
-		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
-	}
-
-
-
 	return (
 		<>
 			<MainMenu />
 			<IonPage id="home-page" ref={pageRef}>
 				<IonHeader>
 					<IonToolbar>
-						{renderTokenExpiration()}
 						<IonButtons slot="start">
 							<IonMenuButton></IonMenuButton>
 						</IonButtons>
