@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { IonButtons } from "@ionic/react"
+import { IonButton, IonButtons, IonIcon } from "@ionic/react"
 
 import { SheetModal } from "../modals/sheetModal"
 import { Button } from "../ui/buttons"
 import { SortList } from "./sort";
 import { FilterList } from "./filter";
+import { funnelOutline } from "ionicons/icons";
 
 export const FilterAndSort = () => {
 	const [showModal, setShowModal] = useState(false);
@@ -32,15 +33,21 @@ export const FilterAndSort = () => {
 
 	return (
 		<>
-			<IonButtons>
-				<Button
+			<IonButtons slot="primary">
+				<IonButton
+					onClick={onSort}
+					label="Sort"
+				>
+					<IonIcon slot='icon-only' icon={funnelOutline} />
+				</IonButton>
+				{/* <Button
 					clickHandler={onSort}
 					label="Sort"
 				/>
 				<Button
 					clickHandler={onFilter}
 					label="Filter"
-				/>
+				/> */}
 			</IonButtons>
 			<SheetModal
 				showModal={showModal}

@@ -207,36 +207,39 @@ const Home = () => {
 		return <ModalParser {...modalProps} />
 	}
 
-	const renderLoginLogout = () => {
-		if (isLogged)
-			return (
-				<IonButton
-					color="dark"
-					onClick={() => dispatch(onLogout())}
-				>
-					<IonIcon slot='icon-only' icon={powerOutline} />
-				</IonButton>
-			)
+	// const renderLoginLogout = () => {
+	// 	if (isLogged)
+	// 		return (
+	// 			<IonButton
+	// 				color="danger"
+	// 				onClick={() => dispatch(onLogout())}
+	// 			>
+	// 				<IonIcon slot='icon-only' icon={powerOutline} />
+	// 			</IonButton>
+	// 		)
 
-		return (
-			<IonButton
-				color="dark"
-				onClick={() => showModalLogin()}
-			>
-				<IonIcon slot='icon-only' icon={logInOutline} />
-			</IonButton>
-		)
-	}
+	// 	return (
+	// 		<IonButton
+	// 			color="medium"
+	// 			onClick={() => showModalLogin()}
+	// 		>
+	// 			<IonIcon slot='icon-only' icon={logInOutline} />
+	// 		</IonButton>
+	// 	)
+	// }
 
 	const renderTitle = () => {
 		return isLogged
-			? 'Articoli condivisi'
+			? 'Articoli'
 			: 'I miei articoli'
 	}
 
 	return (
 		<>
-			<MainMenu />
+			<MainMenu
+				isLogged={isLogged}
+				showModalLogin={showModalLogin}
+			/>
 			<IonPage id="home-page" ref={pageRef}>
 				<IonHeader>
 					<IonToolbar>
@@ -244,14 +247,15 @@ const Home = () => {
 							<IonMenuButton></IonMenuButton>
 						</IonButtons>
 						<IonTitle>{renderTitle()}</IonTitle>
+						<FilterAndSort />
 						<IonButtons slot="primary">
-							{renderLoginLogout()}
 							<IonButton
-								color="dark"
+								color="success"
 								onClick={() => setShowModal(true)}
 							>
 								<IonIcon slot='icon-only' icon={documentTextOutline} />
 							</IonButton>
+							{/* {renderLoginLogout()} */}
 						</IonButtons>
 					</IonToolbar>
 				</IonHeader>
@@ -264,7 +268,6 @@ const Home = () => {
 						<IonToolbar>
 							<IonTitle size="large">{renderTitle()}</IonTitle>
 						</IonToolbar>
-						<FilterAndSort />
 					</IonHeader>
 					<IonList className="px-3">
 						{renderPostList()}

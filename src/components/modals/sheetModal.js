@@ -23,11 +23,11 @@ export const SheetModal = ({ children, showModal, setShowModal }) => {
 			>
 				{children}
 
-				<div>
+				{/* <div>
 					<IonButton
 					onClick={test}
 					>click me</IonButton>
-				</div>
+				</div> */}
 			</IonContent>
 		</IonModal >
 	)

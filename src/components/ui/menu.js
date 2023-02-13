@@ -1,11 +1,13 @@
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { IonButton, IonContent, IonHeader, IonMenu, IonTitle, IonToolbar } from "@ionic/react";
+import { IonButton, IonContent, IonHeader, IonIcon, IonMenu, IonTitle, IonToolbar } from "@ionic/react";
+import { logInOutline, powerOutline } from "ionicons/icons";
 
-import moment from "moment";
 import MiniCards from "../cards/miniCards";
 import { batchEditing } from "../../common/firestore";
 import { onLogout } from "../../store/actions";
-import { useEffect, useState } from "react";
+
+import moment from "moment";
 
 const renderAdminMenu = (user) => {
 	if (user?.id !== '7815BcDJ1sc7WRqfnbIQfMr7Tmc2') return;
@@ -21,12 +23,13 @@ const renderAdminMenu = (user) => {
 	)
 }
 
-const MainMenu = () => {
+const MainMenu = ({ isLogged, showModalLogin }) => {
 	const dispatch = useDispatch();
 	const { user } = useSelector(state => state?.user?.credentials);
 	const { tokenApp, tokenExpiration } = useSelector(state => state.app);
 	const lastLogin = moment(parseInt(user?.meta?.lastLoginAt)).format('DD/MM/GG HH:mm');
-	
+	const [remainingMinutes, setRemainingMinutes] = useState()
+
 
 	const renderUserInfo = () => {
 		if (!tokenApp) return;
@@ -38,7 +41,6 @@ const MainMenu = () => {
 			</>
 		)
 	}
-	const [remainingMinutes, setRemainingMinutes] = useState()
 
 	const calculateToken = () => {
 		const currentTime = moment().unix();
@@ -64,6 +66,27 @@ const MainMenu = () => {
 		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
 	}
 
+	const renderLoginLogout = () => {
+		if (isLogged)
+			return (
+				<IonButton
+					color="danger"
+					onClick={() => dispatch(onLogout())}
+				>
+					<IonIcon slot='icon-only' icon={powerOutline} />
+				</IonButton>
+			)
+
+		return (
+			<IonButton
+				color="medium"
+				onClick={showModalLogin}
+			>
+				<IonIcon slot='icon-only' icon={logInOutline} />
+			</IonButton>
+		)
+	}
+
 	return (
 		<IonMenu contentId="home-page">
 			<IonHeader>
@@ -72,10 +95,13 @@ const MainMenu = () => {
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding" color="light">
-				<MiniCards>{renderUserInfo()}</MiniCards>
+				<MiniCards>
+					{renderUserInfo()}
+					{renderLoginLogout()}
+				</MiniCards>
 				{renderAdminMenu(user)}
 				<div className="py-3">
-				{renderTokenExpiration()}
+					{renderTokenExpiration()}
 				</div>
 			</IonContent>
 		</IonMenu>
