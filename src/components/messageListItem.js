@@ -1,13 +1,17 @@
 import { IonImg, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonThumbnail, useIonModal } from '@ionic/react';
+// import { useSelector } from 'react-redux';
 import Article from './article';
 
-const MessageListItem = ({ post, isLocal, postId, deletePost }) => {
-	const displayLocalDot = () => {
-		if (isLocal)
-			return <div slot="start" className="dot dot-unread"></div>
+const MessageListItem = ({ post, postId, deletePost }) => {
+	
+	// const displayLocalDot = () => {
+	// 	const { userEmail } = post?.savedBy;
 
-		return <div slot="start" className="dot dot-unread"></div>
-	}
+	// 	if (user.mail === userEmail)
+	// 		return <div slot="start" className="dot dot-unread"></div>
+
+	// 	return <></>
+	// }
 
 	const openArticle = () => present()
 	const dismissHandler = () => dismiss()
