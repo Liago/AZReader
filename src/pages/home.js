@@ -184,13 +184,20 @@ const Home = () => {
 		if (isEmpty(list) && isEmpty(postFromDb)) return;
 		if (!isLogged && isEmpty(list)) return <Spinner />;
 		if (isLogged && isEmpty(postFromDb)) return <Spinner />;
+		let posts;
 
 		if (isLogged)
-			return Object.keys(postFromDb).map(key => {
-				return <MessageListItem key={key} postId={key} post={postFromDb[key]} isLocal={false} deletePost={onDeletePostHandler} />
+			posts = postFromDb.filter((post) => {
+				return (post.readingList.indexOf(user.id) >= 0);
+			});
+
+			console.log('posts :>> ', posts);
+
+			return Object.keys(posts).map(key => {
+				return <MessageListItem key={key} postId={key} post={posts[key]} isLocal={false} deletePost={onDeletePostHandler} />
 			})
 
-		return (list || []).reverse().map((item, i) => <MessageListItem key={i} post={item} isLocal />)
+		// return (list || []).reverse().map((item, i) => <MessageListItem key={i} post={item} isLocal />)
 	}
 	const fetchPostsFromDb = () => {
 		setPostFromDb([]);
