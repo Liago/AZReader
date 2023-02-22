@@ -214,27 +214,6 @@ const Home = () => {
 		return <ModalParser {...modalProps} />
 	}
 
-	// const renderLoginLogout = () => {
-	// 	if (isLogged)
-	// 		return (
-	// 			<IonButton
-	// 				color="danger"
-	// 				onClick={() => dispatch(onLogout())}
-	// 			>
-	// 				<IonIcon slot='icon-only' icon={powerOutline} />
-	// 			</IonButton>
-	// 		)
-
-	// 	return (
-	// 		<IonButton
-	// 			color="medium"
-	// 			onClick={() => showModalLogin()}
-	// 		>
-	// 			<IonIcon slot='icon-only' icon={logInOutline} />
-	// 		</IonButton>
-	// 	)
-	// }
-
 	const renderTitle = () => {
 		return isLogged
 			? 'Articoli'
@@ -262,7 +241,6 @@ const Home = () => {
 							>
 								<IonIcon slot='icon-only' icon={documentTextOutline} />
 							</IonButton>
-							{/* {renderLoginLogout()} */}
 						</IonButtons>
 					</IonToolbar>
 				</IonHeader>
