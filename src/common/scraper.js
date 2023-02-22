@@ -26,7 +26,7 @@ export const personalScraper = (url) => {
 
 			switch (scraperParams.url) {
 				case 'www.lescienze.it':
-					_lead_image_url = $(scraperParams.items.lead_image).find('img').attr('data-src');
+					_lead_image_url = $(scraperParams.items.lead_image).find('img').attr('data-src') || "";
 					_date_published = $(scraperParams.items.data_published).attr('datetime');
 					break;
 				case 'unaparolaalgiorno.it':
