@@ -49,7 +49,7 @@ export const manipulateDateFromString = $date => {
 		Luglio: 7,
 		Agosto: 8,
 		Settembre: 9,
-		Ottonre: 10,
+		Ottobre: 10,
 		Novembre: 11,
 		Dicembre: 12
 	};
