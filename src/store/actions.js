@@ -341,3 +341,11 @@ export const onSortingDirection = (direction) => {
 		payload: direction
 	}
 } 
+
+export const onSetFeedType = (property) => {
+	return {
+		type: actionTypes.SET_FEED_TYPE,
+		payload: property
+	}
+
+}

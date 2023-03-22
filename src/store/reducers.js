@@ -11,7 +11,8 @@ const initialState = {
 		sort: {
 			by: 'date_published',
 			asc: true
-		}
+		},
+		feedType: 'Personal',
 	},
 	archive: [],
 	user: {
@@ -54,6 +55,11 @@ const app = (state = initialState.app, action) => {
 				...state,
 				configuration: action.payload
 			};
+		case actionTypes.SET_FEED_TYPE:
+			return {
+				...state,
+				feedType: action.payload
+			}
 		case actionTypes.SET_SORT_BY:
 			return {
 				...state,
