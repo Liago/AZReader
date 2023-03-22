@@ -49,7 +49,10 @@ export const getCollection = async () => {
 const executeQuery = async (query) => {
 	const querySnapshot = await getDocs(query);
 	const queryResponse = querySnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
-	console.log('queryResponse :>> ', queryResponse);
+	console.log('executeQuery :>> ', {
+		postsOnDb: queryResponse.length,
+		posts: queryResponse
+	});
 	return queryResponse;
 }
 

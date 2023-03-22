@@ -1,4 +1,4 @@
-const Spinner = () => {
+export const Spinner = () => {
 	return (
 		<div className="flex justify-center h-1/2 items-center">
 			<svg role="status"
