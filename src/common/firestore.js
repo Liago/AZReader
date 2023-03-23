@@ -33,6 +33,7 @@ if (Capacitor.isNativePlatform)
 const auth = getAuth(app);
 const db = getFirestore(app);
 const postsCollection = collection(db, 'posts');
+const usersCollection = collection(db, 'users');
 
 export { auth }
 
@@ -96,6 +97,12 @@ export const deletePostFromFirestore = async (postId) => {
 	const postDoc = doc(db, 'posts', postId);
 	return await deleteDoc(postDoc);
 }
+
+export const saveUserToFirestore = async (user) => {
+	return await addDoc(usersCollection, user)
+}
+
+
 
 export const batchEditing = async () => {
 	const batch = writeBatch(db);

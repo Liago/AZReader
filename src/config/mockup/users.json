@@ -1,0 +1,27 @@
+{
+	"name": "Users to Import",
+	"version": "0.1",
+	"users": [
+		{
+			"email": "pop@mailinator.com",
+			"firstName": "Andrea",
+			"lastName": "Zampierolo",
+			"nickname": "Andrea's iPad",
+			"uuid": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"
+		},
+		{
+			"email": "test@mail.com",
+			"firstName": "Paolo",
+			"lastName": "Caronno",
+			"nickname": "Paolo's test user",
+			"uuid": "Uh4nCRLgzmRd0kDr2Halx2ABG7Q2"
+		},
+		{
+			"email": "andrea.zampierolo@gmail.com",
+			"firstName": "Andrea",
+			"lastName": "Zampierolo",
+			"nickname": "Andrea's test user",
+			"uuid": "vuovteiFode8ZKdkK7SYZyx8CxR2"
+		}
+	]
+}
