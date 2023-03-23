@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonRouter, useIonToast } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
-import MainMenu from "../components/ui/menu";
+import MainMenu from "../components/ui/menu/menu";
 import MessageListItem from "../components/messageListItem";
 import ModalParser from "../components/modalParser";
 import AuthenticationForm from "../components/form/auth";
@@ -17,7 +17,7 @@ import { personalScraper, rapidApiScraper } from "../common/scraper";
 import { getScraperParmas } from "../utility/utils";
 import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
 
-import { isEmpty } from "lodash";
+import { filter, isEmpty } from "lodash";
 import moment from 'moment';
 
 import "./Home.css";
@@ -27,7 +27,7 @@ const Home = () => {
 	const dispatch = useDispatch();
 	const router = useIonRouter();
 	const { list } = useSelector(state => state.posts);
-	const { tokenExpiration, sort } = useSelector(state => state.app);
+	const { tokenExpiration, sort, feedType } = useSelector(state => state.app);
 	const { isLogged } = useSelector(state => state.user);
 	const { user } = useSelector(state => state.user?.credentials);
 	const [showModal, setShowModal] = useState(false);
@@ -36,7 +36,7 @@ const Home = () => {
 	const [rapidArticleParsed, setRapidArticleParsed] = useState();
 	const [isParsing, setIsParsing] = useState(false);
 	const [postFromDb, setPostFromDb] = useState([]);
-	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
+	const [parseArticle, { data: articleParsed, loading, error }] = getArticledParsed(searchText);
 	// const [saveArticleAccess] = saveReadingList();
 	const pageRef = useRef();
 
@@ -74,7 +74,7 @@ const Home = () => {
 		}
 
 		isLogged && fetchPostsFromDb()
-	}, [isLogged, sort])
+	}, [isLogged, sort, feedType])
 
 	const refresh = (e) => {
 		setTimeout(() => {
@@ -118,6 +118,7 @@ const Home = () => {
 		setIsParsing(false);
 	}, [searchText])
 
+
 	const savePostHandler = () => {
 		if (rapidArticleParsed) {
 			const url = new URL(rapidArticleParsed.url);
@@ -135,9 +136,6 @@ const Home = () => {
 			rapidArticleParsed['domain'] = url.hostname;
 		}
 		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
-
-
-		theArticleParsed['readingList'] = [user.id];
 		theArticleParsed['savedBy'] = { userId: user.id, userEmail: user.mail };
 		theArticleParsed['savedOn'] = Date.now();
 
@@ -175,35 +173,42 @@ const Home = () => {
 				}],
 			})
 	}
-	const onDeletePost = (postId) => {
-		deletePostFromFirestore(postId)
-			.then(() => setTimeout(() => fetchPostsFromDb(), 1000))
-			.catch((err) => console.error(err));
+	const onDeletePost = async (postId) => {
+		const response = await deletePostFromFirestore(postId)
+		setTimeout(() => fetchPostsFromDb(), 1000)
 	}
+
 	const renderPostList = () => {
 		if (isEmpty(list) && isEmpty(postFromDb)) return;
 		if (!isLogged && isEmpty(list)) return <Spinner />;
 		if (isLogged && isEmpty(postFromDb)) return <Spinner />;
-		let posts;
+		let posts = [];
 
 		if (isLogged)
-			posts = postFromDb.filter((post) => {
-				return (post.readingList.indexOf(user.id) >= 0);
-			});
+			switch (feedType) {
+				case 'All':
+					posts = filter(postFromDb, (post) => post.readingList.indexOf(user.id) >= 0)
+					break;
+				case 'Personal':
+					posts = filter(postFromDb, (post) => post.savedBy.userId === user.id)
+					break;
+				default:
+					break;
+			}
 
-			console.log('posts :>> ', posts);
-
-			return Object.keys(posts).map(key => {
-				return <MessageListItem key={key} postId={key} post={posts[key]} isLocal={false} deletePost={onDeletePostHandler} />
-			})
-
-		// return (list || []).reverse().map((item, i) => <MessageListItem key={i} post={item} isLocal />)
+		return Object.keys(posts).map(key => {
+			return <MessageListItem key={key} postId={key} post={posts[key]} isLocal={false} deletePost={onDeletePostHandler} />
+		})
 	}
-	const fetchPostsFromDb = () => {
+
+	const fetchPostsFromDb = async () => {
 		setPostFromDb([]);
-		getPostList(sort?.by, sort?.asc)
-			.then(response => setPostFromDb(response));
+		const response = await getPostList(sort?.by, sort?.asc)
+		setPostFromDb(response)
 	}
+
+
+
 	const renderModalParser = () => {
 		if (isParsing) return;
 
@@ -215,9 +220,10 @@ const Home = () => {
 	}
 
 	const renderTitle = () => {
-		return isLogged
-			? 'Articoli'
-			: 'I miei articoli'
+		if (isLogged && feedType === 'Personal') 
+			return 'I miei articoli'
+
+		return 'Articoli condivisi'
 	}
 
 	return (
