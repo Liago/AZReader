@@ -3,11 +3,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { IonButton, IonContent, IonHeader, IonIcon, IonMenu, IonTitle, IonToolbar } from "@ionic/react";
 import { logInOutline, powerOutline } from "ionicons/icons";
 
-import MiniCards from "../cards/miniCards";
-import { batchEditing } from "../../common/firestore";
-import { onLogout } from "../../store/actions";
+import MiniCards from "../../cards/miniCards";
+import ActionList from './actionList';
+import AddUserMenu from './admin/addUserMenu';
+
+import { batchEditing, saveUserToFirestore } from "../../../common/firestore";
+import { onLogout, onSetFeedType } from "../../../store/actions";
 
 import moment from "moment";
+
+import usersData from '../../../config/mockup/users.json'
 
 const renderAdminMenu = (user) => {
 	if (user?.id !== '7815BcDJ1sc7WRqfnbIQfMr7Tmc2') return;
@@ -23,6 +28,15 @@ const renderAdminMenu = (user) => {
 	)
 }
 
+const renderAddUserMenuItem = (user, addUsers) => {
+	if (user?.id !== '7815BcDJ1sc7WRqfnbIQfMr7Tmc2') return;
+
+	return (
+		<AddUserMenu addUsers={addUsers} />
+	)
+}
+
+
 const MainMenu = ({ isLogged, showModalLogin }) => {
 	const dispatch = useDispatch();
 	const { user } = useSelector(state => state?.user?.credentials);
@@ -36,8 +50,8 @@ const MainMenu = ({ isLogged, showModalLogin }) => {
 
 		return (
 			<>
-				<h2 className="font-semibold">{user?.mail}</h2>
-				<p className="mt-2 text-sm text-gray-500">Last login {lastLogin}</p>
+				<h2 className="font-semibold text-xs">{user?.mail}</h2>
+				<p className="mt-2 text-xs text-gray-500">Last login {lastLogin}</p>
 			</>
 		)
 	}
@@ -66,11 +80,33 @@ const MainMenu = ({ isLogged, showModalLogin }) => {
 		return <span className="text-xs font-[lato]">Scadenza sessione: {remainingMinutes} minuti</span>
 	}
 
+	const onSetFeedHandler = (type) => dispatch(onSetFeedType(type))
+
+	const addUsers = () => {
+		usersData.users.map(item => {
+			saveUserToFirestore(item).then(response => {
+				console.log('response :>> ', response);
+			})
+				.catch(err => {
+					console.log('err :>> ', err);
+				})
+		})
+
+	}
+
+	const renderActionList = () => {
+		if (!isLogged) return;
+
+		return <ActionList onSetFeedHandler={onSetFeedHandler} renderAddUserMenuItem={renderAddUserMenuItem} user={user} addUsers={addUsers} />
+	}
+
 	const renderLoginLogout = () => {
 		if (isLogged)
 			return (
 				<IonButton
 					color="danger"
+					size="small"
+					className="mt-4"
 					onClick={() => dispatch(onLogout())}
 				>
 					<IonIcon slot='icon-only' icon={powerOutline} />
@@ -96,15 +132,21 @@ const MainMenu = ({ isLogged, showModalLogin }) => {
 			</IonHeader>
 			<IonContent className="ion-padding" color="light">
 				<MiniCards>
-					{renderUserInfo()}
-					{renderLoginLogout()}
+					<div className="text-right">
+						{renderUserInfo()}
+						{renderLoginLogout()}
+					</div>
 				</MiniCards>
 				{renderAdminMenu(user)}
 				<div className="py-3">
 					{renderTokenExpiration()}
 				</div>
+				<div className="pt-6">
+					{renderActionList()}
+				</div>
 			</IonContent>
 		</IonMenu>
 	)
 }
+
 export default MainMenu;
