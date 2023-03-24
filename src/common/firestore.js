@@ -35,8 +35,14 @@ const db = getFirestore(app);
 const postsCollection = collection(db, 'posts');
 const usersCollection = collection(db, 'users');
 
+const shareCollection = collection(db, 'share_requests');
+
 export { auth }
 
+
+export const saveShareRequestToFirestore = async request => {
+	return await addDoc(shareCollection, request);
+};
 
 export const getCollection = async () => {
 	const postsQuery = query(
@@ -53,6 +59,16 @@ const executeQuery = async (query) => {
 	console.log('executeQuery :>> ', {
 		postsOnDb: queryResponse.length,
 		posts: queryResponse
+	});
+	return queryResponse;
+}
+
+const executeUsersQuery = async (query) => {
+	const querySnapshot = await getDocs(query);
+	const queryResponse = querySnapshot.docs.map(user => ({ ...user.data() }));
+	console.log('executeUsersQuery :>> ', {
+		usersOnDb: queryResponse.length,
+		users: queryResponse
 	});
 	return queryResponse;
 }
@@ -82,6 +98,10 @@ export const getPostList = async (field, order) => {
 	const postsQuery = query(postsCollection, orderBy(field, order ? 'asc' : 'desc'));
 	return executeQuery(postsQuery);
 };
+export const getUsersList = async () => {
+	const usersQuery = query(usersCollection);
+	return executeUsersQuery(usersQuery);
+};
 
 export const savePostToFirestore = async (post) => {
 	if (!post.date_published) post['date_published'] = moment().format();
@@ -104,6 +124,8 @@ export const saveUserToFirestore = async (user) => {
 
 
 
+
+
 export const batchEditing = async () => {
 	const batch = writeBatch(db);
 	// const nycRef = doc(db, "posts", '3EEeF5T5tSU0PL35LRye');
@@ -122,15 +144,7 @@ export const batchEditing = async () => {
 				await batch.commit()
 			});
 		});
-
 }
-
-
-
-
-
-
-
 
 export const authenticateAnonymously = () => {
 	return signInAnonymously(getAuth(app));
