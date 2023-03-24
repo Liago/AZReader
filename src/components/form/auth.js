@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 import { setUserToken } from "../../store/actions";
 
 import moment from 'moment';
-import { userLogin, userRegistration } from "../../common/firestore";
+import { userLogin, userRegistration } from "../../common/requests/auth";
 
 
 

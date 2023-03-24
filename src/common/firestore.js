@@ -5,13 +5,8 @@ import {
 	collection, getDocs, addDoc, updateDoc,
 	doc, serverTimestamp, arrayUnion
 } from "firebase/firestore";
-import {
-	getAuth, signInAnonymously, createUserWithEmailAndPassword,
-	signInWithEmailAndPassword, sendEmailVerification, indexedDBLocalPersistence,
-	initializeAuth
-} from "firebase/auth";
+import { getAuth, indexedDBLocalPersistence, initializeAuth } from "firebase/auth";
 import { api_keys, firebase } from "../config/environment";
-import moment from "moment";
 
 
 const firebaseConfig = {
@@ -34,30 +29,7 @@ const db = getFirestore(app);
 export { auth, db }
 
 
-export const userLogin = async (email, password) => {
-	return await signInWithEmailAndPassword(auth, email, password)
-		.then((response) => {
-			return { success: true, data: response.user }
-		}).catch(err => {
-			return { success: false, message: err.message, code: err.code }
-		})
-}
-
-export const userRegistration = async (email, password) => {
-	return await createUserWithEmailAndPassword(auth, email, password)
-		.then(() => {
-			return sendEmailVerification(auth.currentUser)
-				.then(() => {
-					return { success: true, currentUser: auth.currentUser }
-				})
-		})
-		.catch(err => console.log(err.message))
-}
-
-export const authenticateAnonymously = () => {
-	return signInAnonymously(getAuth(app));
-};
-
+// TUTTE FUNZIONI DI TEST
 export const getGroceryListItems = (groceryListId) => {
 	const itemsColRef = collection(db, 'groceryLists', groceryListId, 'items')
 	return getDocs(itemsColRef)
