@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { IonButton, IonContent, IonHeader, IonIcon, IonMenu, IonTitle, IonToolbar } from "@ionic/react";
+import { IonButton, IonContent, IonHeader, IonIcon, IonMenu, IonTitle, IonToolbar, useIonRouter } from "@ionic/react";
 import { logInOutline, powerOutline } from "ionicons/icons";
 
 import MiniCards from "../../cards/miniCards";
@@ -16,29 +16,28 @@ import usersData from '../../../config/mockup/users.json'
 
 const renderAdminMenu = (user) => {
 	if (user?.id !== '7815BcDJ1sc7WRqfnbIQfMr7Tmc2') return;
-
+	
 	return (
 		<MiniCards>
 			<IonButton
 				onClick={() => batchEditing()}
-			>
+				>
 				Imposta batch
 			</IonButton>
 		</MiniCards>
 	)
 }
 
-const renderAddUserMenuItem = (user, addUsers) => {
+const renderAddUserMenuItem = (user, addUsersHandler) => {
 	if (user?.id !== '7815BcDJ1sc7WRqfnbIQfMr7Tmc2') return;
-
-	return (
-		<AddUserMenu addUsers={addUsers} />
-	)
+	
+	return <AddUserMenu addUsers={addUsersHandler} />
 }
 
 
 const MainMenu = ({ isLogged, showModalLogin }) => {
 	const dispatch = useDispatch();
+	const router = useIonRouter();
 	const { user } = useSelector(state => state?.user?.credentials);
 	const { tokenApp, tokenExpiration } = useSelector(state => state.app);
 	const lastLogin = moment(parseInt(user?.meta?.lastLoginAt)).format('DD/MM/GG HH:mm');
@@ -82,7 +81,7 @@ const MainMenu = ({ isLogged, showModalLogin }) => {
 
 	const onSetFeedHandler = (type) => dispatch(onSetFeedType(type))
 
-	const addUsers = () => {
+	const addUsersHandler = () => {
 		usersData.users.map(item => {
 			saveUserToFirestore(item).then(response => {
 				console.log('response :>> ', response);
@@ -94,13 +93,24 @@ const MainMenu = ({ isLogged, showModalLogin }) => {
 
 	}
 
+	const searchFriendsHandler = () => {
+		router.push('/friends')
+	}
+
 	const renderActionList = () => {
 		if (!isLogged) return;
 
-		return <ActionList onSetFeedHandler={onSetFeedHandler} renderAddUserMenuItem={renderAddUserMenuItem} user={user} addUsers={addUsers} />
+		return <ActionList
+			onSetFeedHandler={onSetFeedHandler}
+			renderAddUserMenuItem={renderAddUserMenuItem}
+			user={user}
+			addUsers={addUsersHandler}
+			onSearchFriends={searchFriendsHandler}
+		/>
 	}
 
 	const renderLoginLogout = () => {
+
 		if (isLogged)
 			return (
 				<IonButton
@@ -131,13 +141,15 @@ const MainMenu = ({ isLogged, showModalLogin }) => {
 				</IonToolbar>
 			</IonHeader>
 			<IonContent className="ion-padding" color="light">
-				<MiniCards>
-					<div className="text-right">
-						{renderUserInfo()}
-						{renderLoginLogout()}
-					</div>
-				</MiniCards>
-				{renderAdminMenu(user)}
+				<div className="flex flex-col gap-3">
+					<MiniCards>
+						<div className="text-right">
+							{renderUserInfo()}
+							{renderLoginLogout()}
+						</div>
+					</MiniCards>
+					{renderAdminMenu(user)}
+				</div>
 				<div className="py-3">
 					{renderTokenExpiration()}
 				</div>

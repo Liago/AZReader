@@ -90,7 +90,7 @@ const Article = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 							<IonIcon slot="icon-only" color="primary" icon={informationCircleSharp}></IonIcon>
 						</IonButton>
 						<IonPopover trigger="info-popover" side="right" alignment="start">
-							<IonContent class="ion-padding">
+							<IonContent className="ion-padding">
 								{renderContent()}
 							</IonContent>
 						</IonPopover>
