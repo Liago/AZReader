@@ -1,25 +1,42 @@
-import { FriendsCards } from './../components/cards/friendsCards';
 import { useEffect, useState } from "react";
-import { IonBackButton, IonButtons, IonContent, IonHeader, IonList, IonMenuButton, IonPage, IonTitle, IonToolbar } from "@ionic/react";
+import { useSelector } from 'react-redux';
+import { IonBackButton, IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from "@ionic/react";
+
+import { FriendsCards } from './../components/cards/friendsCards';
 import { getUsersList } from "../common/requests/users";
+
 import { saveShareRequestToFirestore } from "../common/requests/share";
+
+import moment from "moment";
+import { filter } from "lodash";
 
 const FriendsPage = () => {
 	const [userList, setUserList] = useState([]);
+	const { user } = useSelector(state => state.user?.credentials);
 
-	useEffect(() => {
-		fetchUsersList()
-	}, [])
+	useEffect(() => fetchUsersList(), [])
 
 	const fetchUsersList = async () => {
 		const response = await getUsersList()
+		let list = filter(response, item => item.uuid !== user.id);
 		setUserList(response)
 	}
 
-	const onAskFriendship = () => {
+	const onAskFriendship = (askToEmail, askToUuid) => {
 		saveShareRequestToFirestore(
 			{
-				"requestBy": "andrea zampierolo"
+				"requestBy": {
+					"email": user.mail,
+					"uuid": user.id,
+				},
+				"requestTo": {
+					"email": askToEmail,
+					"uuid": askToUuid
+				},
+				"status": false,
+				"sentOn": moment().unix(),
+				"acceptedOn": null,
+				"refusedOn": null,
 			}
 		)
 	}

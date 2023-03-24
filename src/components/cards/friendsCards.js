@@ -1,4 +1,4 @@
-export const FriendsCards = ({ nickname, email, onAskFriendship }) => {
+export const FriendsCards = ({ nickname, email, uuid, onAskFriendship }) => {
 	return (
 		<div className="mx-2 p-2 border rounded-sm shadow ">
 			<div className="flex items-center justify-between space-x-5">
@@ -14,8 +14,8 @@ export const FriendsCards = ({ nickname, email, onAskFriendship }) => {
 				</div>
 				<div className="flex items-center space-x-6">
 					<button
-						onClick={onAskFriendship}
-						className="bg-gray-800 pt-2 pr-6 pb-2 pl-6 text-lg font-medium text-gray-100 transition-all duration-200 hover:bg-gray-700 rounded-lg"
+						onClick={() => onAskFriendship(email, uuid)}
+						className="bg-blue-800 pt-2 pr-6 pb-2 pl-6 text-lg font-medium text-gray-100 rounded-lg"
 					>
 						Chiedi
 					</button>
