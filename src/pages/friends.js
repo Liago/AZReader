@@ -1,7 +1,8 @@
 import { FriendsCards } from './../components/cards/friendsCards';
 import { useEffect, useState } from "react";
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonList, IonMenuButton, IonPage, IonTitle, IonToolbar } from "@ionic/react";
-import { getUsersList, saveShareRequestToFirestore } from "../common/firestore";
+import { getUsersList } from "../common/requests/users";
+import { saveShareRequestToFirestore } from "../common/requests/share";
 
 const FriendsPage = () => {
 	const [userList, setUserList] = useState([]);

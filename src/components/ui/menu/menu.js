@@ -7,7 +7,8 @@ import MiniCards from "../../cards/miniCards";
 import ActionList from './actionList';
 import AddUserMenu from './admin/addUserMenu';
 
-import { batchEditing, saveUserToFirestore } from "../../../common/firestore";
+import { batchEditing } from "../../../common/firestore";
+import { saveUserToFirestore } from "../../../common/requests/users";
 import { onLogout, onSetFeedType } from "../../../store/actions";
 
 import moment from "moment";

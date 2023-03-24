@@ -33,16 +33,8 @@ if (Capacitor.isNativePlatform)
 const auth = getAuth(app);
 const db = getFirestore(app);
 const postsCollection = collection(db, 'posts');
-const usersCollection = collection(db, 'users');
 
-const shareCollection = collection(db, 'share_requests');
-
-export { auth }
-
-
-export const saveShareRequestToFirestore = async request => {
-	return await addDoc(shareCollection, request);
-};
+export { auth, db }
 
 export const getCollection = async () => {
 	const postsQuery = query(
@@ -62,17 +54,6 @@ const executeQuery = async (query) => {
 	});
 	return queryResponse;
 }
-
-const executeUsersQuery = async (query) => {
-	const querySnapshot = await getDocs(query);
-	const queryResponse = querySnapshot.docs.map(user => ({ ...user.data() }));
-	console.log('executeUsersQuery :>> ', {
-		usersOnDb: queryResponse.length,
-		users: queryResponse
-	});
-	return queryResponse;
-}
-
 
 export const userLogin = async (email, password) => {
 	return await signInWithEmailAndPassword(auth, email, password)
@@ -98,10 +79,6 @@ export const getPostList = async (field, order) => {
 	const postsQuery = query(postsCollection, orderBy(field, order ? 'asc' : 'desc'));
 	return executeQuery(postsQuery);
 };
-export const getUsersList = async () => {
-	const usersQuery = query(usersCollection);
-	return executeUsersQuery(usersQuery);
-};
 
 export const savePostToFirestore = async (post) => {
 	if (!post.date_published) post['date_published'] = moment().format();
@@ -118,9 +95,7 @@ export const deletePostFromFirestore = async (postId) => {
 	return await deleteDoc(postDoc);
 }
 
-export const saveUserToFirestore = async (user) => {
-	return await addDoc(usersCollection, user)
-}
+
 
 
 
