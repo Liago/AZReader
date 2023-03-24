@@ -3,9 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import {
 	getFirestore, query, orderBy, onSnapshot,
 	collection, getDocs, addDoc, updateDoc,
-	doc, serverTimestamp, arrayUnion, deleteDoc,
-	writeBatch,
-	where
+	doc, serverTimestamp, arrayUnion
 } from "firebase/firestore";
 import {
 	getAuth, signInAnonymously, createUserWithEmailAndPassword,
@@ -32,28 +30,9 @@ if (Capacitor.isNativePlatform)
 
 const auth = getAuth(app);
 const db = getFirestore(app);
-const postsCollection = collection(db, 'posts');
 
 export { auth, db }
 
-export const getCollection = async () => {
-	const postsQuery = query(
-		postsCollection,
-		where('savedBy', '==', "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"),
-		orderBy('savedOn', 'desc')
-	);
-	return executeQuery(postsQuery);
-}
-
-const executeQuery = async (query) => {
-	const querySnapshot = await getDocs(query);
-	const queryResponse = querySnapshot.docs.map(post => ({ ...post.data(), id: post.id }));
-	console.log('executeQuery :>> ', {
-		postsOnDb: queryResponse.length,
-		posts: queryResponse
-	});
-	return queryResponse;
-}
 
 export const userLogin = async (email, password) => {
 	return await signInWithEmailAndPassword(auth, email, password)
@@ -73,52 +52,6 @@ export const userRegistration = async (email, password) => {
 				})
 		})
 		.catch(err => console.log(err.message))
-}
-
-export const getPostList = async (field, order) => {
-	const postsQuery = query(postsCollection, orderBy(field, order ? 'asc' : 'desc'));
-	return executeQuery(postsQuery);
-};
-
-export const savePostToFirestore = async (post) => {
-	if (!post.date_published) post['date_published'] = moment().format();
-	return await addDoc(postsCollection, post);
-}
-
-export const updatePostToFirestore = async (postId, payload) => {
-	const postDoc = doc(db, 'posts', postId);
-	return await updateDoc(postDoc, payload);
-}
-
-export const deletePostFromFirestore = async (postId) => {
-	const postDoc = doc(db, 'posts', postId);
-	return await deleteDoc(postDoc);
-}
-
-
-
-
-
-
-
-export const batchEditing = async () => {
-	const batch = writeBatch(db);
-	// const nycRef = doc(db, "posts", '3EEeF5T5tSU0PL35LRye');
-
-	// console.log('nycRef :>> ', nycRef);
-	// batch.update(nycRef, {"savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"});
-	// await batch.commit();
-
-	getPostList('date_published', 'asc')
-		.then((resp) => {
-			resp.forEach(async (doc) => {
-				// doc.data() contains the document data
-				console.log('id', doc.id);
-				const postRef = doc(db, "posts", doc.id);
-				batch.update(postRef, { "savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2" });
-				await batch.commit()
-			});
-		});
 }
 
 export const authenticateAnonymously = () => {

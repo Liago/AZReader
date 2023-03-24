@@ -15,7 +15,7 @@ import { onLogout, savePost } from "../store/actions";
 import { getArticledParsed } from "../store/rest";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
 import { getScraperParmas } from "../utility/utils";
-import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/firestore';
+import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/requests/posts';
 
 import { filter, isEmpty } from "lodash";
 import moment from 'moment';

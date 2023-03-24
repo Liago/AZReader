@@ -1,5 +1,5 @@
 import { IonButton, IonContent, IonModal } from "@ionic/react"
-import { getCollection } from "../../common/firestore"
+import { getCollection } from "../../common/requests/posts"
 
 export const SheetModal = ({ children, showModal, setShowModal }) => {
 
