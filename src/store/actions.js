@@ -2,6 +2,12 @@ import { store } from "./store";
 import * as actionTypes from "./actionTypes";
 import { isEmpty } from "lodash"
 
+export const onSetSharingRequests = (payload) => {
+	return {
+		type: actionTypes.GET_SHARING_REQUEST,
+		payload: payload,
+	}
+}
 
 export const submitNotificationPost = (postInfo) => {
 	return {
@@ -340,7 +346,7 @@ export const onSortingDirection = (direction) => {
 		type: actionTypes.SET_SORT_DIRECTION,
 		payload: direction
 	}
-} 
+}
 
 export const onSetFeedType = (property) => {
 	return {

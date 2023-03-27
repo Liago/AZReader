@@ -1,7 +1,20 @@
+import { useSelector } from "react-redux";
 import { IconAllElements, IconList } from "../icons";
 import IconUsers from "../icons/icon-users";
 
+import { isEmpty } from "lodash";
+
+
 const ActionList = ({ onSetFeedHandler, renderAddUserMenuItem, user, addUsers, onSearchFriends }) => {
+	const { sharing } = useSelector(state => state.user);
+
+	const requestSharingBadge = () => {
+		if (isEmpty(sharing)) return;
+
+		return <div className="text-xs font-semibold bg-green-500 py-1 px-2 rounded text-white">Nuovo!</div>
+	}
+
+
 	return (
 		<aside className="w-64" aria-label="Sidebar">
 			<div className="px-3 py-4 overflow-y-auto rounded bg-gray-50">
@@ -37,6 +50,7 @@ const ActionList = ({ onSetFeedHandler, renderAddUserMenuItem, user, addUsers, o
 							>
 								Cerca amici
 							</span>
+							{requestSharingBadge()}
 						</div>
 
 					</li>

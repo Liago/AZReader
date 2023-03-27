@@ -19,7 +19,8 @@ const initialState = {
 		isLogged: false,
 		credentials: [],
 		userList: [],
-		favouritePosts: []
+		favouritePosts: [],
+		sharing: [],
 	},
 	toast: null,
 	posts: {
@@ -111,7 +112,7 @@ const user = (state = initialState.user, action) => {
 				...state,
 				isLogged: false,
 				credentials: []
-			}
+			};
 		case actionTypes.LOAD_USER_START:
 			return {
 				...state,
@@ -131,7 +132,6 @@ const user = (state = initialState.user, action) => {
 				loading: false,
 				error: action.error,
 			};
-
 		case actionTypes.USER_REGISTRATION_FAIL:
 			return {
 				...state,
@@ -214,7 +214,13 @@ const user = (state = initialState.user, action) => {
 			return {
 				...state,
 				favouritePosts: action.payload
-			}
+			};
+		case actionTypes.GET_SHARING_REQUEST:
+			return {
+				...state,
+				sharing: action.payload
+			};
+
 		default:
 			return state;
 	}
@@ -230,7 +236,6 @@ const posts = (state = initialState.posts, action) => {
 			return state;
 	}
 }
-
 
 const createRootReducer = {
 	app, user, toast, posts

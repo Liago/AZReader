@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonRouter, useIonToast } from "@ionic/react";
-import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
+import { documentTextOutline } from "ionicons/icons";
 
 import MainMenu from "../components/ui/menu/menu";
 import MessageListItem from "../components/messageListItem";
@@ -11,13 +11,15 @@ import AuthenticationForm from "../components/form/auth";
 import { FilterAndSort } from "../components/toolbar/filterAndSort";
 import Spinner from "../components/ui/spinner";
 
-import { onLogout, savePost } from "../store/actions";
-import { getArticledParsed } from "../store/rest";
-import { personalScraper, rapidApiScraper } from "../common/scraper";
 import { getScraperParmas } from "../utility/utils";
+import { onLogout, onSetSharingRequests, savePost } from "../store/actions";
+import { getArticledParsed } from "../store/rest";
+import { getRequestsList } from "../common/requests/share";
+import { personalScraper, rapidApiScraper } from "../common/scraper";
+
 import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/requests/posts';
 
-import { filter, isEmpty } from "lodash";
+import { filter, isEmpty, isNil } from "lodash";
 import moment from 'moment';
 
 import "./Home.css";
@@ -30,6 +32,7 @@ const Home = () => {
 	const { tokenExpiration, sort, feedType } = useSelector(state => state.app);
 	const { isLogged } = useSelector(state => state.user);
 	const { user } = useSelector(state => state.user?.credentials);
+	const { sharing } = useSelector(state => state.user);
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [customArticleParsed, setCustomArticleParsed] = useState();
@@ -43,16 +46,29 @@ const Home = () => {
 	const [showToast, dismissToast] = useIonToast();
 	const [confirm] = useIonActionSheet();
 
+	useEffect(() => {
+		if (isEmpty(sharing)) return;
+
+		showToast({
+			message: `Hai ${sharing.length} richiesta/e di condivisione`,
+			buttons: [{ text: 'vedi', handler: () => showModalLogin() }],
+			color: "success",
+			duration: 5000,
+			onDidDismiss: () => dismissToast
+		})
+	}, [sharing])
+
+
+
 	const handleDismiss = (res) => {
 		if (res?.success) {
 			dismissModalLogin()
 			router.push('/verify-email');
 			return;
 		}
-
 		dismissModalLogin()
-
 	};
+
 	const [showModalLogin, dismissModalLogin] = useIonModal(AuthenticationForm, {
 		mode: 'SIGNIN',
 		onDismiss: handleDismiss,
@@ -74,7 +90,18 @@ const Home = () => {
 		}
 
 		isLogged && fetchPostsFromDb()
+		isLogged && fetchRequest()
+
 	}, [isLogged, sort, feedType])
+
+
+	const fetchRequest = async () => {
+		const response = await getRequestsList();
+		let requestToMe = filter(response, item => item.requestTo.uuid === user.id);
+		if (isNil(requestToMe)) return;
+
+		dispatch(onSetSharingRequests(requestToMe))
+	}
 
 	const refresh = (e) => {
 		setTimeout(() => {
@@ -174,7 +201,7 @@ const Home = () => {
 			})
 	}
 	const onDeletePost = async (postId) => {
-		const response = await deletePostFromFirestore(postId)
+		let response = await deletePostFromFirestore(postId)
 		setTimeout(() => fetchPostsFromDb(), 1000)
 	}
 
@@ -190,7 +217,7 @@ const Home = () => {
 					posts = filter(postFromDb, (post) => post.readingList.indexOf(user.id) >= 0)
 					break;
 				case 'Personal':
-					posts = filter(postFromDb, (post) => post.savedBy.userId === user.id)
+					posts = filter(postFromDb, (post) => post.savedBy?.userId === user.id)
 					break;
 				default:
 					break;
@@ -220,7 +247,7 @@ const Home = () => {
 	}
 
 	const renderTitle = () => {
-		if (isLogged && feedType === 'Personal') 
+		if (isLogged && feedType === 'Personal')
 			return 'I miei articoli'
 
 		return 'Articoli condivisi'

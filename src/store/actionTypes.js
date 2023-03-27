@@ -69,3 +69,5 @@ export const SET_SORT_BY = "SET_SORTING_BY";
 export const SET_SORT_DIRECTION = "SET_SORT_DIRECTION";
 
 export const SET_FEED_TYPE = "SET_FEED_TYPE";
+
+export const GET_SHARING_REQUEST = "GET_SHARING_REQUEST";

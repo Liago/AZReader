@@ -19,7 +19,7 @@ const FriendsPage = () => {
 	const fetchUsersList = async () => {
 		const response = await getUsersList()
 		let list = filter(response, item => item.uuid !== user.id);
-		setUserList(response)
+		setUserList(list)
 	}
 
 	const onAskFriendship = (askToEmail, askToUuid) => {
