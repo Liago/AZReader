@@ -21,6 +21,7 @@ const initialState = {
 		userList: [],
 		favouritePosts: [],
 		sharing: [],
+		request:[]
 	},
 	toast: null,
 	posts: {
@@ -219,6 +220,11 @@ const user = (state = initialState.user, action) => {
 			return {
 				...state,
 				sharing: action.payload
+			};
+		case actionTypes.GET_SHARING_REQUEST_BY_ME:
+			return {
+				...state,
+				request: action.payload
 			};
 
 		default:

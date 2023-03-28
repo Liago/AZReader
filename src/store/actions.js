@@ -8,6 +8,12 @@ export const onSetSharingRequests = (payload) => {
 		payload: payload,
 	}
 }
+export const onSetRequestByMe = (payload) => {
+	return {
+		type: actionTypes.GET_SHARING_REQUEST_BY_ME,
+		payload: payload,
+	}
+}
 
 export const submitNotificationPost = (postInfo) => {
 	return {

@@ -56,3 +56,7 @@ export const manipulateDateFromString = $date => {
 
 	return dateHash[arr[1]] + '-' + arr[0] + '-' + arr[2];
 }
+
+export const generateUniqueId = () => {
+	return Date.now().toString(36) + Math.random().toString(36);
+}

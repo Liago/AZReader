@@ -5,7 +5,7 @@ const usersCollection = collection(db, 'users');
 
 const executeQuery = async (query) => {
 	const querySnapshot = await getDocs(query);
-	const queryResponse = querySnapshot.docs.map(user => ({ ...user.data() }));
+	const queryResponse = querySnapshot.docs.map(user => ({ ...user.data(), id: user.id }));
 	console.log('executeQuery :>> ', {
 		usersOnDb: queryResponse.length,
 		users: queryResponse

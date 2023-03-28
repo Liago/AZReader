@@ -11,8 +11,8 @@ import AuthenticationForm from "../components/form/auth";
 import { FilterAndSort } from "../components/toolbar/filterAndSort";
 import Spinner from "../components/ui/spinner";
 
-import { getScraperParmas } from "../utility/utils";
-import { onLogout, onSetSharingRequests, savePost } from "../store/actions";
+import { generateUniqueId, getScraperParmas } from "../utility/utils";
+import { onLogout, onSetRequestByMe, onSetSharingRequests, savePost } from "../store/actions";
 import { getArticledParsed } from "../store/rest";
 import { getRequestsList } from "../common/requests/share";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
@@ -49,15 +49,15 @@ const Home = () => {
 	useEffect(() => {
 		if (isEmpty(sharing)) return;
 
+		// @TODO => TESTARE CON PIU' RICHIESTE 
 		showToast({
 			message: `Hai ${sharing.length} richiesta/e di condivisione`,
-			buttons: [{ text: 'vedi', handler: () => showModalLogin() }],
+			buttons: [{ text: 'vedi', handler: () => router.push('/friends') }],
 			color: "success",
 			duration: 5000,
 			onDidDismiss: () => dismissToast
 		})
 	}, [sharing])
-
 
 
 	const handleDismiss = (res) => {
@@ -98,9 +98,10 @@ const Home = () => {
 	const fetchRequest = async () => {
 		const response = await getRequestsList();
 		let requestToMe = filter(response, item => item.requestTo.uuid === user.id);
-		if (isNil(requestToMe)) return;
+		!isNil(requestToMe) && dispatch(onSetSharingRequests(requestToMe));
 
-		dispatch(onSetSharingRequests(requestToMe))
+		let requestFromMe = filter(response, item => item.requestBy.uuid === user.id);
+		!isNil(requestFromMe) && dispatch(onSetRequestByMe(requestFromMe));
 	}
 
 	const refresh = (e) => {
@@ -163,6 +164,7 @@ const Home = () => {
 			rapidArticleParsed['domain'] = url.hostname;
 		}
 		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
+		theArticleParsed['id'] = generateUniqueId();
 		theArticleParsed['savedBy'] = { userId: user.id, userEmail: user.mail };
 		theArticleParsed['savedOn'] = Date.now();
 
