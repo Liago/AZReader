@@ -1,6 +1,8 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc, where, writeBatch } from "@firebase/firestore";
 import moment from "moment";
 import { db } from '../firestore';
+import { store } from "../../store/store";
+
 
 const postsCollection = collection(db, 'posts');
 
@@ -28,6 +30,23 @@ export const getPostList = async (field, order) => {
 	const postsQuery = query(postsCollection, orderBy(field, order ? 'asc' : 'desc'));
 	return executeQuery(postsQuery);
 };
+
+
+export const __getPostList = async () => {
+	const { supabase } = store.getState().app
+	console.log('supabase :>> ', supabase);
+	const { data: posts, error } = await supabase
+		.from('posts')
+		.select('*')
+		// .range(0, 9)
+		.order('savedOn', { ascending: false })
+
+	return {
+		posts,
+		error
+	}
+}
+
 
 export const savePostToFirestore = async (post) => {
 	if (!post.date_published) post['date_published'] = moment().format();

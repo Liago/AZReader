@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonList, IonMenuButton, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, useIonActionSheet, useIonModal, useIonRouter, useIonToast } from "@ionic/react";
@@ -12,7 +12,7 @@ import { FilterAndSort } from "../components/toolbar/filterAndSort";
 import Spinner from "../components/ui/spinner";
 
 import { generateUniqueId, getScraperParmas } from "../utility/utils";
-import { onLogout, onSetRequestByMe, onSetSharingRequests, savePost } from "../store/actions";
+import { onLogout, onSetDatabase, onSetRequestFromMe, onSetSharingRequests, savePost } from "../store/actions";
 import { getArticledParsed } from "../store/rest";
 import { getRequestsList } from "../common/requests/share";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
@@ -23,28 +23,38 @@ import { filter, isEmpty, isNil } from "lodash";
 import moment from 'moment';
 
 import "./Home.css";
+import { DatabaseContext } from "../common/context/dbContext";
 
 
 const Home = () => {
 	const dispatch = useDispatch();
 	const router = useIonRouter();
+
+	const { supabase } = useContext(DatabaseContext);
+
 	const { list } = useSelector(state => state.posts);
 	const { tokenExpiration, sort, feedType } = useSelector(state => state.app);
 	const { isLogged } = useSelector(state => state.user);
 	const { user } = useSelector(state => state.user?.credentials);
 	const { sharing } = useSelector(state => state.user);
+
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [customArticleParsed, setCustomArticleParsed] = useState();
 	const [rapidArticleParsed, setRapidArticleParsed] = useState();
 	const [isParsing, setIsParsing] = useState(false);
 	const [postFromDb, setPostFromDb] = useState([]);
+
 	const [parseArticle, { data: articleParsed, loading, error }] = getArticledParsed(searchText);
 	// const [saveArticleAccess] = saveReadingList();
 	const pageRef = useRef();
 
 	const [showToast, dismissToast] = useIonToast();
 	const [confirm] = useIonActionSheet();
+
+	useEffect(() => {
+		dispatch(onSetDatabase(supabase))
+	},[])
 
 	useEffect(() => {
 		if (isEmpty(sharing)) return;
@@ -100,8 +110,8 @@ const Home = () => {
 		let requestToMe = filter(response, item => item.requestTo.uuid === user.id);
 		!isNil(requestToMe) && dispatch(onSetSharingRequests(requestToMe));
 
-		let requestFromMe = filter(response, item => item.requestBy.uuid === user.id);
-		!isNil(requestFromMe) && dispatch(onSetRequestByMe(requestFromMe));
+		let requestFromMe = filter(response, item => item.requestFrom.uuid === user.id);
+		!isNil(requestFromMe) && dispatch(onSetRequestFromMe(requestFromMe));
 	}
 
 	const refresh = (e) => {
@@ -216,6 +226,8 @@ const Home = () => {
 		if (isLogged)
 			switch (feedType) {
 				case 'All':
+					console.log('user.id :>> ', user.id);
+					console.log('post.readingList :>> ', postFromDb);
 					posts = filter(postFromDb, (post) => post.readingList.indexOf(user.id) >= 0)
 					break;
 				case 'Personal':
@@ -232,7 +244,9 @@ const Home = () => {
 
 	const fetchPostsFromDb = async () => {
 		setPostFromDb([]);
-		const response = await getPostList(sort?.by, sort?.asc)
+		const response = await getPostList(supabase)
+		console.clear()
+		console.log('fetchPostsFromDb response :>> ', response);
 		setPostFromDb(response)
 	}
 
