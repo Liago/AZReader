@@ -5,7 +5,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonMenuButton, IonPag
 import { FriendsCards } from '../components/cards/friends/friendsCards';
 import { getUsersList } from "../common/requests/users";
 
-import { onSetSharingRequests } from "../store/actions";
+import { onSetRequestFromMe, onSetSharingRequests } from "../store/actions";
 import { getRequestsList, saveShareRequestToFirestore, updateShareRequest } from "../common/requests/share";
 
 import { generateUniqueId } from "../utility/utils";
@@ -18,7 +18,7 @@ const FriendsPage = () => {
 	const [userList, setUserList] = useState([]);
 	const { user } = useSelector(state => state.user?.credentials);
 
-	useEffect(() => fetchUsersList(), [user])
+	useEffect(() => fetchAllRequests(), [user])
 
 	const fetchUsersList = async () => {
 		const response = await getUsersList()
@@ -26,11 +26,19 @@ const FriendsPage = () => {
 		setUserList(list)
 	}
 
+	const fetchAllRequests = async () => {
+		const response = await getRequestsList();
+		console.log('fetchAllRequests :>> ', response);
+		fetchRequestToMe(response);
+		fetchRequestFromMe(response);
+		fetchUsersList()
+	}
+
 	const onAskFriendship = async (askToEmail, askToUuid) => {
 		await saveShareRequestToFirestore(
 			{
 				"requestId": generateUniqueId(),
-				"requestBy": {
+				"requestFrom": {
 					"email": user.mail,
 					"uuid": user.id,
 				},
@@ -44,7 +52,7 @@ const FriendsPage = () => {
 				"refusedOn": null,
 			}
 		)
-		fetchRequest();
+		fetchAllRequests();
 	}
 
 	const actionsRequest = async (requestId, status) => {
@@ -53,15 +61,21 @@ const FriendsPage = () => {
 			: { status: status, refusedOn: moment().unix() }
 
 		await updateShareRequest(requestId, payload)
-		fetchRequest();
+		fetchAllRequests();
 	}
 
-	const fetchRequest = async () => {
-		const response = await getRequestsList();
+	const fetchRequestToMe = (response) => {
 		let requestToMe = filter(response, item => item.requestTo.uuid === user.id);
-		if (isNil(requestToMe)) return;
+		isNil(requestToMe)
+			? onSetSharingRequests([])
+			: dispatch(onSetSharingRequests(requestToMe))
+	}
 
-		dispatch(onSetSharingRequests(requestToMe))
+	const fetchRequestFromMe = (response) => {
+		let requestFromMe = filter(response, item => item.requestFrom.uuid === user.id);
+		isNil(requestFromMe)
+			? dispatch(onSetRequestFromMe([]))
+			: dispatch(onSetRequestFromMe(requestFromMe))
 	}
 
 	const renderUserList = () => {
@@ -86,7 +100,7 @@ const FriendsPage = () => {
 					<IonButtons slot="start">
 						<IonMenuButton></IonMenuButton>
 					</IonButtons>
-					<IonTitle>Friends list</IonTitle>
+					<IonTitle>Readers list</IonTitle>
 					<IonButtons slot="start">
 						<IonBackButton text="back" defaultHref="/home"></IonBackButton>
 					</IonButtons>
@@ -96,7 +110,7 @@ const FriendsPage = () => {
 			<IonContent fullscreen>
 				<IonHeader collapse="condense">
 					<IonToolbar>
-						<IonTitle size="large">Friends list</IonTitle>
+						<IonTitle size="large">Readers list</IonTitle>
 					</IonToolbar>
 				</IonHeader>
 				<div className="flex flex-col gap-5">
