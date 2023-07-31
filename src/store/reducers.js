@@ -13,6 +13,7 @@ const initialState = {
 			asc: true
 		},
 		feedType: 'Personal',
+		supabase: null,
 	},
 	archive: [],
 	user: {
@@ -40,6 +41,11 @@ const toast = (state = initialState.toast, action) => {
 }
 const app = (state = initialState.app, action) => {
 	switch (action.type) {
+		case actionTypes.SET_SUPABASE:
+			return { 
+				...state,
+				supabase: action.supabase
+			 };
 		case actionTypes.LOGIN:
 			return {
 				...state,

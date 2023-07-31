@@ -1,14 +1,20 @@
 import { store } from "./store";
 import * as actionTypes from "./actionTypes";
-import { isEmpty } from "lodash"
+import { isEmpty } from "lodash";
 
+export const onSetDatabase = (payload) => {
+	return {
+		type: actionTypes.SET_SUPABASE,
+		supabase: payload
+	}
+}
 export const onSetSharingRequests = (payload) => {
 	return {
 		type: actionTypes.GET_SHARING_REQUEST,
 		payload: payload,
 	}
 }
-export const onSetRequestByMe = (payload) => {
+export const onSetRequestFromMe = (payload) => {
 	return {
 		type: actionTypes.GET_SHARING_REQUEST_BY_ME,
 		payload: payload,
