@@ -27,19 +27,15 @@ export const getCollection = async () => {
 }
 
 export const getPostList = async (field, order) => {
-	const postsQuery = query(postsCollection, orderBy(field, order ? 'asc' : 'desc'));
-	return executeQuery(postsQuery);
-};
-
-
-export const __getPostList = async () => {
+	console.log('getPostList :>> ', {
+		selectFrom: field,
+		ascending: order
+	});
 	const { supabase } = store.getState().app
-	console.log('supabase :>> ', supabase);
 	const { data: posts, error } = await supabase
-		.from('posts')
-		.select('*')
-		// .range(0, 9)
-		.order('savedOn', { ascending: false })
+		.from("posts")
+		.select("*")
+		.order(field, { ascending: order })
 
 	return {
 		posts,
@@ -48,43 +44,67 @@ export const __getPostList = async () => {
 }
 
 
-export const savePostToFirestore = async (post) => {
-	if (!post.date_published) post['date_published'] = moment().format();
-	return await addDoc(postsCollection, post);
-}
-
-export const updatePostToFirestore = async (postId, payload) => {
-	const postDoc = doc(db, 'posts', postId);
-	return await updateDoc(postDoc, payload);
-}
-
-export const deletePostFromFirestore = async (postId) => {
-	const postDoc = doc(db, 'posts', postId);
-	return await deleteDoc(postDoc);
+export const savePostToDatabase = async (post) => {
+	const { supabase } = store.getState().app;
+	const { data, error } = await supabase
+		.from('posts')
+		.insert(post)
+	return data
 }
 
 
+export const updatePostToDatabase = async (postId, payload) => {
+	const { supabase } = store.getState().app;
+
+	// DA VERIFICARE QUESTO PAYLOAD...
+
+	const { data, error } = await supabase
+		.from('posts')
+		.update({ other_column: 'otherValue' })
+		.eq('doc_id', postId)
+		.select()
+
+	return data;	
+}
+
+export const deletePostFromDatabase = async (postId) => {
+	const { supabase } = store.getState().app;
+
+	const { error } = await supabase
+		.from('posts')
+		.delete()
+		.eq('doc_id', postId)
 
 
+}
 
 
 
 export const batchEditing = async () => {
-	const batch = writeBatch(db);
-	// const nycRef = doc(db, "posts", '3EEeF5T5tSU0PL35LRye');
 
-	// console.log('nycRef :>> ', nycRef);
-	// batch.update(nycRef, {"savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2"});
-	// await batch.commit();
-
-	getPostList('date_published', 'asc')
+	getPostList('savedOn', 'asc')
 		.then((resp) => {
-			resp.forEach(async (doc) => {
-				// doc.data() contains the document data
+			resp.posts.forEach((doc) => {
 				console.log('id', doc.id);
-				const postRef = doc(db, "posts", doc.id);
-				batch.update(postRef, { "savedBy": "7815BcDJ1sc7WRqfnbIQfMr7Tmc2" });
-				await batch.commit()
+
+				const newSavedOnValue = Date.now() - 100000000000;
+				setTimeout(() => {
+					updateDocument(newSavedOnValue, doc)
+				}, 500);
 			});
 		});
+}
+
+export const updateDocument = async (newSavedOnValue, record) => {
+	const { supabase } = store.getState().app;
+
+	const { data: updatedRecord, error: updateError } = await supabase
+		.from('posts')
+		.update({ savedOn: newSavedOnValue })
+		.eq('firestore_id', record.firestore_id);
+
+	updateError
+		? console.error('Errore durante l\'aggiornamento del record', record.firestore_id)
+		: console.log('Record aggiornato:', updatedRecord)
+
 }

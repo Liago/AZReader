@@ -11,13 +11,13 @@ import AuthenticationForm from "../components/form/auth";
 import { FilterAndSort } from "../components/toolbar/filterAndSort";
 import Spinner from "../components/ui/spinner";
 
-import { generateUniqueId, getScraperParmas } from "../utility/utils";
+import { generateUniqueId, getRandomID, getScraperParmas } from "../utility/utils";
 import { onLogout, onSetDatabase, onSetRequestFromMe, onSetSharingRequests, savePost } from "../store/actions";
 import { getArticledParsed } from "../store/rest";
 import { getRequestsList } from "../common/requests/share";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
 
-import { deletePostFromFirestore, getPostList, savePostToFirestore } from '../common/requests/posts';
+import { deletePostFromDatabase, getPostList, savePostToDatabase } from '../common/requests/posts';
 
 import { filter, isEmpty, isNil } from "lodash";
 import moment from 'moment';
@@ -177,8 +177,10 @@ const Home = () => {
 		theArticleParsed['id'] = generateUniqueId();
 		theArticleParsed['savedBy'] = { userId: user.id, userEmail: user.mail };
 		theArticleParsed['savedOn'] = Date.now();
+		theArticleParsed['firestore_id'] = getRandomID(20)
 
-		savePostToFirestore(theArticleParsed)
+
+		savePostToDatabase(theArticleParsed)
 			.then(response => {
 				console.log('response :>> ', response);
 			})
@@ -213,7 +215,7 @@ const Home = () => {
 			})
 	}
 	const onDeletePost = async (postId) => {
-		let response = await deletePostFromFirestore(postId)
+		let response = await deletePostFromDatabase(postId)
 		setTimeout(() => fetchPostsFromDb(), 1000)
 	}
 
@@ -244,10 +246,11 @@ const Home = () => {
 
 	const fetchPostsFromDb = async () => {
 		setPostFromDb([]);
-		const response = await getPostList(supabase)
+		const response = await getPostList(sort?.by, sort?.asc)
+		// const response = await getPostList(sort?.by, sort?.asc)
 		console.clear()
 		console.log('fetchPostsFromDb response :>> ', response);
-		setPostFromDb(response)
+		setPostFromDb(response.posts)
 	}
 
 
