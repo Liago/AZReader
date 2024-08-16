@@ -21,6 +21,7 @@ const initialState = {
 		list: []
 	}
 };
+
 const toast = (state = initialState.toast, action) => {
 	switch (action.type) {
 		case actionTypes.TOAST_CLEAR:
@@ -43,7 +44,7 @@ const app = (state = initialState.app, action) => {
 			return {
 				...state,
 				tokenApp: null,
-				tokenExpiration: null 
+				tokenExpiration: null
 			};
 		case actionTypes.APP_START:
 			return {
@@ -66,6 +67,18 @@ const app = (state = initialState.app, action) => {
 };
 const user = (state = initialState.user, action) => {
 	switch (action.type) {
+		case actionTypes.SET_SESSION:
+			return {
+				...state,
+				isLogged: !!action.payload,
+				credentials: action.payload ? action.payload.user : [],
+			};
+		case actionTypes.CLEAR_SESSION:
+			return {
+				...state,
+				isLogged: false,
+				credentials: [],
+			};
 		case actionTypes.UPDATE_AVATAR:
 			return {
 				...state,

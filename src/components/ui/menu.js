@@ -17,17 +17,14 @@ const renderAdminMenu = () => {
 
 const MainMenu = () => {
 	const { credentials } = useSelector(state => state.user);
-	const { tokenApp } = useSelector(state => state.app);
-	const { user } = credentials;
-	const lastLogin = moment(parseInt(user?.meta?.lastLoginAt)).format('DD/MM/GG HH:mm');
+	const lastLogin = moment(credentials.last_sign_in_at).format('DD/MM/YY HH:mm');
 
+	
 
 	const renderUserInfo = () => {
-		if (!tokenApp) return;
-
 		return (
 			<>
-				<h2 className="font-semibold">{user.mail}</h2>
+				<h2 className="font-semibold">{credentials.email}</h2>
 				<p className="mt-2 text-sm text-gray-500">Last login {lastLogin}</p>
 			</>
 		)

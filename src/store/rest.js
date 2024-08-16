@@ -1,11 +1,19 @@
+import { createClient } from "@supabase/supabase-js";
+
 import { wrappedApi } from "../common/api";
 import { store } from "./store";
-import { endpoint, api_keys } from "../config/environment.ts";
+import { endpoint, api_keys, supabaseDb } from "../config/environment.ts";
 
 const { FIREBASE_API_KEY } = api_keys;
 const { UseLazyApi, UseLazyServerApi, UseApi } = wrappedApi({ store });
 
 export const getArticledParsed = (url) => UseLazyApi('GET', `parser?url=${url}`);
+
+
+const supabaseUrl = supabaseDb.SUPA_URL;
+const supabaseAnonKey = supabaseDb.SUPA_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 
 export const registerUser = () => UseLazyServerApi('POST', 'users.json');

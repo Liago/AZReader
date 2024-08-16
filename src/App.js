@@ -29,7 +29,7 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./css/main.css";
-import { AuthProvider } from "./components/auth/authContext";
+import { AuthProvider } from "./context/auth/authContext";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./common/firestore";

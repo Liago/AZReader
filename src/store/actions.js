@@ -1,5 +1,8 @@
 import { store } from "./store";
 import * as actionTypes from "./actionTypes";
+
+import { supabase } from "./rest";
+
 import { isEmpty } from "lodash"
 
 
@@ -328,3 +331,21 @@ export const savePost = (post) => {
 		payload: newList,
 	};
 }
+
+export const setSession = (session) => ({
+	type: actionTypes.SET_SESSION,
+	payload: session
+});
+
+export const clearSession = () => ({
+	type: actionTypes.CLEAR_SESSION
+});
+
+export const initializeSession = () => async (dispatch) => {
+	const { data: { session } } = await supabase.auth.getSession();
+	dispatch(setSession(session));
+
+	supabase.auth.onAuthStateChange((_event, session) => {
+		dispatch(setSession(session));
+	});
+};
