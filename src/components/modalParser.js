@@ -1,18 +1,15 @@
-import { useEffect } from "react";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react"
 import { close, saveOutline, shareSocial } from "ionicons/icons";
 
 import Spinner from './ui/spinner';
 import Article from "./article";
 
-import { isNil } from 'lodash';
 import { isValidUrl } from "../utility/utils";
-import { useSelector } from "react-redux";
+
+import { isNil } from 'lodash';
 
 
-const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
-	const { tokenExpiration } = useSelector(state => state.app);
-
+const ModalParser = ({ articleParsed, showModal, pageRef, savePostHandler, setShowModal, searchText, setSearchText, savePostToServer, loading }) => {
 	const onDismissHandler = () => {
 		setSearchText('');
 	}
@@ -23,17 +20,17 @@ const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, se
 	}
 
 	const renderArticlePreview = () => {
-		if (!theArticleParsed || !searchText) return;
+		if (!articleParsed || !searchText) return;
 
 		return <Article
-			articleParsed={theArticleParsed}
+			articleParsed={articleParsed}
 			onDismiss={onDismissHandler}
 			displayFrom="modalPreview"
 		/>
 	}
 
 	const renderSpinner = () => {
-		if ((loading && searchText === '') || theArticleParsed) return;
+		if ((loading && searchText === '') || articleParsed) return;
 
 		return <Spinner />
 	}
@@ -74,17 +71,16 @@ const ModalParser = ({ theArticleParsed, showModal, pageRef, savePostHandler, se
 							<IonTitle slot="start">Post parser</IonTitle>
 							<IonButtons slot="start">
 								<IonButton
-									disabled={isNil(theArticleParsed) || searchText === ''}
+									disabled={isNil(articleParsed) || searchText === ''}
 									color='dark'
 									onClick={savePostHandler}
 								>
 									<IonIcon slot='icon-only' icon={saveOutline} />
 								</IonButton>
 								<IonButton
-									disabled={isNil(theArticleParsed) || searchText === ''}
+									disabled={isNil(articleParsed) || searchText === ''}
 									color='dark'
 									onClick={savePostToServer}
-									className={`${!tokenExpiration && 'hidden' }`}
 								>
 									<IonIcon slot='icon-only' icon={shareSocial} />
 								</IonButton>
