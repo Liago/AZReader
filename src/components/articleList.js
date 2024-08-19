@@ -6,10 +6,14 @@ import Spinner from "./ui/spinner";
 import useArticles from "../hooks/useArticles";
 
 import { isEmpty } from "lodash";
+import { useEffect } from "react";
 
 const ArticleList = ({ session }) => {
-	console.log("🚀 ~ ArticleList ~ session:", session)
 	const { postFromDb, fetchPostsFromDb } = useArticles(session);
+
+	useEffect(() => {
+		fetchPostsFromDb();
+	}, []);
 
 	const refresh = (e) => {
 		setTimeout(() => {
