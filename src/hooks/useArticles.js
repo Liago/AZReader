@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from "react-redux";
 
 import { savePost } from "../store/actions";
-import { getArticledParsed, supabase } from "../store/rest";
+import { getArticledParsed, insertPost, supabase } from "../store/rest";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
 
 import { getScraperParmas } from "../utility/utils";
-import { savePostToFirestore } from '../common/firestore';
 
 const useArticles = (session) => {
 	const dispatch = useDispatch();
@@ -70,13 +69,9 @@ const useArticles = (session) => {
 			theArticleParsed['savedBy'] = { userId: session.user.id, userEmail: session.user.email };
 			theArticleParsed['savedOn'] = Date.now();
 
-			savePostToFirestore(theArticleParsed)
-				.then(response => {
-					console.log('response :>> ', response);
-				})
-				.catch(err => {
-					console.log('err :>> ', err);
-				});
+			insertPost(theArticleParsed)
+				.then(response => console.log(response.json()))
+
 		}
 
 		setSearchText('');
@@ -91,8 +86,8 @@ const useArticles = (session) => {
 		const { data } = await supabase
 			.from("posts")
 			.select('*')
-			//.eq('domain', 'www.ilpost.it')
-			.order("savedOn", { ascending: false });
+			.order("savedOn", { ascending: false, nullsLast: true })
+			.limit(10)
 
 		console.log("🚀 ~ fetchPostsFromDb ~ data:", data)
 

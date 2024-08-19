@@ -12,8 +12,42 @@ export const getArticledParsed = (url) => UseLazyApi('GET', `parser?url=${url}`)
 
 const supabaseUrl = supabaseDb.SUPA_URL;
 const supabaseAnonKey = supabaseDb.SUPA_KEY;
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+
+
+
+
+export async function insertPost(postData) {
+	const now = new Date().toISOString()
+
+	const { data, error } = await supabase
+		.from('posts')
+		.insert({
+			...postData,
+			savedOn: now
+		})
+		.select()
+
+	if (error) {
+		console.error('Errore durante l\'inserimento del post:', error)
+		throw error
+	}
+
+	console.log('Post inserito con successo:', data)
+	return data
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 export const registerUser = () => UseLazyServerApi('POST', 'users.json');
