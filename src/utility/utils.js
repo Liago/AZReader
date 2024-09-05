@@ -56,3 +56,13 @@ export const manipulateDateFromString = $date => {
 
 	return dateHash[arr[1]] + '-' + arr[0] + '-' + arr[2];
 }
+
+export const generateUniqueId = (length = 20) => {
+	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	let result = '';
+	const charactersLength = chars.length;
+	for (let i = 0; i < length; i++) {
+		result += chars.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	return result;
+}

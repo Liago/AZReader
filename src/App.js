@@ -1,14 +1,17 @@
 import { Redirect, Route } from "react-router-dom";
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from "@ionic/react";
+import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
+
 import { IonReactRouter } from "@ionic/react-router";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./store/store";
 
-
 import Home from "./pages/home";
 import ViewMessage from "./pages/viewMessage";
 import VerifyEmail from "./pages/verifyEmail";
+import AuthConfirmPage from "./pages/AuthConfirmPage";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -36,15 +39,40 @@ import { auth } from "./common/firestore";
 
 setupIonicReact();
 
-
 const App = () => {
-	const [currentUser, setCurrentUser] = useState(null)
+	const [currentUser, setCurrentUser] = useState(null);
+	const router = useIonRouter();
 
 	useEffect(() => {
 		onAuthStateChanged(auth, (user) => {
 			setCurrentUser(user)
 		})
 	}, [])
+
+	useEffect(() => {
+		CapApp.addListener('appUrlOpen', async ({ url }) => {
+			console.log('Deep link opened:', url);  // Add this line
+
+			if (url.startsWith('azreader://auth/confirm')) {
+				console.log('Routing to /auth/confirm');  // Add this line
+				router.push('/auth/confirm', 'root', 'replace');
+			} else {
+				console.log('Unhandled deep link:', url);  // Add this line
+			}
+		});
+
+		// Add this block to log when the app is ready
+		CapApp.addListener('appStateChange', ({ isActive }) => {
+			if (isActive) {
+				console.log('App has become active');
+			}
+		});
+
+		return () => {
+			// Clean up listeners when component unmounts
+			CapApp.removeAllListeners();
+		};
+	}, [router]);
 
 	return (
 		<Provider store={store}>
@@ -53,9 +81,11 @@ const App = () => {
 					<IonReactRouter>
 						<IonRouterOutlet>
 							<AuthProvider value={{ currentUser }}>
+								<Route path="/" exact={true} component={Home} />
 								<Route path="/home" exact={true} component={Home} />
 								<Route path="/article/:id" component={ViewMessage} />
 								<Route exact path="/verify-email" component={VerifyEmail} />
+								<Route exact path="/auth/confirm" component={AuthConfirmPage}/>
 								<Route path="/" exact={true}>
 									<Redirect to="/home" />
 								</Route>

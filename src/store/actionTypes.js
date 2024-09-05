@@ -67,3 +67,8 @@ export const SAVE_POST = "SAVE_POST";
 
 export const SET_SESSION = 'SET_SESSION';
 export const CLEAR_SESSION = 'CLEAR_SESSION';
+
+export const SET_PAGINATION = 'SET_PAGINATION';
+export const FETCH_POSTS_SUCCESS = 'FETCH_POSTS_SUCCESS';
+export const APPEND_POSTS = 'APPEND_POSTS';
+export const RESET_POSTS = 'RESET_POSTS';

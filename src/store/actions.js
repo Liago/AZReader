@@ -349,3 +349,22 @@ export const initializeSession = () => async (dispatch) => {
 		dispatch(setSession(session));
 	});
 };
+
+export const setPagination = (paginationData) => ({
+	type: actionTypes.SET_PAGINATION,
+	payload: paginationData
+});
+
+export const fetchPostsSuccess = (posts, totalItems) => ({
+	type: actionTypes.FETCH_POSTS_SUCCESS,
+	payload: { posts, totalItems }
+});
+
+export const appendPosts = (newPosts) => ({
+	type: actionTypes.APPEND_POSTS,
+	payload: newPosts
+});
+
+export const resetPosts = () => ({
+	type: actionTypes.RESET_POSTS,
+});

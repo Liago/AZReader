@@ -1,4 +1,4 @@
-import { IonImg, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonThumbnail, useIonModal } from '@ionic/react';
+import { IonImg, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonThumbnail, useIonModal } from '@ionic/react';
 import Article from './article';
 
 import './MessageListItem.css';

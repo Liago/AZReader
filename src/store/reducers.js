@@ -18,8 +18,15 @@ const initialState = {
 	},
 	toast: null,
 	posts: {
-		list: []
-	}
+		list: [],
+		pagination: {
+			currentPage: 1,
+			itemsPerPage: 10,
+			totalItems: 0
+		},
+	},
+	loading: false,
+	error: null
 };
 
 const toast = (state = initialState.toast, action) => {
@@ -208,6 +215,33 @@ const user = (state = initialState.user, action) => {
 };
 const posts = (state = initialState.posts, action) => {
 	switch (action.type) {
+		case actionTypes.FETCH_POSTS_SUCCESS:
+			return {
+				...state,
+				list: action.payload.posts,
+				pagination: {
+					...state.pagination,
+					totalItems: action.payload.totalItems
+				}
+			};
+		case actionTypes.APPEND_POSTS:
+			const newPosts = action.payload.filter(newPost =>
+				!state.list.some(existingPost => existingPost.id === newPost.id)
+			);
+			return {
+				...state,
+				list: [...state.list, ...newPosts]
+			};
+		case actionTypes.SET_PAGINATION:
+			return {
+				...state,
+				pagination: {
+					...state.pagination,
+					...action.payload
+				}
+			};
+		case actionTypes.RESET_POSTS:
+			return initialState;
 		case actionTypes.SAVE_POST:
 			return {
 				...state,

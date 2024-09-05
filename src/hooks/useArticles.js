@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
-import { useDispatch } from "react-redux";
-
-import { savePost } from "../store/actions";
+import { useState, useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { getArticledParsed, insertPost, supabase } from "../store/rest";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
-
-import { getScraperParmas } from "../utility/utils";
+import { generateUniqueId, getScraperParmas } from "../utility/utils";
+import { fetchPostsSuccess, setPagination, appendPosts, resetPosts } from '../store/actions';
 
 const useArticles = (session) => {
 	const dispatch = useDispatch();
+	const { list: postFromDb, pagination } = useSelector(state => state.posts);
+
 	const [showModal, setShowModal] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [customArticleParsed, setCustomArticleParsed] = useState();
 	const [rapidArticleParsed, setRapidArticleParsed] = useState();
 	const [isParsing, setIsParsing] = useState(false);
-	const [postFromDb, setPostFromDb] = useState([]);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const [parseArticle, { data: articleParsed, loading }] = getArticledParsed(searchText);
 
@@ -25,12 +25,12 @@ const useArticles = (session) => {
 		setRapidArticleParsed(null);
 
 		const parserParams = getScraperParmas(searchText);
-
 		if (!parserParams?.parser) {
 			parseArticle();
 			setIsParsing(false);
 			return;
 		}
+
 		switch (parserParams.parser) {
 			case 'personal':
 				personalScraper(searchText).then(resp => setCustomArticleParsed(resp[0]));
@@ -41,67 +41,99 @@ const useArticles = (session) => {
 			default:
 				parseArticle();
 		}
-
 		setIsParsing(false);
 	}, [searchText]);
 
 	const savePostHandler = () => {
-		if (rapidArticleParsed) {
-			const url = new URL(rapidArticleParsed.url);
-			rapidArticleParsed['domain'] = url.hostname;
-		}
-		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
+		// if (rapidArticleParsed) {
+		// 	const url = new URL(rapidArticleParsed.url);
+		// 	rapidArticleParsed['domain'] = url.hostname;
+		// }
+		// const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
 
-		dispatch(savePost(theArticleParsed));
-		setSearchText('');
-		setShowModal(false);
+		// dispatch(savePost(theArticleParsed));
+		// setSearchText('');
+		// setShowModal(false);
 	};
 
 	const savePostToServer = () => {
+		console.log('savePostToServer');
 		if (rapidArticleParsed) {
 			const url = new URL(rapidArticleParsed.url);
 			rapidArticleParsed['domain'] = url.hostname;
 		}
 		const theArticleParsed = customArticleParsed ? customArticleParsed : rapidArticleParsed ?? articleParsed;
-
 		if (session?.user) {
 			theArticleParsed['readingList'] = [session.user.id];
 			theArticleParsed['savedBy'] = { userId: session.user.id, userEmail: session.user.email };
-			theArticleParsed['savedOn'] = Date.now();
-
+			theArticleParsed['savedOn'] = new Date().toISOString();
+			theArticleParsed['id'] = generateUniqueId();
 			insertPost(theArticleParsed)
 				.then(response => console.log(response.json()))
-
 		}
-
 		setSearchText('');
 		setShowModal(false);
-		setTimeout(() => {
-			fetchPostsFromDb();
-		}, 500);
+		fetchPostsFromDb(true);
 	};
 
-	const fetchPostsFromDb = async () => {
-		setPostFromDb([]);
-		const { data } = await supabase
-			.from("posts")
-			.select('*')
-			.order("savedOn", { ascending: false, nullsLast: true })
-			.limit(10)
+	const fetchPostsFromDb = useCallback(async (isInitialFetch = false) => {
+		if (isLoading) return;
+		setIsLoading(true);
+		try {
+			const { currentPage, itemsPerPage } = pagination;
+			const from = (currentPage - 1) * itemsPerPage;
+			const to = from + itemsPerPage - 1;
 
-		console.log("🚀 ~ fetchPostsFromDb ~ data:", data)
+			const { data, count } = await supabase
+				.from("posts")
+				.select('*', { count: 'exact' })
+				.order("savedOn", { ascending: false, nullsLast: true })
+				.range(from, to);
 
-		if (data) {
-			setPostFromDb(data);
+			if (data) {
+				if (isInitialFetch) {
+					dispatch(fetchPostsSuccess(data, count));
+				} else {
+					dispatch(appendPosts(data));
+				}
+				dispatch(setPagination({ ...pagination, totalItems: count }));
+			}
+		} catch (error) {
+			console.error('Failed to fetch posts:', error);
+		} finally {
+			setIsLoading(false);
 		}
-	};
+	}, [dispatch, pagination, isLoading]);
+
+	const refresh = useCallback(async () => {
+		if (isLoading) return;
+		dispatch(resetPosts());
+		dispatch(setPagination({ currentPage: 1, itemsPerPage: 10, totalItems: 0 }));
+		await fetchPostsFromDb(true);
+	}, [dispatch, fetchPostsFromDb, isLoading]);
+
+	const changePage = useCallback((newPage) => {
+		if (isLoading) return;
+		dispatch(setPagination({ ...pagination, currentPage: newPage }));
+	}, [dispatch, pagination, isLoading]);
+
+	useEffect(() => {
+		fetchPostsFromDb(true);
+	}, []);
+
+	useEffect(() => {
+		if (pagination.currentPage > 1) {
+			fetchPostsFromDb(false);
+		}
+	}, [pagination.currentPage]);
 
 	return {
 		showModal, setShowModal,
 		searchText, setSearchText,
 		isParsing, articleParsed,
 		savePostHandler, savePostToServer,
-		loading, postFromDb, fetchPostsFromDb
+		loading, postFromDb, fetchPostsFromDb,
+		changePage, pagination, refresh
 	};
 };
 

@@ -44,9 +44,26 @@ export const useAuth = () => {
 
 	const signIn = async (email: string) => {
 		setLoading(true);
-		const { error } = await supabase.auth.signInWithOtp({ email });
-		setLoading(false);
-		if (error) throw error;
+		try {
+			const { data, error } = await supabase.auth.signInWithOtp({
+				email,
+				options: {
+					shouldCreateUser: true, // Questo creerà un nuovo utente se non esiste
+					emailRedirectTo: window.location.origin,
+				},
+			});
+			console.log("🚀 ~ signIn ~ data:", data)
+
+			if (error) throw error;
+
+			// Se l'operazione è riuscita, data.user sarà null perché l'OTP non è ancora stato verificato
+			console.log("OTP inviato con successo");
+		} catch (error) {
+			console.error("Errore durante il sign-in:", error);
+			throw error;
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	const signOut = async () => {
@@ -58,13 +75,26 @@ export const useAuth = () => {
 
 	const verifyOtp = async (email: string, token: string) => {
 		setLoading(true);
-		const { error } = await supabase.auth.verifyOtp({
-			email,
-			token,
-			type: "email",
-		});
-		setLoading(false);
-		if (error) throw error;
+		try {
+			const { data, error } = await supabase.auth.verifyOtp({
+				email,
+				token,
+				type: "email",
+			});
+
+			if (error) throw error;
+
+			// Se la verifica ha successo, data.user conterrà le informazioni dell'utente
+			if (data.user) {
+				console.log("OTP verificato con successo");
+				// Qui puoi gestire eventuali azioni post-verifica
+			}
+		} catch (error) {
+			console.error("Errore durante la verifica OTP:", error);
+			throw error;
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return { session, loading, signIn, signOut, verifyOtp };

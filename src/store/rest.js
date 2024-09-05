@@ -38,6 +38,20 @@ export async function insertPost(postData) {
 	return data
 }
 
+export async function deletePost(postId) {
+	const { data, error } = await supabase
+		.from('posts')
+		.delete()
+		.match({ id: postId })
+
+	if (error) {
+		console.error('Errore durante la cancellazione del post:', error)
+		throw error
+	}
+
+	console.log('Post cancellato con successo:', postId)
+	return data
+}
 
 
 
