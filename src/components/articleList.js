@@ -1,16 +1,20 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
 	IonList,
 	IonRefresher,
 	IonRefresherContent,
 	IonInfiniteScroll,
 	IonInfiniteScrollContent,
-	IonSpinner
 } from "@ionic/react";
+
 import MessageListItem from "./messageListItem";
+import LoadingSpinner from "./ui/loadingSpinner";
+
 import useArticles from "../hooks/useArticles";
 import { useCustomToast } from "../hooks/useIonToast";
+
 import { deletePost } from "../store/rest";
+
 import { isEmpty } from "lodash";
 
 const ArticleList = ({ session }) => {
@@ -66,22 +70,24 @@ const ArticleList = ({ session }) => {
 			/>
 		));
 	}, [postFromDb, handleDeletePost, handleRefresh]);
-	
+
+	const renderPage = () => {
+		return (
+			<div className="relative">
+				<IonList className="px-3">
+					{renderPostList()}
+				</IonList>
+				{isLoading && <LoadingSpinner />}
+			</div>
+		);
+	};
 
 	return (
 		<>
 			<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 				<IonRefresherContent></IonRefresherContent>
 			</IonRefresher>
-			{isLoading && postFromDb.length === 0 ? (
-				<div className="ion-text-center">
-					<IonSpinner name="circular" />
-				</div>
-			) : (
-				<IonList className="px-3">
-					{renderPostList()}
-				</IonList>
-			)}
+			{renderPage()}
 			<IonInfiniteScroll
 				onIonInfinite={loadMore}
 				threshold="100px"

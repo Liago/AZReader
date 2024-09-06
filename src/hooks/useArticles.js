@@ -133,7 +133,7 @@ const useArticles = (session) => {
 		isParsing, articleParsed,
 		savePostHandler, savePostToServer,
 		loading, postFromDb, fetchPostsFromDb,
-		changePage, pagination, refresh
+		changePage, pagination, refresh, isLoading
 	};
 };
 
