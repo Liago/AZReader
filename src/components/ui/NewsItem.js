@@ -4,7 +4,7 @@ const PostItem = ({ source, title, subtitle, date, imageUrl, excerpt, preview, p
 	return (
 		<div className="flex items-start w-full">
 			<div className="flex-1 pr-3 min-w-0">
-				<p className="text-xs font-montserrat text-gray-600">{source}</p>
+				<p className="text-xs font-montserrat uppercase text-gray-600">{source}</p>
 				<h2
 					className="font-lato text-lg font-black mt-1 leading-tight"
 					dangerouslySetInnerHTML={{ __html: title }}></h2>
