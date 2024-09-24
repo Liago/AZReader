@@ -1,7 +1,11 @@
 {
-	"name": "AZReader",
+	"name": "azreader",
 	"version": "0.0.1",
 	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Liago/AZReader.git"
+	},
 	"dependencies": {
 		"@capacitor/android": "3.4.0",
 		"@capacitor/app": "1.1.0",
