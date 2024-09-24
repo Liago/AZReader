@@ -1,11 +1,67 @@
+import { createClient } from "@supabase/supabase-js";
+
 import { wrappedApi } from "../common/api";
 import { store } from "./store";
-import { endpoint, api_keys } from "../config/environment.ts";
+import { endpoint, api_keys, supabaseDb } from "../config/environment.ts";
 
 const { FIREBASE_API_KEY } = api_keys;
 const { UseLazyApi, UseLazyServerApi, UseApi } = wrappedApi({ store });
 
 export const getArticledParsed = (url) => UseLazyApi('GET', `parser?url=${url}`);
+
+
+const supabaseUrl = supabaseDb.SUPA_URL;
+const supabaseAnonKey = supabaseDb.SUPA_KEY;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+
+
+
+
+export async function insertPost(postData) {
+	const now = new Date().toISOString()
+
+	const { data, error } = await supabase
+		.from('posts')
+		.insert({
+			...postData,
+			savedOn: now
+		})
+		.select()
+
+	if (error) {
+		console.error('Errore durante l\'inserimento del post:', error)
+		throw error
+	}
+
+	console.log('Post inserito con successo:', data)
+	return data
+}
+
+export async function deletePost(postId) {
+	const { data, error } = await supabase
+		.from('posts')
+		.delete()
+		.match({ id: postId })
+
+	if (error) {
+		console.error('Errore durante la cancellazione del post:', error)
+		throw error
+	}
+
+	console.log('Post cancellato con successo:', postId)
+	return data
+}
+
+
+
+
+
+
+
+
+
+
 
 
 export const registerUser = () => UseLazyServerApi('POST', 'users.json');

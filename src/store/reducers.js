@@ -18,9 +18,17 @@ const initialState = {
 	},
 	toast: null,
 	posts: {
-		list: []
-	}
+		list: [],
+		pagination: {
+			currentPage: 1,
+			itemsPerPage: 10,
+			totalItems: 0
+		},
+	},
+	loading: false,
+	error: null
 };
+
 const toast = (state = initialState.toast, action) => {
 	switch (action.type) {
 		case actionTypes.TOAST_CLEAR:
@@ -43,7 +51,7 @@ const app = (state = initialState.app, action) => {
 			return {
 				...state,
 				tokenApp: null,
-				tokenExpiration: null 
+				tokenExpiration: null
 			};
 		case actionTypes.APP_START:
 			return {
@@ -66,6 +74,18 @@ const app = (state = initialState.app, action) => {
 };
 const user = (state = initialState.user, action) => {
 	switch (action.type) {
+		case actionTypes.SET_SESSION:
+			return {
+				...state,
+				isLogged: !!action.payload,
+				credentials: action.payload ? action.payload.user : [],
+			};
+		case actionTypes.CLEAR_SESSION:
+			return {
+				...state,
+				isLogged: false,
+				credentials: [],
+			};
 		case actionTypes.UPDATE_AVATAR:
 			return {
 				...state,
@@ -195,6 +215,33 @@ const user = (state = initialState.user, action) => {
 };
 const posts = (state = initialState.posts, action) => {
 	switch (action.type) {
+		case actionTypes.FETCH_POSTS_SUCCESS:
+			return {
+				...state,
+				list: action.payload.posts,
+				pagination: {
+					...state.pagination,
+					totalItems: action.payload.totalItems
+				}
+			};
+		case actionTypes.APPEND_POSTS:
+			const newPosts = action.payload.filter(newPost =>
+				!state.list.some(existingPost => existingPost.id === newPost.id)
+			);
+			return {
+				...state,
+				list: [...state.list, ...newPosts]
+			};
+		case actionTypes.SET_PAGINATION:
+			return {
+				...state,
+				pagination: {
+					...state.pagination,
+					...action.payload
+				}
+			};
+		case actionTypes.RESET_POSTS:
+			return initialState;
 		case actionTypes.SAVE_POST:
 			return {
 				...state,

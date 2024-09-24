@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useIonRouter } from '@ionic/react';
 import { sendEmailVerification } from 'firebase/auth';
 
-import { useAuthValue } from '../components/auth/authContext';
+import { useAuthValue } from '../context/auth/authContext';
 import { auth } from '../common/firestore';
 
 import LayoutPage from '../components/ui/layoutPage';
