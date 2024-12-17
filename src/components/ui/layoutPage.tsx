@@ -1,6 +1,6 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from "@ionic/react"
 
-const LayoutPage = ({ children }, props) => {
+const LayoutPage = ({ children }: { children: React.ReactNode }, props: any) => {
 	console.log('title :>> ', props);
 	return (
 		<IonContent>
