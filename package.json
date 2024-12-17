@@ -1,5 +1,5 @@
 {
-	"name": "AZReader",
+	"name": "azreader",
 	"version": "0.0.1",
 	"private": true,
 	"dependencies": {
@@ -30,6 +30,7 @@
 		"firebase": "^9.19.1",
 		"ionicons": "^5.4.0",
 		"lodash": "^4.17.21",
+		"lucide-react": "^0.459.0",
 		"moment": "^2.29.4",
 		"nth-check": "^2.0.1",
 		"postcss-nesting": "^10.1.2",
