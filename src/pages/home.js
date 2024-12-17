@@ -1,10 +1,10 @@
-import React, { useRef, useState } from "react";
+import { useRef } from "react";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, IonPage, IonTitle, IonToolbar } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 
 import MainMenu from "../components/ui/menu";
 import ModalParser from "../components/modalParser";
-import { Auth, Account } from "../components/form/authentication";
+import { Auth } from "../components/form/authentication";
 import ArticleList from "../components/articleList";
 
 import useAuth from "../hooks/useAuth";
@@ -87,7 +87,7 @@ const Home = () => {
 					{renderContent()}
 				</IonContent>
 			</IonPage>
-			{session && <Account session={session} />}
+			{/* {session && <Account session={session} />} */}
 		</>
 	);
 };
