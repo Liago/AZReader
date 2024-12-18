@@ -1,6 +1,6 @@
 {
 	"name": "azreader",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"private": true,
 	"repository": {
 		"type": "git",
@@ -99,7 +99,7 @@
 		"@types/semantic-release": "^20.0.6",
 		"js-yaml": "^4.1.0",
 		"postcss-import": "^14.0.2",
-		"semantic-release": "^24.1.1",
+		"semantic-release": "^24.2.0",
 		"tailwindcss": "^3.0.17"
 	},
 	"description": "An Ionic project"
