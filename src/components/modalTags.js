@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { IonContent, IonModal, IonPage, IonSearchbar, IonToolbar, IonListHeader, IonButtons, IonButton } from "@ionic/react"
 
-import { getTagsHandler } from "../store/rest";
+import { useTagsHandler } from "../store/rest";
 
 import { filter, isEmpty } from 'lodash'
 import { flattenServerTagList } from "../utility/utils";
@@ -10,7 +10,7 @@ const ModalTags = ({ showModal, dismissTagModalHandler, postId, clickme }) => {
 	const [searchText, setSearchText] = useState('');
 	const [tags, setTagList] = useState([]);
 	const [articleTags, setArticleTags] = useState([]);
-	const { data: tagList } = getTagsHandler();
+	const { data: tagList } = useTagsHandler();
 
 	useEffect(() => {
 		if (searchText === '') return;
