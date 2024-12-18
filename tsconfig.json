@@ -28,7 +28,7 @@
 			"@store/*": ["store/*"],
 			"@theme/*": ["theme/*"],
 			"@utility/*": ["utility/*"],
-			"@ui/*": ["ui/*"],
+			"@ui/*": ["ui/*"]
 		}
 	},
 	"include": ["src"]

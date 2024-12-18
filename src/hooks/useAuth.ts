@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
-import * as actionTypes from "../store/actionTypes";
+import * as actionTypes from "@store/actionTypes";
 
 import { supabase } from "@store/rest";
 

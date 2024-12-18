@@ -6,10 +6,10 @@ import { close } from "ionicons/icons";
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
-import { setUserToken } from "../../store/actions";
+import { setUserToken } from "../@store/actions";
 
 import moment from 'moment';
-import { userLogin, userRegistration } from "../../common/firestore";
+import { userLogin, userRegistration } from "../@common/firestore";
 
 
 

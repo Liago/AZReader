@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { IonContent, IonModal, IonPage, IonSearchbar, IonToolbar, IonListHeader, IonButtons, IonButton } from "@ionic/react"
 
-import { useTagsHandler } from "../store/rest";
+import { useTagsHandler } from "@store/rest";
 
 import { filter, isEmpty } from 'lodash'
 import { flattenServerTagList } from "../utility/utils";

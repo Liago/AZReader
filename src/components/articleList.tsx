@@ -3,12 +3,11 @@ import { IonList, IonRefresher, IonRefresherContent, IonInfiniteScroll, IonInfin
 import { Session } from "@supabase/auth-js";
 import MessageListItem from "./messageListItem";
 import LoadingSpinner from "./ui/loadingSpinner";
-import useArticles from "../hooks/useArticles";
-import { useCustomToast } from "../hooks/useIonToast";
-import { deletePost } from "../store/rest";
+import useArticles from "@hooks/useArticles";
+import { useCustomToast } from "@hooks/useIonToast";
+import { deletePost } from "@store/rest";
 import { isEmpty } from "lodash";
-import { Post, Pagination } from "../common/interfaces";
-
+import { Post, Pagination } from "@common/interfaces";
 
 interface ArticleListProps {
 	session: Session;

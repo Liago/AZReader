@@ -1,7 +1,6 @@
-import { store } from "./store";
+import { store } from "@store/store";
+import { supabase } from "@store/rest";
 import * as actionTypes from "./actionTypes";
-
-import { supabase } from "./rest";
 
 import { isEmpty } from "lodash"
 
