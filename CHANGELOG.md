@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/Liago/AZReader/compare/v1.2.0...v1.3.0) (2024-12-18)
+
+
+### Features
+
+* installed craco to override webpack and set aliases ([ceb1db0](https://github.com/Liago/AZReader/commit/ceb1db0555e7b2055517a26354b495a991ce1dd5))
+
 # [1.2.0](https://github.com/Liago/AZReader/compare/v1.1.0...v1.2.0) (2024-12-18)
 
 
