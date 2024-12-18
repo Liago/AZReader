@@ -12,10 +12,10 @@ import {
 	searchOutline,
 } from "ionicons/icons";
 import ModalTags from "./modalTags";
-import { useTagsSaver } from "../store/rest";
+import { useTagsSaver } from "@store/rest";
 import { isEmpty } from "lodash";
 import { renderArticleDatePublished } from "../utility/utils";
-import { ArticleProps } from "../common/interfaces";
+import { ArticleProps } from "@common/interfaces";
 
 const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt } = articleParsed;
@@ -38,7 +38,6 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 			tags: tagsSelected,
 		});
 	};
-
 
 	const insertTagHandler = () => {
 		setShowModal(true);

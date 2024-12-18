@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Session } from "@supabase/auth-js/dist/module/lib/types";
 
-import { ArticleParsed, RootState} from "@common/interfaces";
+import { ArticleParsed, RootState } from "@common/interfaces";
 
 import { personalScraper, rapidApiScraper } from "@common/scraper";
 import { generateUniqueId, getScraperParmas } from "@utility/utils";

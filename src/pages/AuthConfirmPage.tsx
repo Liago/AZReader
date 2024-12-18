@@ -3,8 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import { IonContent, IonPage, useIonRouter } from "@ionic/react";
 
-import { supabase } from "../store/rest";
-
+import { supabase } from "@store/rest";
 
 const AuthConfirmPage: React.FC = () => {
 	const [isLoading, setIsLoading] = useState(true);

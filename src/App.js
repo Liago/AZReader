@@ -1,17 +1,22 @@
+import { useEffect, useState } from "react";
 import { Redirect, Route } from "react-router-dom";
-import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from "@ionic/react";
-import { Capacitor } from '@capacitor/core';
-import { App as CapApp } from '@capacitor/app';
-
-import { IonReactRouter } from "@ionic/react-router";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { persistor, store } from "./store/store";
+import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from "@ionic/react";
+import { IonReactRouter } from "@ionic/react-router";
+import { App as CapApp } from '@capacitor/app';
 
-import Home from "./pages/home";
-import ViewMessage from "./pages/viewMessage";
-import VerifyEmail from "./pages/verifyEmail";
-import AuthConfirmPage from "./pages/AuthConfirmPage";
+import { AuthProvider } from "@context/auth/authContext";
+
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@common/firestore";
+
+import { persistor, store } from "@store/store";
+
+import Home from "@pages/home";
+import ViewMessage from "@pages/viewMessage";
+import VerifyEmail from "@pages/verifyEmail";
+import AuthConfirmPage from "@pages/AuthConfirmPage";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -32,10 +37,6 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./css/main.css";
-import { AuthProvider } from "./context/auth/authContext";
-import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./common/firestore";
 
 setupIonicReact();
 

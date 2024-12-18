@@ -1,9 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
-import { wrappedApi } from "../common/api";
+import { wrappedApi } from "@common/api";
 import { supabaseDb } from "../config/environment";
-import { PostData, UseLazyApiReturn, ArticleParseResponse, TagsResponse } from "../common/interfaces";
+import { PostData, UseLazyApiReturn, ArticleParseResponse, TagsResponse } from "@common/interfaces";
 import { store } from "./store";
-
 
 const { useLazyApi } = wrappedApi();
 
@@ -30,8 +29,6 @@ export const useTagsSaver = (): UseLazyApiReturn<{ success: boolean }> => {
 	const { tokenApp } = store.getState().app;
 	return useLazyApi<{ success: boolean }>("POST", `tags/save?auth=${tokenApp}`);
 };
-
-
 
 export async function insertPost(postData: PostData) {
 	const now = new Date().toISOString();

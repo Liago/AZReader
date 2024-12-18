@@ -3,9 +3,9 @@ import { useIonRouter } from '@ionic/react';
 import { sendEmailVerification } from 'firebase/auth';
 
 import { useAuthValue } from '../context/auth/authContext';
-import { auth } from '../common/firestore';
+import { auth } from '@common/firestore';
 
-import LayoutPage from '../components/ui/layoutPage';
+import LayoutPage from '@components/ui/layoutPage';
 
 const VerifyEmail = () => {
 
