@@ -4,33 +4,13 @@ import { useArticleParsed, insertPost, supabase } from "../store/rest";
 import { personalScraper, rapidApiScraper } from "../common/scraper";
 import { generateUniqueId, getScraperParmas } from "../utility/utils";
 import { fetchPostsSuccess, setPagination, appendPosts, resetPosts } from "../store/actions";
-import { Session } from "@supabase/supabase-js";
-import { ArticleParsed, ArticleParseResponse, RootState, ScraperParams, UseLazyApiReturn } from "../common/interfaces";
-
-interface ArticleParserReturn {
-	parseArticle: (payload?: any) => Promise<void>;
-	data: ArticleParsed | null;
-	loading: boolean;
-	error: null;
-}
+import { Session } from "@supabase/auth-js/dist/module/lib/types";
+import { ArticleParsed, RootState, ScraperParams } from "../common/interfaces";
 
 interface CustomPagination {
 	currentPage: number;
 	itemsPerPage: number;
 	totalItems: number;
-}
-
-interface ParserResponse {
-	author: string;
-	content: string;
-	date_published: string | undefined;
-	dek: null;
-	direction: string;
-	domain: string;
-	excerpt: string;
-	lead_image_url: string | undefined;
-	next_page_url: null;
-	word_count: number;
 }
 
 interface UseArticlesReturn {
@@ -61,111 +41,93 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 	const [rapidArticleParsed, setRapidArticleParsed] = useState<ArticleParsed | null>(null);
 	const [isParsing, setIsParsing] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+
 	const isRefreshing = useRef(false);
+	const parseInProgress = useRef(false);
+	const isMounted = useRef(true);
 
-	const [parseArticle, { data: articleParsed, loading }] = useArticleParsed(searchText) as UseLazyApiReturn<ArticleParseResponse>;
+	const [parseArticle, { data: articleParsed, loading }] = useArticleParsed(searchText);
 
-	  useEffect(() => {
-			const parseUrl = async () => {
-				if (searchText === "") return;
+	useEffect(() => {
+		let isActive = true;
 
-				setIsParsing(true);
+		const parseUrl = async () => {
+			if (!searchText || parseInProgress.current || !isActive) return;
+
+			parseInProgress.current = true;
+			setIsParsing(true);
+
+			try {
+				const parserParams = getScraperParmas(searchText);
+				if (!isActive) return;
+
 				setCustomArticleParsed(null);
 				setRapidArticleParsed(null);
 
-				try {
-					const parserParams = getScraperParmas(searchText) as ScraperParams;
+				if (!parserParams?.parser) {
+					await parseArticle();
+					if (!isActive) return;
+					return;
+				}
 
-					if (!parserParams?.parser) {
-						if (parseArticle && typeof parseArticle === "function") {
-							await parseArticle();
-						}
-						return;
-					}
-
-					const handlePersonalScraper = async () => {
+				switch (parserParams.parser) {
+					case "personal": {
 						const result = await personalScraper(searchText);
+						if (!isActive) return;
 						if (Array.isArray(result) && result.length > 0) {
 							setCustomArticleParsed(result[0] as ArticleParsed);
 						}
-					};
-
-					const handleRapidApiScraper = async () => {
+						break;
+					}
+					case "rapidApi": {
 						const result = await rapidApiScraper(searchText);
+						if (!isActive) return;
 						if (result) {
 							setRapidArticleParsed(result as ArticleParsed);
 						}
-					};
-
-					switch (parserParams.parser) {
-						case "personal":
-							await handlePersonalScraper();
-							break;
-						case "rapidApi":
-							await handleRapidApiScraper();
-							break;
-						default:
-							if (parseArticle && typeof parseArticle === "function") {
-								await parseArticle();
-							}
+						break;
 					}
-				} catch (error) {
-					console.error("Error parsing article:", error);
-				} finally {
-					setIsParsing(false);
-				}
-			};
-
-			parseUrl();
-		}, [searchText, parseArticle]);
-
-	const savePostHandler = (): void => {
-		// Implementation remains the same
-	};
-
-	const savePostToServer = async (): Promise<void> => {
-		if (rapidArticleParsed && rapidArticleParsed.url) {
-			const url = new URL(rapidArticleParsed.url);
-			rapidArticleParsed["domain"] = url.hostname;
-		}
-
-		const theArticleParsed = customArticleParsed || rapidArticleParsed || articleParsed;
-
-		if (session?.user && theArticleParsed) {
-			const enrichedArticle: ArticleParsed = {
-				...theArticleParsed,
-				readingList: [session.user.id],
-				savedBy: {
-					userId: session.user.id,
-					userEmail: session.user.email || "",
-				},
-				savedOn: new Date().toISOString(),
-				id: generateUniqueId(),
-			};
-
-			try {
-				const response = await insertPost(enrichedArticle);
-				if (response && typeof response === "object") {
-					console.log(response);
+					default:
+						await parseArticle();
 				}
 			} catch (error) {
-				console.error("Failed to insert post:", error);
+				if (!isActive) return;
+				console.error("Error parsing article:", error);
+				setCustomArticleParsed(null);
+				setRapidArticleParsed(null);
+			} finally {
+				if (isActive) {
+					setIsParsing(false);
+					parseInProgress.current = false;
+				}
 			}
-		}
+		};
 
-		setSearchText("");
+		parseUrl();
+
+		return () => {
+			isActive = false;
+			parseInProgress.current = false;
+		};
+	}, [searchText]); // Rimosso parseArticle dalle dipendenze
+
+	const handleModalClose = useCallback(() => {
+		if (!isMounted.current) return;
 		setShowModal(false);
-		refresh();
-	};
+		setSearchText("");
+		setCustomArticleParsed(null);
+		setRapidArticleParsed(null);
+		setIsParsing(false);
+		parseInProgress.current = false;
+	}, []);
 
 	const fetchPostsFromDb = useCallback(
 		async (isInitialFetch = false): Promise<void> => {
-			if (isLoading) return;
+			if (isLoading || !isMounted.current) return;
 			setIsLoading(true);
 
 			try {
-				const currentPage = isRefreshing.current ? 1 : pagination.currentPage;
-				const { itemsPerPage } = pagination;
+				const { currentPage, itemsPerPage } = pagination;
 				const from = (currentPage - 1) * itemsPerPage;
 				const to = from + itemsPerPage - 1;
 
@@ -175,34 +137,32 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 					.order("savedOn", { ascending: false, nullsFirst: false })
 					.range(from, to);
 
+				if (!isMounted.current) return;
+
 				if (data) {
 					const totalItems = count || 0;
 
 					if (isInitialFetch || isRefreshing.current) {
 						dispatch(fetchPostsSuccess(data, totalItems));
-						dispatch(
-							setPagination({
-								currentPage: 1,
-								itemsPerPage: 10,
-								totalItems,
-							})
-						);
+						const newPagination = {
+							currentPage: 1,
+							itemsPerPage: 10,
+							totalItems,
+						};
+						dispatch(setPagination(newPagination));
 					} else {
 						dispatch(appendPosts(data));
-						dispatch(
-							setPagination({
-								...pagination,
-								totalItems,
-							})
-						);
+						dispatch(setPagination({ ...pagination, totalItems }));
 					}
 				}
 			} catch (error) {
 				console.error("Failed to fetch posts:", error);
 			} finally {
-				setIsLoading(false);
-				if (isRefreshing.current) {
-					isRefreshing.current = false;
+				if (isMounted.current) {
+					setIsLoading(false);
+					if (isRefreshing.current) {
+						isRefreshing.current = false;
+					}
 				}
 			}
 		},
@@ -210,16 +170,49 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 	);
 
 	const refresh = useCallback(async (): Promise<void> => {
-		if (isLoading) return;
+		if (isLoading || !isMounted.current) return;
 
 		isRefreshing.current = true;
 		dispatch(resetPosts());
 		await fetchPostsFromDb(true);
 	}, [dispatch, fetchPostsFromDb, isLoading]);
 
+	const savePostToServer = useCallback(async (): Promise<void> => {
+		if (!isMounted.current) return;
+
+		try {
+			if (rapidArticleParsed && rapidArticleParsed.url) {
+				const url = new URL(rapidArticleParsed.url);
+				rapidArticleParsed["domain"] = url.hostname;
+			}
+
+			const theArticleParsed = customArticleParsed || rapidArticleParsed || articleParsed;
+
+			if (session?.user && theArticleParsed) {
+				const enrichedArticle: ArticleParsed = {
+					...theArticleParsed,
+					readingList: [session.user.id],
+					savedBy: {
+						userId: session.user.id,
+						userEmail: session.user.email || "",
+					},
+					savedOn: new Date().toISOString(),
+					id: generateUniqueId(),
+				};
+
+				await insertPost(enrichedArticle);
+			}
+
+			handleModalClose();
+			await refresh();
+		} catch (error) {
+			console.error("Failed to save post:", error);
+		}
+	}, [session, customArticleParsed, rapidArticleParsed, articleParsed, refresh, handleModalClose]);
+
 	const changePage = useCallback(
 		(newPage: number): void => {
-			if (isLoading || isRefreshing.current) return;
+			if (isLoading || isRefreshing.current || !isMounted.current) return;
 			dispatch(
 				setPagination({
 					...pagination,
@@ -237,10 +230,22 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 	}, []);
 
 	useEffect(() => {
-		if (pagination.currentPage > 1 && !isRefreshing.current) {
+		if (pagination.currentPage > 1 && !isRefreshing.current && isMounted.current) {
 			fetchPostsFromDb(false);
 		}
 	}, [pagination.currentPage]);
+
+	useEffect(() => {
+		if (!showModal && isMounted.current) {
+			handleModalClose();
+		}
+	}, [showModal, handleModalClose]);
+
+	useEffect(() => {
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	return {
 		showModal,
@@ -248,8 +253,8 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		searchText,
 		setSearchText,
 		isParsing,
-		articleParsed,
-		savePostHandler,
+		articleParsed: customArticleParsed || rapidArticleParsed || articleParsed,
+		savePostHandler: () => {}, // Implementazione non fornita
 		savePostToServer,
 		loading,
 		postFromDb: postFromDb || [],
