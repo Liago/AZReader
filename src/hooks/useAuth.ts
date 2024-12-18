@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
+
 import * as actionTypes from "../store/actionTypes";
-import { supabase } from "../store/rest";
+
+import { supabase } from "@store/rest";
 
 interface User {
 	id: string;
 	email?: string;
-	// Altre proprietà dell'utente...
 }
 
 interface Session {
@@ -32,11 +33,7 @@ export const useAuth = () => {
 		} = supabase.auth.onAuthStateChange((_event, session) => {
 			setSession(session);
 			setLoading(false);
-			if (session) {
-				dispatch({ type: actionTypes.SET_SESSION, payload: session });
-			} else {
-				dispatch({ type: actionTypes.CLEAR_SESSION });
-			}
+			session ? dispatch({ type: actionTypes.SET_SESSION, payload: session }) : dispatch({ type: actionTypes.CLEAR_SESSION });
 		});
 
 		return () => subscription.unsubscribe();
@@ -52,7 +49,7 @@ export const useAuth = () => {
 					emailRedirectTo: window.location.origin,
 				},
 			});
-			console.log("🚀 ~ signIn ~ data:", data)
+			console.log("🚀 ~ signIn ~ data:", data);
 
 			if (error) throw error;
 

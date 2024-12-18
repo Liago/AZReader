@@ -1,20 +1,13 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
+import { ErrorBoundary } from "react-error-boundary";
 import { close, saveOutline, shareSocial } from "ionicons/icons";
+
 import Spinner from "./ui/spinner";
 import Article from "./article";
-import { isValidUrl } from "../utility/utils";
+
+import { isValidUrl } from "@utility/utils";
 import { isNil } from "lodash";
-
-class ModalErrorBoundary extends React.Component {
-	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error("Modal Error:", error, errorInfo);
-	}
-
-	render() {
-		return this.props.children;
-	}
-}
 
 type ModalParserProps = {
 	articleParsed: any;
@@ -141,9 +134,10 @@ const ModalParser: React.FC<ModalParserProps> = ({
 };
 
 export const ModalParserWithErrorBoundary: React.FC<ModalParserProps> = (props) => (
-	<ModalErrorBoundary>
+	<ErrorBoundary fallback={<div>Something went wrong</div>}>
 		<ModalParser {...props} />
-	</ModalErrorBoundary>
+	</ErrorBoundary>
+	
 );
 
 export default ModalParserWithErrorBoundary;

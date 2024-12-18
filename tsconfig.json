@@ -15,7 +15,21 @@
 		"isolatedModules": true,
 		"noEmit": true,
 		"jsx": "react-jsx",
-		"experimentalDecorators": true
+		"experimentalDecorators": true,
+		"baseUrl": "src",
+		"paths": {
+			"@common/*": ["common/*"],
+			"@components/*": ["components/*"],
+			"@config/*": ["config/*"],
+			"@context/*": ["context/*"],
+			"@css/*": ["css/*"],
+			"@hooks/*": ["hooks/*"],
+			"@pages/*": ["pages/*"],
+			"@store/*": ["store/*"],
+			"@theme/*": ["theme/*"],
+			"@utility/*": ["utility/*"],
+			"@ui/*": ["ui/*"],
+		}
 	},
 	"include": ["src"]
 }

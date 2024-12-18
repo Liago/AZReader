@@ -40,6 +40,7 @@
 		"postcss-nesting": "^10.1.2",
 		"react": "^17.0.1",
 		"react-dom": "^17.0.1",
+		"react-error-boundary": "^4.1.2",
 		"react-hook-form": "^7.25.1",
 		"react-redux": "^7.2.6",
 		"react-router": "^5.2.0",
@@ -66,10 +67,9 @@
 	},
 	"scripts": {
 		"config": "node set-env.js",
-		"start": "PORT=3001 react-scripts start",
-		"build": "react-scripts build",
-		"test": "react-scripts test --transformIgnorePatterns 'node_modules/(?!(@ionic/react|@ionic/react-router|@ionic/core|@stencil/core|ionicons)/)'",
-		"eject": "react-scripts eject",
+		"start": "PORT=3001 craco start",
+		"build": "craco build",
+		"test": "craco test",
 		"deploy:version": "semantic-release --no-ci"
 	},
 	"eslintConfig": {
@@ -92,6 +92,7 @@
 	},
 	"devDependencies": {
 		"@capacitor/cli": "3.4.0",
+		"@craco/craco": "^7.1.0",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/exec": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",

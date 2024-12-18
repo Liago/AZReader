@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Mail, ArrowRight, Loader2 } from "lucide-react";
-import { supabase } from "../../store/rest";
-import { useCustomToast } from "../../hooks/useIonToast";
+
+import { useCustomToast } from "@hooks/useIonToast";
+import { supabase } from "@store/rest";
 
 export const Auth: React.FC = () => {
 	const showToast = useCustomToast();

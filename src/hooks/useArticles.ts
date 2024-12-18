@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useArticleParsed, insertPost, supabase } from "../store/rest";
-import { personalScraper, rapidApiScraper } from "../common/scraper";
-import { generateUniqueId, getScraperParmas } from "../utility/utils";
-import { fetchPostsSuccess, setPagination, appendPosts, resetPosts } from "../store/actions";
 import { Session } from "@supabase/auth-js/dist/module/lib/types";
-import { ArticleParsed, RootState, ScraperParams } from "../common/interfaces";
+
+import { ArticleParsed, RootState} from "@common/interfaces";
+
+import { personalScraper, rapidApiScraper } from "@common/scraper";
+import { generateUniqueId, getScraperParmas } from "@utility/utils";
+
+import { fetchPostsSuccess, setPagination, appendPosts, resetPosts } from "@store/actions";
+import { useArticleParsed, insertPost, supabase } from "@store/rest";
 
 interface CustomPagination {
 	currentPage: number;
