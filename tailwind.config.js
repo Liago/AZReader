@@ -1,7 +1,11 @@
 module.exports = {
-	content: ["./src/**/*.{html,js}"],
+	content: ["./src/**/*.{html,js,jsx,ts,tsx}"],  // Aggiunto supporto per più estensioni di file
 	theme: {
-		extend: {},
+		extend: {
+			inset: {
+				'center-custom': '0px',
+			},
+		},
 		fontFamily: {
 			gentium_book: ['"Gentium Book Basic"', 'serif'],
 			lato: ['"Lato"', 'serif'],
@@ -10,5 +14,14 @@ module.exports = {
 			roboto: ['"Roboto Slab"', 'serif'],
 		},
 	},
-	plugins: [],
+	plugins: [
+		function ({ addUtilities }) {
+			const newUtilities = {
+				'.center-custom': {
+					'inset': '0px',
+				},
+			}
+			addUtilities(newUtilities, ['responsive', 'hover'])
+		}
+	],
 }

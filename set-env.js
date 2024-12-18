@@ -22,6 +22,11 @@ const environmentFile = `
 		APP_ID: '${process.env.FIREBASE_APP_ID}',
 	}
 
+	export const supabaseDb = {
+		SUPA_URL: '${process.env.SUPABASE_URL}',
+		SUPA_KEY: '${process.env.SUPABASE_KEY}',
+	}
+
 `;
 
 fs.writeFile('./src/config/environment.ts', environmentFile, function (err) {
