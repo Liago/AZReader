@@ -1,32 +1,43 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { IonButton, IonIcon, IonPopover } from "@ionic/react";
+import { IonActionSheet, IonButton, IonIcon, IonPopover } from "@ionic/react";
 
 import { textOutline } from "ionicons/icons";
 
 import { RootState } from "@store/reducers";
 import { decreaseFontSize, increaseFontSize } from "@store/actions";
 
-const FontSizeControls = () => {
-	const [popoverOpen, setPopoverOpen] = useState(false);
+export const FontSizeControls = () => {
+	const [isOpen, setIsOpen] = useState(false);
 	const dispatch = useDispatch();
 	const fontSize = useSelector((state: RootState) => state.app.fontSize);
 
 	return (
 		<>
-			<IonPopover isOpen={popoverOpen} onDidDismiss={() => setPopoverOpen(false)} className="p-2">
-				<div className="flex items-center space-x-3 p-2">
-					<button className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700" onClick={() => dispatch(decreaseFontSize())}>
-						A-
-					</button>
-					<span className="text-sm text-gray-600">{fontSize}</span>
-					<button onClick={() => dispatch(increaseFontSize())} className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700">
-						A+
-					</button>
-				</div>
-			</IonPopover>
+			<IonActionSheet
+				isOpen={isOpen}
+				onDidDismiss={() => setIsOpen(false)}
+				buttons={[
+					{
+						text: "Diminuisci carattere",
+						handler: () => {
+							dispatch({ type: "DECREASE_FONT_SIZE" });
+						},
+					},
+					{
+						text: "Aumenta carattere",
+						handler: () => {
+							dispatch({ type: "INCREASE_FONT_SIZE" });
+						},
+					},
+					{
+						text: "Cancel",
+						role: "cancel",
+					},
+				]}
+			/>
 
-			<IonButton fill="clear" onClick={() => setPopoverOpen(true)}>
+			<IonButton fill="clear" onClick={() => setIsOpen(true)}>
 				<IonIcon icon={textOutline} className="w-6 h-6 text-gray-700" />
 			</IonButton>
 		</>

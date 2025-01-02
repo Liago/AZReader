@@ -295,69 +295,71 @@ article *:has(> img) {
 /* per l'articolo */
 
 article {
- max-width: var(--content-max-width, 800px);
- margin: 0 auto;
- padding: var(--content-padding, 1.5rem);
+	max-width: var(--content-max-width, 800px);
+	margin: 0 auto;
+	padding: var(--content-padding, 1.5rem);
 
- p {
-   margin-bottom: 1.5rem;
-   line-height: 1.6;
- }
+	p {
+		margin-bottom: 1.5rem;
+		line-height: 1.6;
+	}
+	h1 {
+		font-size: 1.5rem;
+	}
+	h3 {
+		font-size: 1.3rem;
+		font-weight: 600;
+		margin: 2rem 0 1rem;
+	}
 
- h3 {
-   font-size: 1.3rem;
-   font-weight: 600;
-   margin: 2rem 0 1rem;
- }
+	a {
+		color: var(--link-color);
+		text-decoration: none;
+		border-bottom: 1px solid transparent;
+		transition: border-color 0.2s;
 
- a {
-   color: var(--link-color);
-   text-decoration: none;
-   border-bottom: 1px solid transparent;
-   transition: border-color 0.2s;
-   
-   &:hover {
-     border-color: currentColor;
-   }
- }
+		&:hover {
+			border-color: currentColor;
+		}
+	}
 
- ul {
-   margin: 1.5rem 0;
-   padding-left: 1.5rem;
-   
-   li {
-     margin-bottom: 0.5rem;
-   }
- }
+	ul {
+		margin: 1.5rem 0;
+		padding-left: 1.5rem;
 
- figure {
-   margin: 2rem 0;
-   
-   img {
-     width: 100%;
-     height: auto;
-     border-radius: 4px;
-   }
-   
-   figcaption {
-     margin-top: 0.5rem;
-     font-size: 0.9rem;
-     color: var(--caption-color);
-     text-align: center;
-   }
- }
+		li {
+			margin-bottom: 0.5rem;
+		}
+	}
+
+	figure {
+		margin: 2rem 0;
+
+		img {
+			width: 100%;
+			height: auto;
+			border-radius: 4px;
+		}
+
+		figcaption {
+			margin-top: 0.5rem;
+			font-size: 0.9rem;
+			color: var(--caption-color);
+			text-align: center;
+		}
+	}
 }
 
 :root {
- --content-max-width: 800px;
- --content-padding: 1.5rem;
- --text-color: #2d3748;
- --link-color: #3182ce;
- --caption-color: #718096;
+	--content-max-width: 800px;
+	--content-padding: 1.5rem;
+	--text-color: #2d3748;
+	--link-color: #3182ce;
+	--caption-color: #718096;
 }
 
 @media (max-width: 768px) {
- article {
-   padding: 1rem;
- }
+	article {
+		padding: 1rem;
+	}
 }
