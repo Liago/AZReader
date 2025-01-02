@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { IonIcon, getPlatforms, IonModal } from "@ionic/react";
+import { IonIcon, getPlatforms, IonModal, IonToolbar, IonButtons, IonButton, IonTitle, IonBackButton, IonFooter } from "@ionic/react";
 import {
 	bookmark,
 	chevronBack,
@@ -16,6 +16,8 @@ import { useTagsSaver } from "@store/rest";
 import { isEmpty } from "lodash";
 import { renderArticleDatePublished } from "../utility/utils";
 import { ArticleProps } from "@common/interfaces";
+import FontSizeWrapper from "./FontSizeWrapper";
+import FontSizeControls from "./ui/FontSizeControls";
 
 const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom }) => {
 	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt } = articleParsed;
@@ -44,6 +46,25 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 	};
 
 	const renderHeader = () => (
+		<IonToolbar>
+			<IonButtons slot="start">
+				<IonButton onClick={onDismiss}>
+					<IonIcon icon={chevronBack} className="w-6 h-6" />
+				</IonButton>
+			</IonButtons>
+			{/* <IonTitle>{postId}</IonTitle> */}
+			<IonButtons slot="end">
+				<FontSizeControls />
+				<IonButton>
+					<IonIcon icon={bookmark} className="w-6 h-6 text-gray-700" />
+				</IonButton>
+				<IonButton>
+					<IonIcon icon={ellipsisHorizontal} className="w-6 h-6 text-gray-700" />
+				</IonButton>
+			</IonButtons>
+		</IonToolbar>
+	);
+	const _renderHeader = () => (
 		<header
 			className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10"
 			style={{
@@ -76,6 +97,28 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 	);
 
 	const renderFooter = () => (
+		<IonFooter className="bg-white border-t border-gray-200 z-10">
+			<IonToolbar className="bg-white border-t border-gray-200 z-10">
+				<IonButton>
+					<IonIcon icon={heartOutline} className="w-6 h-6" />
+					<span className="text-sm font-medium">1.7K</span>
+				</IonButton>
+				<IonButton>
+					<IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
+					<span className="text-sm font-medium">222</span>
+				</IonButton>
+				<IonButton>
+					<IonIcon icon={refreshOutline} className="w-6 h-6" />
+					<span className="text-sm font-medium">136</span>
+				</IonButton>
+				<IonButton onClick={insertTagHandler}>
+					<IonIcon icon={shareOutline} className="w-6 h-6" />
+				</IonButton>
+			</IonToolbar>
+		</IonFooter>
+	);
+
+	const _renderFooter = () => (
 		<footer
 			className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10"
 			style={{
@@ -140,7 +183,6 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 	return (
 		<div className="flex flex-col min-h-screen bg-white">
 			{renderHeader()}
-
 			<main className="flex-1 overflow-y-auto pt-16 pb-20">
 				<article className="max-w-2xl mx-auto px-4 font-montserrat">
 					<h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
@@ -156,10 +198,12 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 
 					{lead_image_url && <img src={lead_image_url} alt={title} className="w-full rounded-lg mb-6 shadow-sm object-cover" />}
 
-					<div
-						className="prose max-w-none text-gray-800 text-base leading-relaxed mb-12"
-						dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }}
-					/>
+					<FontSizeWrapper>
+						<div
+							className="prose max-w-none text-gray-800 mb-12"
+							dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }}
+						/>
+					</FontSizeWrapper>
 				</article>
 			</main>
 
