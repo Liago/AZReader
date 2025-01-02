@@ -1,3 +1,19 @@
+# [1.4.0](https://github.com/Liago/AZReader/compare/v1.3.0...v1.4.0) (2025-01-02)
+
+
+### Bug Fixes
+
+* :bug: fixed double quote ([92ed471](https://github.com/Liago/AZReader/commit/92ed471c88ba03acaa23fa1be33d44ea98a3eded))
+
+
+### Features
+
+*  switch components to TS ([7f8783b](https://github.com/Liago/AZReader/commit/7f8783bd06555e29eb35393b138a5af286edefeb))
+* added Font Size globally styled ([6f6ac14](https://github.com/Liago/AZReader/commit/6f6ac141c583dc36ef2f715f476105ca6e83ecb1))
+* added new Font Size control wrapper ([791783b](https://github.com/Liago/AZReader/commit/791783b0292831815610bca5a340c4680e41910f))
+* installed Redux Logger ([615c0aa](https://github.com/Liago/AZReader/commit/615c0aa5b2c91e942602c554657a8b00461f76ae))
+* integrated FontSize on article ([40c2b26](https://github.com/Liago/AZReader/commit/40c2b264c30ea7fd73e8aaed53e396b92f3e9294))
+
 # [1.3.0](https://github.com/Liago/AZReader/compare/v1.2.0...v1.3.0) (2024-12-18)
 
 
