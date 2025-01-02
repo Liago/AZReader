@@ -1,16 +1,13 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { IonActionSheet, IonButton, IonIcon, IonPopover } from "@ionic/react";
+import { useDispatch } from "react-redux";
+import { IonActionSheet, IonButton, IonIcon } from "@ionic/react";
 
 import { textOutline } from "ionicons/icons";
-
-import { RootState } from "@store/reducers";
-import { decreaseFontSize, increaseFontSize } from "@store/actions";
 
 export const FontSizeControls = () => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dispatch = useDispatch();
-	const fontSize = useSelector((state: RootState) => state.app.fontSize);
+	// const fontSize = useSelector((state: RootState) => state.app.fontSize);
 
 	return (
 		<>
