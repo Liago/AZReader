@@ -1,20 +1,80 @@
-
 import * as actionTypes from "./actionTypes";
+import { AnyAction } from "redux";
 
-const initialState = {
+const fontSizes = ["xs", "sm", "base", "lg", "xl", "2xl"];
+
+// Interfaces per gli stati
+interface AppState {
+	darkMode: boolean;
+	devMode: boolean;
+	notificationSegment: string;
+	tokenApp: string | null;
+	tokenExpiration: string | null;
+	configuration?: any;
+	fontSize: string;
+}
+interface Credentials {
+	avatar?: string;
+	[key: string]: any;
+}
+
+interface UserState {
+	isLogged: boolean;
+	credentials: Credentials;
+	userList: any[];
+	favouritePosts: any[];
+	loading?: boolean;
+	loaded?: boolean;
+	error?: any;
+	message?: any;
+	created?: boolean;
+	deleted?: boolean;
+	commentsList?: any[];
+	replied?: boolean;
+}
+
+interface Post {
+	id: string | number;
+	[key: string]: any;
+}
+
+interface PaginationState {
+	currentPage: number;
+	itemsPerPage: number;
+	totalItems: number;
+}
+
+interface PostsState {
+	list: Post[];
+	pagination: PaginationState;
+}
+
+interface RootState {
+	app: AppState;
+	archive: any[];
+	user: UserState;
+	toast: any;
+	posts: PostsState;
+	loading: boolean;
+	error: null;
+}
+
+// Stato iniziale
+const initialState: RootState = {
 	app: {
 		darkMode: false,
 		devMode: false,
 		notificationSegment: "Subscribed Users",
 		tokenApp: null,
 		tokenExpiration: null,
+		fontSize: "base",
 	},
 	archive: [],
 	user: {
 		isLogged: false,
-		credentials: [],
+		credentials: {},
 		userList: [],
-		favouritePosts: []
+		favouritePosts: [],
 	},
 	toast: null,
 	posts: {
@@ -22,41 +82,42 @@ const initialState = {
 		pagination: {
 			currentPage: 1,
 			itemsPerPage: 10,
-			totalItems: 0
+			totalItems: 0,
 		},
 	},
 	loading: false,
-	error: null
+	error: null,
 };
 
-const toast = (state = initialState.toast, action) => {
+const toast = (state = initialState.toast, action: AnyAction) => {
 	switch (action.type) {
 		case actionTypes.TOAST_CLEAR:
-			return initialState.toast
+			return initialState.toast;
 		case actionTypes.TOAST_SET_VALUE:
 			return { ...action.payload };
 		default:
 			return state;
 	}
-}
-const app = (state = initialState.app, action) => {
+};
+
+const app = (state = initialState.app, action: AnyAction): AppState => {
 	switch (action.type) {
 		case actionTypes.LOGIN:
 			return {
 				...state,
 				tokenApp: action.payload.token,
-				tokenExpiration: action.payload.expiration
+				tokenExpiration: action.payload.expiration,
 			};
 		case actionTypes.LOGOUT:
 			return {
 				...state,
 				tokenApp: null,
-				tokenExpiration: null
+				tokenExpiration: null,
 			};
 		case actionTypes.APP_START:
 			return {
 				...state,
-				configuration: action.payload
+				configuration: action.payload,
 			};
 		case actionTypes.DARK_MODE_SET:
 			return {
@@ -68,11 +129,24 @@ const app = (state = initialState.app, action) => {
 				...state,
 				darkMode: false,
 			};
+		case actionTypes.INCREASE_FONT_SIZE:
+			const currentSizeIndex = fontSizes.indexOf(state.fontSize);
+			return {
+				...state,
+				fontSize: currentSizeIndex < fontSizes.length - 1 ? fontSizes[currentSizeIndex + 1] : state.fontSize,
+			};
+		case actionTypes.DECREASE_FONT_SIZE:
+			const sizeIndex = fontSizes.indexOf(state.fontSize);
+			return {
+				...state,
+				fontSize: sizeIndex > 0 ? fontSizes[sizeIndex - 1] : state.fontSize,
+			};
 		default:
 			return state;
 	}
 };
-const user = (state = initialState.user, action) => {
+
+const user = (state = initialState.user, action: AnyAction): UserState => {
 	switch (action.type) {
 		case actionTypes.SET_SESSION:
 			return {
@@ -91,21 +165,21 @@ const user = (state = initialState.user, action) => {
 				...state,
 				credentials: {
 					...state.credentials,
-					avatar: action.payload
-				}
+					avatar: action.payload,
+				},
 			};
 		case actionTypes.LOGIN:
 			return {
 				...state,
 				isLogged: true,
-				credentials: action.payload
+				credentials: action.payload,
 			};
 		case actionTypes.LOGOUT:
 			return {
 				...state,
 				isLogged: false,
-				credentials: []
-			}
+				credentials: [],
+			};
 		case actionTypes.LOAD_USER_START:
 			return {
 				...state,
@@ -125,7 +199,6 @@ const user = (state = initialState.user, action) => {
 				loading: false,
 				error: action.error,
 			};
-
 		case actionTypes.USER_REGISTRATION_FAIL:
 			return {
 				...state,
@@ -202,18 +275,19 @@ const user = (state = initialState.user, action) => {
 			return {
 				...state,
 				loading: true,
-				replied: false
+				replied: false,
 			};
 		case actionTypes.SET_FAVOURITES:
 			return {
 				...state,
-				favouritePosts: action.payload
-			}
+				favouritePosts: action.payload,
+			};
 		default:
 			return state;
 	}
 };
-const posts = (state = initialState.posts, action) => {
+
+const posts = (state = initialState.posts, action: AnyAction): PostsState => {
 	switch (action.type) {
 		case actionTypes.FETCH_POSTS_SUCCESS:
 			return {
@@ -221,27 +295,25 @@ const posts = (state = initialState.posts, action) => {
 				list: action.payload.posts,
 				pagination: {
 					...state.pagination,
-					totalItems: action.payload.totalItems
-				}
+					totalItems: action.payload.totalItems,
+				},
 			};
 		case actionTypes.APPEND_POSTS:
-			const newPosts = action.payload.filter(newPost =>
-				!state.list.some(existingPost => existingPost.id === newPost.id)
-			);
+			const newPosts = action.payload.filter((newPost: Post) => !state.list.some((existingPost) => existingPost.id === newPost.id));
 			return {
 				...state,
-				list: [...state.list, ...newPosts]
+				list: [...state.list, ...newPosts],
 			};
 		case actionTypes.SET_PAGINATION:
 			return {
 				...state,
 				pagination: {
 					...state.pagination,
-					...action.payload
-				}
+					...action.payload,
+				},
 			};
 		case actionTypes.RESET_POSTS:
-			return initialState;
+			return initialState.posts;
 		case actionTypes.SAVE_POST:
 			return {
 				...state,
@@ -250,11 +322,14 @@ const posts = (state = initialState.posts, action) => {
 		default:
 			return state;
 	}
-}
-
+};
 
 const createRootReducer = {
-	app, user, toast, posts
-}
+	app,
+	user,
+	toast,
+	posts,
+};
 
+export type { RootState, AppState, UserState, PostsState, Post };
 export default createRootReducer;
