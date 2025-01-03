@@ -5,16 +5,20 @@ import moment from "moment";
 import MiniCards from "../cards/miniCards";
 
 const MainMenu = () => {
+	const { user } = useSelector(state => state.user.credentials);
 	const { credentials } = useSelector(state => state.user);
-	const lastLogin = moment(credentials.last_sign_in_at).format('DD/MM/YY HH:mm');
+	const lastLogin = moment(user.last_sign_in_at).format('DD/MM/YY HH:mm');
 
 
 
 	const renderUserInfo = () => {
+		const expires_at = new Date(credentials.expires_at * 1000);
+		
 		return (
 			<>
-				<h2 className="font-semibold">{credentials.email}</h2>
+				<h2 className="font-semibold">{credentials.user.email}</h2>
 				<p className="mt-2 text-sm text-gray-500">Last login {lastLogin}</p>
+				<p className="mt-2 text-sm text-gray-500">Session expires at <br />{expires_at.toLocaleString()}</p>
 			</>
 		)
 	}
