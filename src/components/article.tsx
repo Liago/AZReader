@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { IonIcon, getPlatforms, IonModal, IonToolbar, IonButtons, IonButton, IonTitle, IonBackButton, IonFooter } from "@ionic/react";
+import { IonIcon, getPlatforms, IonModal, IonToolbar, IonButtons, IonButton, IonTitle, IonBackButton, IonFooter, IonPage } from "@ionic/react";
 import {
 	bookmark,
 	chevronBack,
@@ -181,35 +181,37 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 	);
 
 	return (
-		<div className="flex flex-col min-h-screen bg-white">
-			{renderHeader()}
-			<main className="flex-1 overflow-y-auto pt-16 pb-20">
-				<article className="max-w-2xl mx-auto px-4 font-montserrat">
-					<h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
-					{excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: excerpt }} />}
+		<IonPage>
+			<div className="flex flex-col min-h-screen bg-white">
+				{renderHeader()}
+				<main className="flex-1 overflow-y-auto pt-16 pb-20">
+					<article className="max-w-2xl mx-auto px-4 font-montserrat">
+						<h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
+						{excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: excerpt }} />}
 
-					<div className="flex justify-between items-center mb-6">
-						<div>
-							<p className="font-medium text-gray-900">{domain}</p>
-							<p className="text-sm text-gray-500">{renderArticleDatePublished(date || date_published)}</p>
+						<div className="flex justify-between items-center mb-6">
+							<div>
+								<p className="font-medium text-gray-900">{domain}</p>
+								<p className="text-sm text-gray-500">{renderArticleDatePublished(date || date_published)}</p>
+							</div>
+							<img src="/api/placeholder/40/40" alt={domain} className="w-10 h-10 rounded-full shadow-sm object-cover" />
 						</div>
-						<img src="/api/placeholder/40/40" alt={domain} className="w-10 h-10 rounded-full shadow-sm object-cover" />
-					</div>
 
-					{lead_image_url && <img src={lead_image_url} alt={title} className="w-full rounded-lg mb-6 shadow-sm object-cover" />}
+						{lead_image_url && <img src={lead_image_url} alt={title} className="w-full rounded-lg mb-6 shadow-sm object-cover" />}
 
-					<FontSizeWrapper>
-						<div
-							className="prose max-w-none text-gray-800 mb-12"
-							dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }}
-						/>
-					</FontSizeWrapper>
-				</article>
-			</main>
+						<FontSizeWrapper>
+							<div
+								className="prose max-w-none text-gray-800 mb-12"
+								dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }}
+							/>
+						</FontSizeWrapper>
+					</article>
+				</main>
 
-			{renderFooter()}
-			{renderModalTags()}
-		</div>
+				{renderFooter()}
+				{renderModalTags()}
+			</div>
+		</IonPage>
 	);
 };
 

@@ -1,61 +1,70 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-
 import { IonContent, IonPage, useIonRouter } from "@ionic/react";
-
 import { supabase } from "@store/rest";
 
 const AuthConfirmPage: React.FC = () => {
+	console.log("AuthConfirmPage renderizzato");
+	console.log("URL corrente:", window.location.href);
+
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const router = useIonRouter();
-	const location = useLocation();
 
 	useEffect(() => {
-		const verifyToken = async () => {
-			const searchParams = new URLSearchParams(location.search);
-			const token = searchParams.get("token_hash");
-
-			if (!token) {
-				setError("Token mancante nell'URL");
-				setIsLoading(false);
-				return;
-			}
-
+		const handleAuth = async () => {
 			try {
-				const { error } = await supabase.auth.verifyOtp({
-					token_hash: token,
-					type: "email",
+				console.log("handleAuth eseguito");
+				const searchParams = new URLSearchParams(window.location.search);
+				const token_hash = searchParams.get("token_hash");
+				const typeParam = searchParams.get("type");
+
+				console.log("Params trovati:", { token_hash, type: typeParam });
+
+				if (!token_hash || !typeParam) {
+					console.log("Parametri mancanti");
+					setError("Parametri di autenticazione mancanti");
+					setIsLoading(false);
+					return;
+				}
+
+				// Convertiamo il tipo in un valore valido per Supabase
+				const type = typeParam === "magiclink" ? "email" : typeParam;
+
+				console.log("Tentativo di verifica OTP con Supabase");
+				const { data, error: verifyError } = await supabase.auth.verifyOtp({
+					token_hash,
+					type: type as "email", // Forziamo il tipo a 'email' per magic link
 				});
 
-				if (error) throw error;
+				if (verifyError) {
+					console.error("Errore Supabase:", verifyError);
+					throw verifyError;
+				}
 
-				// Autenticazione riuscita
+				console.log("Verifica completata con successo:", data);
 				setIsLoading(false);
-				// Reindirizza l'utente alla homepage o al dashboard
 				router.push("/", "root", "replace");
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Si è verificato un errore durante la verifica");
+				console.error("Errore durante l'autenticazione:", err);
+				setError(err instanceof Error ? err.message : "Errore durante l'autenticazione");
 				setIsLoading(false);
 			}
 		};
 
-		verifyToken();
-	}, [location, router]);
+		handleAuth();
+	}, [router]);
 
 	return (
 		<IonPage>
 			<IonContent className="ion-padding">
 				<div className="flex flex-col justify-center items-center h-full">
 					{isLoading && <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>}
-
 					{error && (
 						<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
 							<strong className="font-bold">Errore di Autenticazione</strong>
 							<span className="block sm:inline"> {error}</span>
 						</div>
 					)}
-
 					{!isLoading && !error && (
 						<div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
 							<strong className="font-bold">Autenticazione Completata</strong>
