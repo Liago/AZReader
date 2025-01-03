@@ -7,7 +7,7 @@ import MiniCards from "../cards/miniCards";
 const MainMenu = () => {
 	const { user } = useSelector(state => state.user.credentials);
 	const { credentials } = useSelector(state => state.user);
-	const lastLogin = moment(user.last_sign_in_at).format('DD/MM/YY HH:mm');
+	const lastLogin = moment(user?.last_sign_in_at).format('DD/MM/YY HH:mm');
 
 
 
@@ -16,9 +16,9 @@ const MainMenu = () => {
 		
 		return (
 			<>
-				<h2 className="font-semibold">{credentials.user.email}</h2>
-				<p className="mt-2 text-sm text-gray-500">Last login {lastLogin}</p>
-				<p className="mt-2 text-sm text-gray-500">Session expires at <br />{expires_at.toLocaleString()}</p>
+				<h2 className="font-semibold">{credentials?.user?.email || 'n/a'}</h2>
+				<p className="mt-2 text-sm text-gray-500">Last login {lastLogin || 'n/a'}</p>
+				<p className="mt-2 text-sm text-gray-500">Session expires at <br />{expires_at.toLocaleString() || 'n/a'}</p>
 			</>
 		)
 	}
