@@ -1,3 +1,18 @@
+# [1.5.0](https://github.com/Liago/AZReader/compare/v1.4.0...v1.5.0) (2025-01-03)
+
+
+### Bug Fixes
+
+* check if values are null ([c8700be](https://github.com/Liago/AZReader/commit/c8700beea8e7cd93a98a14425ac4184a44d03f51))
+* FontSize controls switched to ActionSheet ([6a35408](https://github.com/Liago/AZReader/commit/6a354085115838ec8dd77543173a8b01cf457ed3))
+* removed redux logger from production ([6a9ef41](https://github.com/Liago/AZReader/commit/6a9ef41c4acc3d50a2688c709f95e657be45c304))
+
+
+### Features
+
+* auth cycle done ([0e97f8a](https://github.com/Liago/AZReader/commit/0e97f8a4ed240686f4668cd4739c73a952a4f98b))
+* session status management from Supabase to Store ([41747d5](https://github.com/Liago/AZReader/commit/41747d5d04071bc7dcb4dae55e3f7fc8c78ad825))
+
 # [1.4.0](https://github.com/Liago/AZReader/compare/v1.3.0...v1.4.0) (2025-01-02)
 
 
