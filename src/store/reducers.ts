@@ -152,7 +152,7 @@ const user = (state = initialState.user, action: AnyAction): UserState => {
 			return {
 				...state,
 				isLogged: !!action.payload,
-				credentials: action.payload ? action.payload.user : [],
+				credentials: action.payload //? action.payload.user : [],
 			};
 		case actionTypes.CLEAR_SESSION:
 			return {
