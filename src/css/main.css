@@ -363,3 +363,11 @@ article {
 		padding: 1rem;
 	}
 }
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 20px);
+}
+
+.pr-safe-area {
+  padding-right: env(safe-area-inset-right, 16px);
+}
