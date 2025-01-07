@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/Liago/AZReader/compare/v1.5.0...v1.6.0) (2025-01-07)
+
+
+### Bug Fixes
+
+* deprecated tag ([8627daf](https://github.com/Liago/AZReader/commit/8627daf09e436d682de4e859cb2d3a2076ac434b))
+* safe area on top fixed ([5ff844b](https://github.com/Liago/AZReader/commit/5ff844ba9a602ff67be91e05ebf8b3d53ed4bc2b))
+
+
+### Features
+
+* get URL from clipboard ([4ab9e45](https://github.com/Liago/AZReader/commit/4ab9e453b93c90d172297c567c045a36092f4e7e))
+
 # [1.5.0](https://github.com/Liago/AZReader/compare/v1.4.0...v1.5.0) (2025-01-03)
 
 
