@@ -46,14 +46,13 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 	};
 
 	const renderHeader = () => (
-		<IonToolbar>
+		<IonToolbar className="ion-padding-top safe-area-top">
 			<IonButtons slot="start">
 				<IonButton onClick={onDismiss}>
 					<IonIcon icon={chevronBack} className="w-6 h-6" />
 				</IonButton>
 			</IonButtons>
-			{/* <IonTitle>{postId}</IonTitle> */}
-			<IonButtons slot="end">
+			<IonButtons slot="end" className="pr-safe-area">
 				<FontSizeControls />
 				<IonButton>
 					<IonIcon icon={bookmark} className="w-6 h-6 text-gray-700" />
@@ -64,38 +63,7 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 			</IonButtons>
 		</IonToolbar>
 	);
-	const _renderHeader = () => (
-		<header
-			className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10"
-			style={{
-				paddingTop: "env(safe-area-inset-top, 0px)",
-				paddingLeft: "env(safe-area-inset-left, 0px)",
-				paddingRight: "env(safe-area-inset-right, 0px)",
-			}}
-		>
-			<div className="flex justify-between items-center h-14 px-4">
-				<button
-					onClick={onDismiss}
-					className="p-2 hover:bg-gray-100 rounded-full text-gray-700"
-					style={{ marginTop: "env(safe-area-inset-top, 0px)" }}
-				>
-					<IonIcon icon={chevronBack} className="w-6 h-6" />
-				</button>
-				<div className="flex space-x-2" style={{ marginTop: "env(safe-area-inset-top, 0px)" }}>
-					<button className="p-2 hover:bg-gray-100 rounded-full">
-						<IonIcon icon={playCircle} className="w-6 h-6 text-gray-700" />
-					</button>
-					<button className="p-2 hover:bg-gray-100 rounded-full">
-						<IonIcon icon={bookmark} className="w-6 h-6 text-gray-700" />
-					</button>
-					<button className="p-2 hover:bg-gray-100 rounded-full">
-						<IonIcon icon={ellipsisHorizontal} className="w-6 h-6 text-gray-700" />
-					</button>
-				</div>
-			</div>
-		</header>
-	);
-
+	
 	const renderFooter = () => (
 		<IonFooter className="bg-white border-t border-gray-200 z-10">
 			<IonToolbar className="bg-white border-t border-gray-200 z-10">
@@ -116,35 +84,6 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 				</IonButton>
 			</IonToolbar>
 		</IonFooter>
-	);
-
-	const _renderFooter = () => (
-		<footer
-			className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10"
-			style={{
-				paddingBottom: "env(safe-area-inset-bottom, 0px)",
-				paddingLeft: "env(safe-area-inset-left, 0px)",
-				paddingRight: "env(safe-area-inset-right, 0px)",
-			}}
-		>
-			<div className="flex justify-between items-center h-14 px-6">
-				<button className="flex items-center space-x-2 text-gray-700">
-					<IonIcon icon={heartOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">1.7K</span>
-				</button>
-				<button className="flex items-center space-x-2 text-gray-700">
-					<IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">222</span>
-				</button>
-				<button className="flex items-center space-x-2 text-gray-700">
-					<IonIcon icon={refreshOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">136</span>
-				</button>
-				<button onClick={insertTagHandler} className="flex items-center text-gray-700">
-					<IonIcon icon={shareOutline} className="w-6 h-6" />
-				</button>
-			</div>
-		</footer>
 	);
 
 	const renderSearchBar = () => (
@@ -207,7 +146,6 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 						</FontSizeWrapper>
 					</article>
 				</main>
-
 				{renderFooter()}
 				{renderModalTags()}
 			</div>
