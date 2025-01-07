@@ -1,11 +1,9 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonSearchbar, IonTitle, IonToolbar, IonAlert } from "@ionic/react";
 import { ErrorBoundary } from "react-error-boundary";
-import { close, saveOutline, shareSocial } from "ionicons/icons";
-
+import { close, saveOutline, shareSocial, clipboard } from "ionicons/icons";
 import Spinner from "./ui/spinner";
 import Article from "./article";
-
 import { isValidUrl } from "@utility/utils";
 import { isNil } from "lodash";
 
@@ -37,25 +35,42 @@ const ModalParser: React.FC<ModalParserProps> = ({
 	const contentRef = useRef<HTMLIonContentElement>(null);
 	const [isClosing, setIsClosing] = useState(false);
 	const [shouldRender, setShouldRender] = useState(true);
+	const [showClipboardAlert, setShowClipboardAlert] = useState(false);
+	const [clipboardContent, setClipboardContent] = useState("");
 
-	// Gestiamo la chiusura in modo controllato
+	// Funzione per leggere dalla clipboard
+	const readFromClipboard = async () => {
+		try {
+			const text = await navigator.clipboard.readText();
+			if (isValidUrl(text)) {
+				setClipboardContent(text);
+				setShowClipboardAlert(true);
+			}
+		} catch (err) {
+			console.error("Failed to read clipboard:", err);
+		}
+	};
+
+	// Leggi dalla clipboard all'apertura della modale
+	useEffect(() => {
+		if (showModal && !searchText) {
+			readFromClipboard();
+		}
+	}, [showModal, searchText]);
+
 	const handleClose = useCallback(() => {
 		setIsClosing(true);
 		setShouldRender(false);
-
-		// Prima puliamo il contenuto
 		setTimeout(() => {
 			if (contentRef.current) {
 				contentRef.current.innerHTML = "";
 			}
-			// Poi chiudiamo il modal
 			setShowModal(false);
 			setSearchText("");
 			setIsClosing(false);
 		}, 50);
 	}, [setShowModal, setSearchText]);
 
-	// Resettiamo lo stato quando il modal viene aperto
 	useEffect(() => {
 		if (showModal) {
 			setShouldRender(true);
@@ -63,7 +78,6 @@ const ModalParser: React.FC<ModalParserProps> = ({
 		}
 	}, [showModal]);
 
-	// Cleanup quando il componente viene smontato
 	useEffect(() => {
 		return () => {
 			if (contentRef.current) {
@@ -74,7 +88,6 @@ const ModalParser: React.FC<ModalParserProps> = ({
 
 	const renderContent = () => {
 		if (isClosing || !shouldRender) return null;
-
 		return (
 			<IonContent ref={contentRef}>
 				<IonPage>
@@ -82,9 +95,9 @@ const ModalParser: React.FC<ModalParserProps> = ({
 						<IonToolbar>
 							<IonTitle slot="start">Post parser</IonTitle>
 							<IonButtons slot="start">
-								<IonButton disabled={isNil(articleParsed) || searchText === ""} color="dark" onClick={savePostHandler}>
+								{/* <IonButton disabled={isNil(articleParsed) || searchText === ""} color="dark" onClick={savePostHandler}>
 									<IonIcon slot="icon-only" icon={saveOutline} />
-								</IonButton>
+								</IonButton> */}
 								<IonButton disabled={isNil(articleParsed) || searchText === ""} color="dark" onClick={savePostToServer}>
 									<IonIcon slot="icon-only" icon={shareSocial} />
 								</IonButton>
@@ -97,19 +110,25 @@ const ModalParser: React.FC<ModalParserProps> = ({
 						</IonToolbar>
 					</IonHeader>
 					<IonContent fullscreen>
-						{!searchText && (
-							<IonSearchbar
-								animated
-								value={searchText}
-								placeholder="Url articolo"
-								debounce={1000}
-								onIonChange={(e) => {
-									const value = e?.detail?.value || "";
-									if (isValidUrl(value)) {
-										setSearchText(value);
-									}
-								}}
-							/>
+						{!searchText && !showClipboardAlert && (
+							<div>
+								<IonSearchbar
+									animated
+									value={searchText}
+									placeholder="Url articolo"
+									debounce={1000}
+									onIonChange={(e) => {
+										const value = e?.detail?.value || "";
+										if (isValidUrl(value)) {
+											setSearchText(value);
+										}
+									}}
+								/>
+								<IonButton expand="block" fill="clear" onClick={readFromClipboard}>
+									<IonIcon slot="start" icon={clipboard} />
+									Incolla dalla clipboard
+								</IonButton>
+							</div>
 						)}
 						{isParsing && searchText && <Spinner />}
 						{articleParsed && searchText && !isParsing && (
@@ -122,6 +141,26 @@ const ModalParser: React.FC<ModalParserProps> = ({
 						)}
 					</IonContent>
 				</IonPage>
+
+				<IonAlert
+					isOpen={showClipboardAlert}
+					onDidDismiss={() => setShowClipboardAlert(false)}
+					header="URL trovato nella clipboard"
+					message={`Vuoi utilizzare questo URL?\n${clipboardContent}`}
+					buttons={[
+						{
+							text: "No",
+							role: "cancel",
+						},
+						{
+							text: "Sì",
+							handler: () => {
+								setSearchText(clipboardContent);
+								setShowClipboardAlert(false);
+							},
+						},
+					]}
+				/>
 			</IonContent>
 		);
 	};
@@ -137,7 +176,6 @@ export const ModalParserWithErrorBoundary: React.FC<ModalParserProps> = (props) 
 	<ErrorBoundary fallback={<div>Something went wrong</div>}>
 		<ModalParser {...props} />
 	</ErrorBoundary>
-	
 );
 
 export default ModalParserWithErrorBoundary;
