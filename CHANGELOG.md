@@ -1,3 +1,55 @@
+# [1.7.0](https://github.com/Liago/AZReader/compare/v1.6.0...v1.7.0) (2025-01-13)
+
+
+### Bug Fixes
+
+* new router IonRouterOutlet ([c3d0a9c](https://github.com/Liago/AZReader/commit/c3d0a9c57a5f830c44ad15b5afa3b8c6b42f206d))
+* URL and parsed various fixes ([a0facb2](https://github.com/Liago/AZReader/commit/a0facb2d06b137dc674a2579b2026d62725c19fd))
+
+
+### Features
+
+* upgraded some packages ([58728d1](https://github.com/Liago/AZReader/commit/58728d13250db0002159c13497c296b96683a3c8))
+
+# [1.7.0](https://github.com/Liago/AZReader/compare/v1.6.0...v1.7.0) (2025-01-13)
+
+
+### Bug Fixes
+
+* new router IonRouterOutlet ([c3d0a9c](https://github.com/Liago/AZReader/commit/c3d0a9c57a5f830c44ad15b5afa3b8c6b42f206d))
+* URL and parsed various fixes ([a0facb2](https://github.com/Liago/AZReader/commit/a0facb2d06b137dc674a2579b2026d62725c19fd))
+
+
+### Features
+
+* upgraded some packages ([58728d1](https://github.com/Liago/AZReader/commit/58728d13250db0002159c13497c296b96683a3c8))
+
+# [1.7.0](https://github.com/Liago/AZReader/compare/v1.6.0...v1.7.0) (2025-01-13)
+
+
+### Bug Fixes
+
+* new router IonRouterOutlet ([c3d0a9c](https://github.com/Liago/AZReader/commit/c3d0a9c57a5f830c44ad15b5afa3b8c6b42f206d))
+* URL and parsed various fixes ([a0facb2](https://github.com/Liago/AZReader/commit/a0facb2d06b137dc674a2579b2026d62725c19fd))
+
+
+### Features
+
+* upgraded some packages ([58728d1](https://github.com/Liago/AZReader/commit/58728d13250db0002159c13497c296b96683a3c8))
+
+# [1.7.0](https://github.com/Liago/AZReader/compare/v1.6.0...v1.7.0) (2025-01-13)
+
+
+### Bug Fixes
+
+* new router IonRouterOutlet ([c3d0a9c](https://github.com/Liago/AZReader/commit/c3d0a9c57a5f830c44ad15b5afa3b8c6b42f206d))
+* URL and parsed various fixes ([a0facb2](https://github.com/Liago/AZReader/commit/a0facb2d06b137dc674a2579b2026d62725c19fd))
+
+
+### Features
+
+* upgraded some packages ([58728d1](https://github.com/Liago/AZReader/commit/58728d13250db0002159c13497c296b96683a3c8))
+
 # [1.6.0](https://github.com/Liago/AZReader/compare/v1.5.0...v1.6.0) (2025-01-07)
 
 
