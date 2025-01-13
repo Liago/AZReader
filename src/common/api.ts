@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
+import { CapacitorHttp } from "@capacitor/core";
 import { ApiResponse, UseLazyApiReturn } from "./interfaces";
 import { supabaseDb, endpoint } from "../config/environment";
 
 interface ApiOptions extends AxiosRequestConfig {
 	useParserEndpoint?: boolean;
+	useCapacitorHttp?: boolean;
 }
 
 const wrappedApi = () => {
@@ -24,19 +26,40 @@ const wrappedApi = () => {
 		const baseURL = getBaseUrl(opts.useParserEndpoint);
 
 		try {
-			const response = await axios({
-				baseURL,
-				headers: {
-					...(opts.useParserEndpoint ? {} : { Authorization: `Bearer ${token}` }),
-					"Content-Type": "application/json",
-				},
-				method: method || "GET",
-				url,
-				data: payload,
-				...opts,
-			});
-			data = response.data;
+			if (opts.useCapacitorHttp) {
+				console.log("Using Capacitor HTTP:", `${baseURL}/${url}`);
+				const response = await CapacitorHttp.request({
+					method: method?.toUpperCase() || "GET",
+					url: `${baseURL}/${url}`,
+					headers: {
+						Accept: "application/json, text/plain, */*",
+						...(token ? { Authorization: `Bearer ${token}` } : {}),
+					},
+					...payload,
+				});
+				console.log("Capacitor HTTP response:", response);
+
+				if (response.status >= 400) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				data = response.data;
+			} else {
+				const response = await axios({
+					baseURL,
+					headers: {
+						...(opts.useParserEndpoint ? {} : { Authorization: `Bearer ${token}` }),
+						"Content-Type": "application/json",
+					},
+					method: method || "GET",
+					url,
+					data: payload,
+					...opts,
+				});
+				data = response.data;
+			}
 		} catch (e) {
+			console.error("API error:", e);
 			error = e;
 			data = {} as any;
 		}
@@ -68,35 +91,62 @@ const wrappedApi = () => {
 				});
 				setError(null);
 
-				const config: AxiosRequestConfig = {
-					baseURL,
-					headers: {
-						...(opts.useParserEndpoint ? {} : { Authorization: `Bearer ${token}` }),
-						"Content-Type": "application/json",
-					},
-					method: method || "GET",
-					url,
-					data: { ...payload, ...opts },
-				};
+				if (opts.useCapacitorHttp) {
+					console.log("Using Capacitor HTTP in useLazyApi");
+					const response = await CapacitorHttp.request({
+						method: method?.toUpperCase() || "GET",
+						url: `${baseURL}/${url}`,
+						headers: {
+							Accept: "application/json, text/plain, */*",
+							origin: "ionic://localhost",
+							"x-requested-with": "XMLHttpRequest",
+							...(token ? { Authorization: `Bearer ${token}` } : {}),
+						},
+						...payload,
+					});
 
-				const response = await axios(config);
-				setEvent({
-					loading: false,
-					data: response.data,
-				});
-			} catch (e) {
+					console.log("Capacitor HTTP response:", response);
+
+					if (response.status >= 400) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+
+					setEvent({
+						loading: false,
+						data: response.data as T,
+					});
+				} else {
+					const config: AxiosRequestConfig = {
+						baseURL,
+						headers: {
+							...(opts.useParserEndpoint ? {} : { Authorization: `Bearer ${token}` }),
+							"Content-Type": "application/json",
+						},
+						method: method || "GET",
+						url,
+						data: payload,
+						...opts,
+					};
+
+					const response = await axios(config);
+					setEvent({
+						loading: false,
+						data: response.data,
+					});
+				}
+			} catch (error) {
+				console.error("Full error details:", error);
 				setEvent({ loading: false, data: null });
 				let errorMessage = "";
-				const error = e as AxiosError;
-				if (error.response) {
-					console.error("Error in server response:", error.response.data);
-					errorMessage = String(error.response.data);
-				} else if (error.request) {
-					console.error("No response received:", error.request);
-					errorMessage = String(error.request);
+				if (axios.isAxiosError(error)) {
+					console.error("Axios error details:", {
+						status: error.response?.status,
+						data: error.response?.data,
+						headers: error.response?.headers,
+					});
+					errorMessage = String(error.response?.data || error.message);
 				} else {
-					console.error("Error during request setup:", error.message);
-					errorMessage = error.message || "Unknown error occurred";
+					errorMessage = String(error);
 				}
 				setError(errorMessage);
 			}

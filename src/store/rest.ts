@@ -3,6 +3,7 @@ import { wrappedApi } from "@common/api";
 import { supabaseDb } from "../config/environment";
 import { PostData, UseLazyApiReturn, ArticleParseResponse, TagsResponse } from "@common/interfaces";
 import { store } from "./store";
+import { PlatformHelper } from "@utility/platform-helper";
 
 const { useLazyApi } = wrappedApi();
 
@@ -11,12 +12,25 @@ const supabaseUrl = supabaseDb.SUPA_URL;
 const supabaseAnonKey = supabaseDb.SUPA_KEY;
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Funzione di utility per preparare l'URL
+const prepareUrl = (inputUrl: string): string => {
+	try {
+		// Decodifica solo se l'URL contiene caratteri codificati
+		if (inputUrl.includes("%")) {
+			return encodeURIComponent(decodeURIComponent(inputUrl));
+		}
+		return encodeURIComponent(inputUrl);
+	} catch (e) {
+		console.warn("Error processing URL:", e);
+		return encodeURIComponent(inputUrl);
+	}
+};
+
 export const useArticleParsed = (url: string): UseLazyApiReturn<ArticleParseResponse> => {
-	return useLazyApi<ArticleParseResponse>(
-		"GET",
-		`parser?url=${url}`,
-		{ useParserEndpoint: true } // Indichiamo di usare l'endpoint del parser
-	);
+	return useLazyApi<ArticleParseResponse>("GET", `parser?url=${prepareUrl(url)}`, {
+		useParserEndpoint: true,
+		useCapacitorHttp: PlatformHelper.isNative(),
+	});
 };
 
 export const useTagsHandler = (): UseLazyApiReturn<TagsResponse[]> => {
@@ -24,7 +38,6 @@ export const useTagsHandler = (): UseLazyApiReturn<TagsResponse[]> => {
 	return useLazyApi<TagsResponse[]>("GET", `tags.json?auth=${tokenApp}`);
 };
 
-// Se hai altri hook, seguono lo stesso pattern
 export const useTagsSaver = (): UseLazyApiReturn<{ success: boolean }> => {
 	const { tokenApp } = store.getState().app;
 	return useLazyApi<{ success: boolean }>("POST", `tags/save?auth=${tokenApp}`);

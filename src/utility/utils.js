@@ -1,5 +1,4 @@
 import { scraperConfig } from '../config/scraperConfig';
-
 import 'moment/locale/it'
 import moment from "moment";
 import { find, map, uniq } from 'lodash';
@@ -7,6 +6,7 @@ import { find, map, uniq } from 'lodash';
 export const getDataFormatted = (date, dateFormat) => {
 	return moment(date).format(dateFormat)
 }
+
 export const flattenServerTagList = (tagList) => {
 	const onlyTags = map(tagList, "tags")
 	const tagValues = onlyTags.reduce((acc, val) => acc.concat(val), []);
@@ -14,26 +14,65 @@ export const flattenServerTagList = (tagList) => {
 }
 
 export const getScraperParmas = (searchText) => {
-	const url = new URL(searchText);
-	console.log('url.hostname', url.hostname)
-	return find(scraperConfig, ["url", url.hostname])
+	try {
+		// Verifica se l'input è una stringa
+		if (typeof searchText !== 'string' || !searchText) {
+			console.warn('Invalid input to getScraperParams:', searchText);
+			return null;
+		}
+
+		// Decodifica l'URL se è codificato
+		let decodedUrl = searchText;
+		try {
+			if (searchText.includes('%')) {
+				decodedUrl = decodeURIComponent(searchText);
+			}
+		} catch (e) {
+			console.warn('Error decoding URL:', e);
+			// Se la decodifica fallisce, usiamo l'URL originale
+		}
+
+		// Assicurati che l'URL abbia un protocollo
+		const urlToCheck = decodedUrl.startsWith('http') ? decodedUrl : `https://${decodedUrl}`;
+
+		// Prova a creare un oggetto URL
+		const url = new URL(urlToCheck);
+		console.log('Parsing URL:', {
+			input: searchText,
+			processed: urlToCheck,
+			hostname: url.hostname
+		});
+
+		// Cerca nella configurazione dello scraper
+		const scraperParams = find(scraperConfig, ["url", url.hostname]);
+		console.log('Found scraper config:', scraperParams);
+
+		return scraperParams;
+	} catch (error) {
+		console.error('Error in getScraperParams:', {
+			input: searchText,
+			error: error.message
+		});
+		return null;
+	}
 }
 
 export const isValidUrl = urlString => {
-	var urlPattern = new RegExp('^(https?:\\/\\/)?' + // validate protocol
-		'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // validate domain name
-		'((\\d{1,3}\\.){3}\\d{1,3}))' + // validate OR ip (v4) address
-		'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // validate port and path
-		'(\\?[;&a-z\\d%_.~+=-]*)?' + // validate query string
-		'(\\#[-a-z\\d_]*)?$', 'i'); // validate fragment locator
-	return !!urlPattern.test(urlString);
+	if (typeof urlString !== 'string' || !urlString) {
+		return false;
+	}
+
+	try {
+		const processed = urlString.startsWith('http') ? urlString : `https://${urlString}`;
+		new URL(processed);
+		return true;
+	} catch (err) {
+		return false;
+	}
 }
 
 export const renderArticleDatePublished = date => {
 	if (!date) return;
-
-	// console.log('date', moment(date))
-
 	return <>Pubblicato il {moment(date).format('DD MMMM YYYY')}</>;
 }
 

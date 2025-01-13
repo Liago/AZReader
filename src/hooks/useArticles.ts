@@ -44,12 +44,13 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 	const [rapidArticleParsed, setRapidArticleParsed] = useState<ArticleParsed | null>(null);
 	const [isParsing, setIsParsing] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [parseError, setParseError] = useState<string | null>(null);
 
 	const isRefreshing = useRef(false);
 	const parseInProgress = useRef(false);
 	const isMounted = useRef(true);
 
-	const [parseArticle, { data: articleParsed, loading }] = useArticleParsed(searchText);
+	const [parseArticle, { data: articleParsed, loading, error: parseArticleError }] = useArticleParsed(searchText);
 
 	useEffect(() => {
 		let isActive = true;
@@ -59,13 +60,43 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 
 			parseInProgress.current = true;
 			setIsParsing(true);
+			setParseError(null);
 
 			try {
-				const parserParams = getScraperParmas(searchText);
-				if (!isActive) return;
+				// Decodifica l'URL se necessario
+				let urlToProcess = searchText;
+				try {
+					if (searchText.includes("%")) {
+						urlToProcess = decodeURIComponent(searchText);
+					}
+				} catch (e) {
+					console.warn("Error decoding URL:", e);
+				}
 
+				// Validazione base dell'URL
+				try {
+					new URL(urlToProcess);
+				} catch (error) {
+					console.error("Invalid URL:", urlToProcess);
+					setParseError("URL non valido");
+					return;
+				}
+
+				// Reset degli stati
 				setCustomArticleParsed(null);
 				setRapidArticleParsed(null);
+
+				if (!isActive) return;
+
+				let parserParams;
+				try {
+					parserParams = getScraperParmas(urlToProcess);
+				} catch (error) {
+					console.error("Error in getScraperParams:", error);
+					// Se getScraperParams fallisce, proviamo con il parser di default
+					await parseArticle();
+					return;
+				}
 
 				if (!parserParams?.parser) {
 					await parseArticle();
@@ -75,18 +106,28 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 
 				switch (parserParams.parser) {
 					case "personal": {
-						const result = await personalScraper(searchText);
-						if (!isActive) return;
-						if (Array.isArray(result) && result.length > 0) {
-							setCustomArticleParsed(result[0] as ArticleParsed);
+						try {
+							const result = await personalScraper(searchText);
+							if (!isActive) return;
+							if (Array.isArray(result) && result.length > 0) {
+								setCustomArticleParsed(result[0] as ArticleParsed);
+							}
+						} catch (error) {
+							console.error("Error in personalScraper:", error);
+							await parseArticle();
 						}
 						break;
 					}
 					case "rapidApi": {
-						const result = await rapidApiScraper(searchText);
-						if (!isActive) return;
-						if (result) {
-							setRapidArticleParsed(result as ArticleParsed);
+						try {
+							const result = await rapidApiScraper(searchText);
+							if (!isActive) return;
+							if (result) {
+								setRapidArticleParsed(result as ArticleParsed);
+							}
+						} catch (error) {
+							console.error("Error in rapidApiScraper:", error);
+							await parseArticle();
 						}
 						break;
 					}
@@ -94,10 +135,8 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 						await parseArticle();
 				}
 			} catch (error) {
-				if (!isActive) return;
 				console.error("Error parsing article:", error);
-				setCustomArticleParsed(null);
-				setRapidArticleParsed(null);
+				setParseError("Errore durante il parsing dell'articolo");
 			} finally {
 				if (isActive) {
 					setIsParsing(false);
@@ -121,6 +160,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		setCustomArticleParsed(null);
 		setRapidArticleParsed(null);
 		setIsParsing(false);
+		setParseError(null);
 		parseInProgress.current = false;
 	}, []);
 
