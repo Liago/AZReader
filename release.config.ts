@@ -3,8 +3,8 @@ import { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 
-const releaseConfig = {
-	branches: ["dev", "master"],
+export default {
+	branches: ["dev", "main"],
 	plugins: [
 		"@semantic-release/commit-analyzer",
 		"@semantic-release/release-notes-generator",
@@ -18,18 +18,11 @@ const releaseConfig = {
 		[
 			"@semantic-release/exec",
 			{
-				prepareCmd: `
-		  # Update iOS version
-		  /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString \${nextRelease.version}" ios/App/App/Info.plist
-		  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion \${nextRelease.version}" ios/App/App/Info.plist
-		  
-		  # Update Android version
-		  sed -i '' 's/versionName "[^"]*"/versionName "\${nextRelease.version}"/' android/app/build.gradle
-		  
-		  # Calculate Android version code (remove dots and convert to integer)
-		  VERSION_CODE=$(echo \${nextRelease.version} | sed 's/\\.//g')
-		  sed -i '' 's/versionCode [0-9]*/versionCode '\${VERSION_CODE}'/' android/app/build.gradle
-		`,
+				prepareCmd:
+					'/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${nextRelease.version}" ios/App/App/Info.plist && ' +
+					'/usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${nextRelease.version}" ios/App/App/Info.plist && ' +
+					'sed -i "" -E "s/(versionName ).*/\\1\\"${nextRelease.version}\\"/" android/app/build.gradle && ' +
+					'sed -i "" -E "s/(versionCode ).*/\\1$(echo ${nextRelease.version} | tr -d ".")/" android/app/build.gradle',
 			},
 		],
 		[
@@ -41,5 +34,3 @@ const releaseConfig = {
 		],
 	],
 };
-
-export default releaseConfig;
