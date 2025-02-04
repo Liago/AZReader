@@ -18,9 +18,10 @@ import { renderArticleDatePublished } from "../utility/utils";
 import { ArticleProps } from "@common/interfaces";
 import FontSizeWrapper from "./FontSizeWrapper";
 import FontSizeControls from "./ui/FontSizeControls";
+import moment from "moment";
 
 const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom }) => {
-	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt } = articleParsed;
+	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt, savedBy, savedOn } = articleParsed;
 
 	const platforms = getPlatforms();
 	const [showModal, setShowModal] = useState<boolean>(false);
@@ -128,12 +129,13 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 						<h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
 						{excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: excerpt }} />}
 
-						<div className="flex justify-between items-center mb-6">
+						<div className="flex justify-between items-center mb-6 border border-gray-200 p-4">
 							<div>
-								<p className="font-medium text-gray-900">{domain}</p>
-								<p className="text-sm text-gray-500">{renderArticleDatePublished(date || date_published)}</p>
+								<p className="text-sm text-gray-500 m-0">{renderArticleDatePublished(date || date_published)}</p>
+								<p className="text-xs m-0">Salvato da: {savedBy?.userEmail} il {moment(savedOn).format('DD MMMM YYYY')}</p>
+								<p className="font-bold text-xs text-gray-900 m-0 text-right">{domain}</p>
 							</div>
-							<img src="/api/placeholder/40/40" alt={domain} className="w-10 h-10 rounded-full shadow-sm object-cover" />
+							{/* <img src="/api/placeholder/40/40" alt={domain} className="w-10 h-10 rounded-full shadow-sm object-cover" /> */}
 						</div>
 
 						{lead_image_url && <img src={lead_image_url} alt={title} className="w-full rounded-lg mb-6 shadow-sm object-cover" />}

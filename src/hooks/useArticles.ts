@@ -9,6 +9,7 @@ import { generateUniqueId, getScraperParmas } from "@utility/utils";
 
 import { fetchPostsSuccess, setPagination, appendPosts, resetPosts } from "@store/actions";
 import { useArticleParsed, insertPost, supabase } from "@store/rest";
+import { useCustomToast } from "./useIonToast";
 
 interface CustomPagination {
 	currentPage: number;
@@ -45,12 +46,17 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 	const [isParsing, setIsParsing] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [parseError, setParseError] = useState<string | null>(null);
+	const showToast = useCustomToast();
 
 	const isRefreshing = useRef(false);
 	const parseInProgress = useRef(false);
 	const isMounted = useRef(true);
 
 	const [parseArticle, { data: articleParsed, loading, error: parseArticleError }] = useArticleParsed(searchText);
+
+	useEffect(() => {
+		console.log("parseArticleError", parseArticleError);
+	}, [parseArticleError]);
 
 	useEffect(() => {
 		let isActive = true;
@@ -250,6 +256,11 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 			await refresh();
 		} catch (error) {
 			console.error("Failed to save post:", error);
+			const errorMessage = error instanceof Error ? error.message : "Errore durante il salvataggio del post";
+			showToast({
+				message: errorMessage,
+				color: "danger",
+			});
 		}
 	}, [session, customArticleParsed, rapidArticleParsed, articleParsed, refresh, handleModalClose]);
 
