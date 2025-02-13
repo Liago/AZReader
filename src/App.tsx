@@ -25,6 +25,7 @@ import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 import "./theme/variables.css";
 import "./css/main.css";
+import { XCircleIcon } from "lucide-react";
 
 interface AppUrlOpenListenerEvent {
 	url: string;
@@ -36,17 +37,47 @@ interface AppStateChangeListenerEvent {
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 	console.log("ErrorFallback rendered:", error);
+
 	return (
-		<div
-			style={{
-				padding: 20,
-				background: "#fff",
-				color: "#000",
-			}}
-		>
-			<h1>Qualcosa è andato storto:</h1>
-			<pre style={{ whiteSpace: "pre-wrap" }}>{error.message}</pre>
-			<button onClick={resetErrorBoundary}>Riprova</button>
+		<div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+			<div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
+				<div className="flex items-center justify-center">
+					<XCircleIcon className="h-16 w-16 text-red-500" />
+				</div>
+
+				<div className="text-center">
+					<h1 className="text-2xl font-bold text-gray-900 mb-2">Oops! Qualcosa è andato storto</h1>
+					<p className="text-gray-600 mb-6">Non preoccuparti, puoi riprovare o tornare alla home</p>
+				</div>
+
+				<div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-48">
+					<pre className="text-sm text-gray-600 whitespace-pre-wrap break-words font-mono">{error.message}</pre>
+				</div>
+
+				<div className="flex flex-col space-y-3">
+					<button
+						onClick={resetErrorBoundary}
+						className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+					>
+						<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+							/>
+						</svg>
+						<span>Riprova</span>
+					</button>
+
+					<button
+						onClick={() => (window.location.href = "/")}
+						className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition-colors duration-200"
+					>
+						Torna alla Home
+					</button>
+				</div>
+			</div>
 		</div>
 	);
 }

@@ -14,6 +14,13 @@ const wrappedApi = () => {
 		return useParserEndpoint ? endpoint.parser : supabaseDb.SUPA_URL;
 	};
 
+	const getFullUrl = (baseURL: string, path: string, targetUrl?: string): string => {
+		if (path.includes("parser") && targetUrl) {
+			return `${baseURL}/parser?url=${encodeURIComponent(targetUrl)}`;
+		}
+		return `${baseURL}/${path}`;
+	};
+
 	const useRawCall = async (
 		method: AxiosRequestConfig["method"],
 		url: string,
@@ -27,12 +34,15 @@ const wrappedApi = () => {
 
 		try {
 			if (opts.useCapacitorHttp) {
-				console.log("Using Capacitor HTTP:", `${baseURL}/${url}`);
+				const fullUrl = getFullUrl(baseURL, url, payload?.url);
+				console.log("🚀 ~ wrappedApi ~ fullUrl:", fullUrl)
 				const response = await CapacitorHttp.request({
 					method: method?.toUpperCase() || "GET",
-					url: `${baseURL}/${url}`,
+					url: fullUrl,
 					headers: {
 						Accept: "application/json, text/plain, */*",
+						origin: "ionic://localhost",
+						"x-requested-with": "XMLHttpRequest",
 						...(token ? { Authorization: `Bearer ${token}` } : {}),
 					},
 					...payload,
@@ -92,10 +102,12 @@ const wrappedApi = () => {
 				setError(null);
 
 				if (opts.useCapacitorHttp) {
+					const fullUrl = getFullUrl(baseURL, url, payload?.url);
+					console.log("🚀 ~ func ~ fullUrl:", fullUrl)
 					console.log("Using Capacitor HTTP in useLazyApi");
 					const response = await CapacitorHttp.request({
 						method: method?.toUpperCase() || "GET",
-						url: `${baseURL}/${url}`,
+						url: fullUrl,
 						headers: {
 							Accept: "application/json, text/plain, */*",
 							origin: "ionic://localhost",
