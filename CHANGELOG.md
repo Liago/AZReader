@@ -1,3 +1,17 @@
+# [1.8.0](https://github.com/Liago/AZReader/compare/v1.7.0...v1.8.0) (2025-02-13)
+
+
+### Bug Fixes
+
+* android version on Gradle ([cacac35](https://github.com/Liago/AZReader/commit/cacac351813d40eb52b3cc02072808a0a245f073))
+* semantic release config ([c525ca0](https://github.com/Liago/AZReader/commit/c525ca0fa6d4d9b2f1f47360d6f040aecbbcf296))
+
+
+### Features
+
+* new posts management on homepage ([9666d79](https://github.com/Liago/AZReader/commit/9666d79f3648f77b636ed661c35275780b5885c0))
+* notification on save error for some reason ([443321d](https://github.com/Liago/AZReader/commit/443321de5112903bd25ea9e4a21534becf31263c))
+
 # [1.7.0](https://github.com/Liago/AZReader/compare/v1.6.0...v1.7.0) (2025-01-13)
 
 
