@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/Liago/AZReader/compare/v1.8.0...v1.9.0) (2025-02-14)
+
+
+### Features
+
+* post like! ([1456352](https://github.com/Liago/AZReader/commit/14563527a2e806b874c62b7be27052ef55698873))
+
 # [1.8.0](https://github.com/Liago/AZReader/compare/v1.7.0...v1.8.0) (2025-02-13)
 
 
