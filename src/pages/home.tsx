@@ -1,19 +1,14 @@
 import { useRef } from "react";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, IonPage, IonTitle, IonToolbar } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
-import { Session } from "@supabase/auth-js/dist/module/lib/types";
-
+import { Session } from "@supabase/auth-js/dist/module/lib/types"; // Percorso corretto per il tipo Session
 import { ArticleParsed } from "@common/interfaces";
-
 import MainMenu from "@components/ui/menu";
 import ModalParser from "@components/modalParser";
 import { Auth } from "@components/form/authentication";
 import ArticleList from "@components/articleList";
-
 import useAuth from "@hooks/useAuth";
 import useArticles from "@hooks/useArticles";
-
-import "./Home.css";
 
 interface ModalProps {
 	articleParsed: ArticleParsed | null;
@@ -26,13 +21,14 @@ interface ModalProps {
 	savePostToServer: () => void;
 	loading: boolean;
 	isParsing: boolean;
+	session: Session | null;
 }
 
 const Home: React.FC = () => {
 	const { session, signOut } = useAuth();
 	const { showModal, setShowModal, searchText, setSearchText, isParsing, articleParsed, savePostHandler, savePostToServer, loading } = useArticles(
 		session as Session | null
-	);
+	); // Aggiungiamo il cast esplicito qui
 
 	const pageRef = useRef<HTMLElement>(null);
 
@@ -63,6 +59,7 @@ const Home: React.FC = () => {
 			savePostToServer,
 			loading,
 			isParsing,
+			session: session as Session | null,
 		};
 
 		return <ModalParser {...modalProps} />;
@@ -96,7 +93,6 @@ const Home: React.FC = () => {
 				</IonHeader>
 				<IonContent fullscreen>{renderContent()}</IonContent>
 			</IonPage>
-			{/* {session && <Account session={session} />} */}
 		</>
 	);
 };

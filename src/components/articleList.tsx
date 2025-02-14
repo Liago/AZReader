@@ -93,7 +93,14 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 	const ArticleWrapper = useCallback(
 		({ onDismiss }: { onDismiss: () => void }) => {
 			if (!selectedArticle || !currentPostId) return null;
-			return <Article articleParsed={selectedArticle} postId={currentPostId} onDismiss={onDismiss} />;
+			return (
+				<Article
+					articleParsed={selectedArticle}
+					postId={currentPostId}
+					onDismiss={onDismiss}
+					session={session} // Aggiungi la sessione qui
+				/>
+			);
 		},
 		[selectedArticle, currentPostId]
 	);

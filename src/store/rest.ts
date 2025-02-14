@@ -4,6 +4,7 @@ import { supabaseDb } from "../config/environment";
 import { PostData, UseLazyApiReturn, ArticleParseResponse, TagsResponse } from "@common/interfaces";
 import { store } from "./store";
 import { PlatformHelper } from "@utility/platform-helper";
+import { useEffect } from "react";
 
 const { useLazyApi } = wrappedApi();
 
@@ -33,9 +34,15 @@ export const useArticleParsed = (url: string): UseLazyApiReturn<ArticleParseResp
 	});
 };
 
-export const useTagsHandler = (): UseLazyApiReturn<TagsResponse[]> => {
+export const useTagsHandler = () => {
 	const { tokenApp } = store.getState().app;
-	return useLazyApi<TagsResponse[]>("GET", `tags.json?auth=${tokenApp}`);
+	const [fetchTags, response] = useLazyApi<TagsResponse[]>("GET", `tags.json?auth=${tokenApp}`);
+
+	useEffect(() => {
+		fetchTags();
+	}, []);
+
+	return response;
 };
 
 export const useTagsSaver = (): UseLazyApiReturn<{ success: boolean }> => {
@@ -69,5 +76,39 @@ export async function deletePost(postId: string) {
 		throw error;
 	}
 	console.log("Post cancellato con successo:", postId);
+	return data;
+}
+
+export async function getPostLikesCount(postId: string) {
+	const { data, error } = await supabase.rpc("get_post_likes_count", { post_id: postId });
+
+	if (error) throw error;
+	return data || 0;
+}
+
+export async function checkUserLike(postId: string, userId: string) {
+	const { data, error } = await supabase.from("posts_likes").select("id").eq("post_id", postId).eq("user_id", userId).single();
+
+	if (error && error.code !== "PGRST116") throw error;
+	return !!data;
+}
+
+export async function addLike(postId: string, userId: string) {
+	const { data, error } = await supabase
+		.from("posts_likes")
+		.insert({
+			post_id: postId,
+			user_id: userId,
+		})
+		.select();
+
+	if (error) throw error;
+	return data;
+}
+
+export async function removeLike(postId: string, userId: string) {
+	const { data, error } = await supabase.from("posts_likes").delete().eq("post_id", postId).eq("user_id", userId);
+
+	if (error) throw error;
 	return data;
 }

@@ -8,8 +8,9 @@ import Spinner from "./ui/spinner";
 import Article from "./article";
 import { isValidUrl } from "@utility/utils";
 import { isNil } from "lodash";
+import { Session } from "@supabase/supabase-js";
 
-type ModalParserProps = {
+interface ModalParserProps {
 	articleParsed: any;
 	showModal: boolean;
 	pageRef: React.RefObject<HTMLElement>;
@@ -20,7 +21,8 @@ type ModalParserProps = {
 	savePostToServer: () => void;
 	loading: boolean;
 	isParsing: boolean;
-};
+	session: Session | null;
+}
 
 const noIOSPasteStyles = {
 	WebkitTouchCallout: "none",
@@ -45,6 +47,7 @@ const ModalParser: React.FC<ModalParserProps> = ({
 	savePostToServer,
 	loading,
 	isParsing,
+	session
 }) => {
 	const contentRef = useRef<HTMLIonContentElement>(null);
 	const [isClosing, setIsClosing] = useState(false);
@@ -226,6 +229,7 @@ const ModalParser: React.FC<ModalParserProps> = ({
 								onDismiss={() => setSearchText("")}
 								displayFrom="modalPreview"
 								postId={articleParsed.id || ""}
+								session={session} // Aggiungi la sessione qui
 							/>
 						)}
 					</IonContent>

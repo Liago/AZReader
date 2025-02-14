@@ -104,10 +104,14 @@ export interface ArticleParseResponse {
 	topImage?: string;
 }
 
-export interface TagsResponse {
+export interface TagItem {
 	id: string;
-	name: string;
-	count: number;
+	tags: string[];
+}
+
+export interface TagsResponse extends TagItem {
+	createdAt?: string;
+	updatedAt?: string;
 }
 
 export interface Post {

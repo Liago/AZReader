@@ -6,40 +6,107 @@ import {
 	ellipsisHorizontal,
 	playCircle,
 	chatbubbleOutline,
+	heart,
 	heartOutline,
 	refreshOutline,
 	shareOutline,
 	searchOutline,
+	bookmarkOutline,
 } from "ionicons/icons";
+import { Session } from "@supabase/supabase-js";
 import ModalTags from "./modalTags";
 import { useTagsSaver } from "@store/rest";
+import { usePostLikes } from "@hooks/usePostLikes";
+import { useCustomToast } from "@hooks/useIonToast";
 import { isEmpty } from "lodash";
 import { renderArticleDatePublished } from "../utility/utils";
-import { ArticleProps } from "@common/interfaces";
 import FontSizeWrapper from "./FontSizeWrapper";
 import FontSizeControls from "./ui/FontSizeControls";
 import moment from "moment";
 
-const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom }) => {
+interface ArticleProps {
+	articleParsed: {
+		title: string;
+		content?: string;
+		html?: string;
+		lead_image_url?: string;
+		date?: string;
+		date_published?: string;
+		domain?: string;
+		excerpt?: string;
+		savedBy?: {
+			userEmail: string;
+			userId: string;
+		};
+		savedOn?: string;
+	};
+	onDismiss: () => void;
+	postId: string;
+	displayFrom?: string;
+	session: Session | null;
+}
+
+const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom, session }) => {
 	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt, savedBy, savedOn } = articleParsed;
 
 	const platforms = getPlatforms();
 	const [showModal, setShowModal] = useState<boolean>(false);
-	const [saveTagsFunc, { error, loading, data }] = useTagsSaver();
 	const [searchQuery, setSearchQuery] = useState<string>("");
+	const showToast = useCustomToast();
 
-	const clickme = () => {
-		console.log("clicked!");
+	// Likes handling
+	const { likesCount, hasLiked, toggleLike, isLoading: isLikeLoading, error: likeError } = usePostLikes(postId, session);
+
+	const [saveTagsFunc, { error: tagError, loading: tagLoading, data: tagData }] = useTagsSaver();
+
+	const handleLikeClick = async () => {
+		try {
+			if (!session) {
+				showToast({
+					message: "Devi effettuare l'accesso per mettere mi piace",
+					color: "warning",
+				});
+				return;
+			}
+
+			await toggleLike();
+
+			if (likeError) {
+				showToast({
+					message: likeError.message,
+					color: "danger",
+				});
+			}
+		} catch (err) {
+			showToast({
+				message: "Errore durante l'operazione",
+				color: "danger",
+			});
+		}
 	};
 
 	const dismissTagModalHandler = async (tagsSelected: string[]) => {
 		setShowModal(false);
 		if (isEmpty(tagsSelected)) return;
 
-		await saveTagsFunc({
-			id: postId,
-			tags: tagsSelected,
-		});
+		try {
+			await saveTagsFunc({
+				id: postId,
+				tags: tagsSelected,
+			});
+
+			if (tagError) {
+				showToast({
+					message: "Errore durante il salvataggio dei tag",
+					color: "danger",
+				});
+			}
+		} catch (err) {
+			showToast({
+				message: "Errore durante il salvataggio dei tag",
+				color: "danger",
+			});
+		}
 	};
 
 	const insertTagHandler = () => {
@@ -64,25 +131,52 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 			</IonButtons>
 		</IonToolbar>
 	);
-	
+
 	const renderFooter = () => (
-		<IonFooter className="bg-white border-t border-gray-200 z-10">
-			<IonToolbar className="bg-white border-t border-gray-200 z-10">
-				<IonButton>
-					<IonIcon icon={heartOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">1.7K</span>
-				</IonButton>
-				<IonButton>
-					<IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">222</span>
-				</IonButton>
-				<IonButton>
-					<IonIcon icon={refreshOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">136</span>
-				</IonButton>
-				<IonButton onClick={insertTagHandler}>
-					<IonIcon icon={shareOutline} className="w-6 h-6" />
-				</IonButton>
+		<IonFooter className="bg-white border-t border-gray-100 shadow-sm">
+			<IonToolbar className="px-2 py-1">
+				<div className="flex justify-around items-center">
+					{/* Like Button */}
+					<IonButton onClick={handleLikeClick} disabled={isLikeLoading} className="flex flex-col items-center" fill="clear" size="large">
+						<div
+							className={`
+            flex flex-col items-center transition-all duration-200 transform
+            ${hasLiked ? "scale-110" : "scale-100"}
+            ${isLikeLoading ? "opacity-50" : "opacity-100"}
+          `}
+						>
+							<IonIcon
+								icon={hasLiked ? heart : heartOutline}
+								className={`w-6 h-6 mb-1 ${hasLiked ? "text-red-500" : "text-gray-600"}`}
+							/>
+							<span className={`text-xs font-medium ${hasLiked ? "text-red-500" : "text-gray-600"}`}>{likesCount}</span>
+						</div>
+					</IonButton>
+
+					{/* Comment Button */}
+					<IonButton className="flex flex-col items-center" fill="clear" size="large">
+						<div className="flex flex-col items-center hover:text-blue-500 transition-colors duration-200">
+							<IonIcon icon={chatbubbleOutline} className="w-6 h-6 mb-1 text-gray-600" />
+							<span className="text-xs font-medium text-gray-600">222</span>
+						</div>
+					</IonButton>
+
+					{/* Share Button */}
+					<IonButton onClick={insertTagHandler} className="flex flex-col items-center" fill="clear" size="large">
+						<div className="flex flex-col items-center hover:text-green-500 transition-colors duration-200">
+							<IonIcon icon={shareOutline} className="w-6 h-6 mb-1 text-gray-600" />
+							<span className="text-xs font-medium text-gray-600">Condividi</span>
+						</div>
+					</IonButton>
+
+					{/* Save Button */}
+					<IonButton className="flex flex-col items-center" fill="clear" size="large">
+						<div className="flex flex-col items-center hover:text-purple-500 transition-colors duration-200">
+							<IonIcon icon={bookmarkOutline} className="w-6 h-6 mb-1 text-gray-600" />
+							<span className="text-xs font-medium text-gray-600">Salva</span>
+						</div>
+					</IonButton>
+				</div>
 			</IonToolbar>
 		</IonFooter>
 	);
@@ -114,7 +208,7 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 				{renderSearchBar()}
 				<div className="mt-4">
 					<h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-					<ModalTags showModal={showModal} dismissTagModalHandler={dismissTagModalHandler} postId={postId} clickme={clickme} />
+					<ModalTags showModal={showModal} dismissTagModalHandler={dismissTagModalHandler} postId={postId} />
 				</div>
 			</div>
 		</IonModal>
@@ -132,10 +226,11 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 						<div className="flex justify-between items-center mb-6 border border-gray-200 p-4">
 							<div>
 								<p className="text-sm text-gray-500 m-0">{renderArticleDatePublished(date || date_published)}</p>
-								<p className="text-xs m-0">Salvato da: {savedBy?.userEmail} il {moment(savedOn).format('DD MMMM YYYY')}</p>
+								<p className="text-xs m-0">
+									Salvato da: {savedBy?.userEmail} il {moment(savedOn).format("DD MMMM YYYY")}
+								</p>
 								<p className="font-bold text-xs text-gray-900 m-0 text-right">{domain}</p>
 							</div>
-							{/* <img src="/api/placeholder/40/40" alt={domain} className="w-10 h-10 rounded-full shadow-sm object-cover" /> */}
 						</div>
 
 						{lead_image_url && <img src={lead_image_url} alt={title} className="w-full rounded-lg mb-6 shadow-sm object-cover" />}
