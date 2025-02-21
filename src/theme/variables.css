@@ -223,3 +223,104 @@ ion-toolbar {
 	--padding-top: 10px;
 	--padding-bottom: 10px;
 }
+
+
+
+/* Aggiungi questi stili al tuo file CSS principale (main.css) */
+
+/* Fix per il layout compatto */
+.compact-header {
+  min-height: 0;
+}
+
+.compact-header ion-toolbar {
+  --min-height: 40px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+}
+
+.compact-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  margin: 0;
+}
+
+.compact-footer {
+  min-height: 0;
+}
+
+/* Safe area per iOS ma con dimensioni più compatte */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .compact-header {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .compact-footer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Riduci i margini eccessivi sui dispositivi iOS */
+.ios ion-content {
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+/* Footer più compatto */
+.compact-footer .button {
+  margin: 0;
+  height: auto;
+}
+
+/* Riduzione dello spazio superiore per iOS */
+.ios .header-ios ion-toolbar:first-of-type {
+  --padding-top: 0;
+  --border-width: 0;
+}
+
+/* Stili specifici per iOS per ridurre gli spazi vuoti */
+.ios article h1 {
+  margin-top: 0;
+}
+
+.ios .prose {
+  margin-bottom: 0;
+}
+
+/* Fix per il padding nel Content */
+ion-content.ion-padding-horizontal {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+/* Assicurati che il footer abbia un'altezza fissa e ridotta */
+ion-footer.compact-footer {
+  height: auto;
+}
+
+ion-footer.compact-footer button {
+  padding: 4px;
+}
+
+/* Riduci il padding tra elementi del footer */
+ion-footer.compact-footer .flex {
+  padding: 4px 0;
+}
+
+/* Riduci la dimensione dei font nell'articolo per iOS */
+.ios article h1 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+.ios article h2 {
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+/* Riduci gli spazi nelle card info */
+.ios article .mb-4 {
+  margin-bottom: 0.75rem;
+}
