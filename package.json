@@ -31,6 +31,7 @@
 		"async": "^3.2.4",
 		"axios": "^1.7.4",
 		"cheerio": "^1.0.0-rc.12",
+		"date-fns": "^4.1.0",
 		"firebase": "^10.14.1",
 		"ionicons": "^5.4.0",
 		"lodash": "^4.17.21",
