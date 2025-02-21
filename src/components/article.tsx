@@ -23,6 +23,8 @@ import { renderArticleDatePublished } from "../utility/utils";
 import FontSizeWrapper from "./FontSizeWrapper";
 import FontSizeControls from "./ui/FontSizeControls";
 import moment from "moment";
+import { usePostComments } from "@hooks/usePostComments";
+import Comments from "./Comments";
 
 interface ArticleProps {
 	articleParsed: {
@@ -56,6 +58,8 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 
 	// Likes handling
 	const { likesCount, hasLiked, toggleLike, isLoading: isLikeLoading, error: likeError } = usePostLikes(postId, session);
+	const [showComments, setShowComments] = useState<boolean>(false);
+	const { commentsCount } = usePostComments(postId, session);
 
 	const [saveTagsFunc, { error: tagError, loading: tagLoading, data: tagData }] = useTagsSaver();
 
@@ -154,10 +158,10 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 					</IonButton>
 
 					{/* Comment Button */}
-					<IonButton className="flex flex-col items-center" fill="clear" size="large">
+					<IonButton onClick={() => setShowComments(true)} className="flex flex-col items-center" fill="clear" size="large">
 						<div className="flex flex-col items-center hover:text-blue-500 transition-colors duration-200">
 							<IonIcon icon={chatbubbleOutline} className="w-6 h-6 mb-1 text-gray-600" />
-							<span className="text-xs font-medium text-gray-600">222</span>
+							<span className="text-xs font-medium text-gray-600">{commentsCount}</span>
 						</div>
 					</IonButton>
 
@@ -245,6 +249,7 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 				</main>
 				{renderFooter()}
 				{renderModalTags()}
+				<Comments postId={postId} session={session} isOpen={showComments} onClose={() => setShowComments(false)} />;
 			</div>
 		</IonPage>
 	);
