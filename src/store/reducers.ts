@@ -131,15 +131,24 @@ const app = (state = initialState.app, action: AnyAction): AppState => {
 			};
 		case actionTypes.INCREASE_FONT_SIZE:
 			const currentSizeIndex = fontSizes.indexOf(state.fontSize);
+			// Verifichiamo che l'indice sia valido e che esista un elemento successivo
+			const nextSize =
+				currentSizeIndex < fontSizes.length - 1 && currentSizeIndex !== -1
+					? fontSizes[currentSizeIndex + 1] ?? state.fontSize
+					: state.fontSize;
+
 			return {
 				...state,
-				fontSize: currentSizeIndex < fontSizes.length - 1 ? fontSizes[currentSizeIndex + 1] : state.fontSize,
+				fontSize: nextSize,
 			};
 		case actionTypes.DECREASE_FONT_SIZE:
 			const sizeIndex = fontSizes.indexOf(state.fontSize);
+			// Verifichiamo che l'indice sia valido e che esista un elemento precedente
+			const prevSize = sizeIndex > 0 && sizeIndex !== -1 ? fontSizes[sizeIndex - 1] ?? state.fontSize : state.fontSize;
+
 			return {
 				...state,
-				fontSize: sizeIndex > 0 ? fontSizes[sizeIndex - 1] : state.fontSize,
+				fontSize: prevSize,
 			};
 		default:
 			return state;
@@ -152,7 +161,7 @@ const user = (state = initialState.user, action: AnyAction): UserState => {
 			return {
 				...state,
 				isLogged: !!action.payload,
-				credentials: action.payload //? action.payload.user : [],
+				credentials: action.payload, //? action.payload.user : [],
 			};
 		case actionTypes.CLEAR_SESSION:
 			return {

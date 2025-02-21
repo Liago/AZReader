@@ -112,3 +112,162 @@ export async function removeLike(postId: string, userId: string) {
 	if (error) throw error;
 	return data;
 }
+
+export async function getPostCommentsCount(postId: string) {
+	// Utilizzo di count() invece di rpc per maggiore compatibilità
+	const { count, error } = await supabase
+		.from("posts_comments")
+		.select("*", { count: "exact", head: true })
+		.eq("post_id", postId)
+		.is("deleted_at", null);
+
+	if (error) throw error;
+	return count || 0;
+}
+
+interface Profile {
+	id: string;
+	username: string | null;
+	avatar_url: string | null;
+	email: string | null;
+}
+
+interface ProfileMap {
+	[key: string]: Profile;
+}
+
+export async function getPostComments(postId: string) {
+	// Modifichiamo la query per evitare l'uso della relazione implicita
+	const { data, error } = await supabase
+		.from("posts_comments")
+		.select(
+			`
+      id,
+      comment,
+      created_at,
+      updated_at,
+      user_id,
+      parent_id,
+      post_id
+    `
+		)
+		.eq("post_id", postId)
+		.is("deleted_at", null)
+		.order("created_at", { ascending: true });
+
+	if (error) throw error;
+
+	// Se abbiamo dei commenti, recuperiamo i profili utente separatamente
+	if (data && data.length > 0) {
+		// Raccogliamo tutti gli ID utente unici
+		const userIdSet = new Set<string>();
+		data.forEach((comment) => {
+			if (comment.user_id) {
+				userIdSet.add(comment.user_id);
+			}
+		});
+
+		const userIds = Array.from(userIdSet);
+
+		// Recuperiamo i profili per questi utenti, includendo anche l'email
+		const { data: profiles, error: profilesError } = await supabase.from("profiles").select("id, username, avatar_url, email").in("id", userIds);
+
+		if (profilesError) {
+			console.error("Errore nel recupero dei profili:", profilesError);
+			// Non blocchiamo l'esecuzione, ma usiamo profili di fallback
+		}
+
+		// Recuperiamo anche gli utenti stessi per ottenere le loro email
+		const { data: users, error: usersError } = await supabase.from("users").select("id, email").in("id", userIds);
+
+		if (usersError) {
+			console.error("Errore nel recupero degli utenti:", usersError);
+		}
+
+		// Creiamo un dizionario per una rapida ricerca dei profili
+		const profilesMap: ProfileMap = {};
+		if (profiles) {
+			profiles.forEach((profile: Profile) => {
+				profilesMap[profile.id] = profile;
+			});
+		}
+
+		// Aggiungiamo le informazioni dell'email dagli utenti
+		if (users) {
+			users.forEach((user: any) => {
+				if (user.id && profilesMap[user.id]) {
+					// Utilizziamo l'operatore di optional chaining per evitare errori
+					// se profilesMap[user.id] è undefined
+					profilesMap[user.id]!.email = user.email || profilesMap[user.id]?.email || null;
+				} else if (user.id) {
+					// Se non abbiamo un profilo per questo utente, creiamo uno con le informazioni che abbiamo
+					profilesMap[user.id] = {
+						id: user.id,
+						username: null,
+						avatar_url: null,
+						email: user.email,
+					};
+				}
+			});
+		}
+
+		// Aggiungiamo le informazioni del profilo a ciascun commento
+		return data.map((comment) => ({
+			...comment,
+			profiles: profilesMap[comment.user_id] || {
+				username: null,
+				avatar_url: null,
+				email: null,
+			},
+		}));
+	}
+
+	return data || [];
+}
+
+export async function addComment(postId: string, userId: string, comment: string, parentId?: string) {
+	const { data, error } = await supabase
+		.from("posts_comments")
+		.insert({
+			post_id: postId,
+			user_id: userId,
+			comment,
+			parent_id: parentId,
+		})
+		.select()
+		.single();
+
+	if (error) throw error;
+	return data;
+}
+
+export async function updateComment(commentId: string, userId: string, comment: string) {
+	const { data, error } = await supabase
+		.from("posts_comments")
+		.update({
+			comment,
+			updated_at: new Date().toISOString(),
+		})
+		.eq("id", commentId)
+		.eq("user_id", userId)
+		.select()
+		.single();
+
+	if (error) throw error;
+	return data;
+}
+
+export async function deleteComment(commentId: string, userId: string) {
+	// Utilizziamo un soft delete aggiornando il campo deleted_at
+	const { data, error } = await supabase
+		.from("posts_comments")
+		.update({
+			deleted_at: new Date().toISOString(),
+		})
+		.eq("id", commentId)
+		.eq("user_id", userId)
+		.select();
+
+	if (error) throw error;
+	return data;
+}
