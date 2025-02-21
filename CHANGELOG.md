@@ -1,3 +1,18 @@
+# [1.10.0](https://github.com/Liago/AZReader/compare/v1.9.0...v1.10.0) (2025-02-21)
+
+
+### Bug Fixes
+
+* new modern TS config ([4c8a37c](https://github.com/Liago/AZReader/commit/4c8a37cfffd4a045dd739c6841c5004a3ffbe735))
+* styles on iOS (wip) ([651864b](https://github.com/Liago/AZReader/commit/651864b6cc92e899acf9439f408625c6a27a9eb8))
+
+
+### Features
+
+* added comments count on article ([3dc905c](https://github.com/Liago/AZReader/commit/3dc905cf784b17e0971d3d4631fe1fbe1fe66cae))
+* added post comments management ([5f8baff](https://github.com/Liago/AZReader/commit/5f8baff8f6c35694d4c01115ab259ce204859774))
+* installed date to manage insertion ([c141ddc](https://github.com/Liago/AZReader/commit/c141ddc6992071846dc89e29b7b2110342e6c14d))
+
 # [1.9.0](https://github.com/Liago/AZReader/compare/v1.8.0...v1.9.0) (2025-02-14)
 
 
