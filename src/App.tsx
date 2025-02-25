@@ -8,7 +8,7 @@ import { persistor, store } from "@store/store";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { App as CapApp } from "@capacitor/app";
 import Home from "@pages/home";
-import ViewMessage from "@pages/viewMessage";
+
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 import VerifyEmail from "@pages/verifyEmail";
 import { supabase } from "@store/rest";
@@ -26,6 +26,8 @@ import "@ionic/react/css/display.css";
 import "./theme/variables.css";
 import "./css/main.css";
 import { XCircleIcon } from "lucide-react";
+import ParserHeaderTest from "@pages/Test";
+import ViewMessage from "@pages/ViewMessage";
 
 interface AppUrlOpenListenerEvent {
 	url: string;
@@ -207,6 +209,23 @@ const AppContent: React.FC = () => {
 							console.error("Error processing URL:", error);
 						}
 					}
+					// Gestione dei deep link per gli articoli
+					else if (url.startsWith("azreader://article/")) {
+						try {
+							// Estrai l'ID dell'articolo dal deep link
+							const articleId = url.replace("azreader://article/", "").split("?")[0];
+							console.log("Articolo condiviso con ID:", articleId);
+
+							if (articleId) {
+								// Naviga all'articolo
+								window.location.href = `/article/${articleId}`;
+							} else {
+								console.error("ID articolo mancante nel deep link");
+							}
+						} catch (error) {
+							console.error("Errore durante l'elaborazione del deep link dell'articolo:", error);
+						}
+					}
 				});
 
 				const stateChangeListener = await CapApp.addListener("appStateChange", ({ isActive }: AppStateChangeListenerEvent) => {
@@ -236,6 +255,7 @@ const AppContent: React.FC = () => {
 				<Route path="/article/:id" component={ViewMessage} exact />
 				<Route path="/verify-email" component={VerifyEmail} exact />
 				<Route path="/" exact render={() => <Redirect to="/home" />} />
+				<Route path="/test" component={ParserHeaderTest} exact />
 				<Route render={() => <Redirect to="/home" />} />
 			</IonRouterOutlet>
 		</IonApp>

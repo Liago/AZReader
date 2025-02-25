@@ -28,7 +28,7 @@ import {
 } from "ionicons/icons";
 import { formatDistanceToNow } from "date-fns";
 import { it } from "date-fns/locale";
-import { Session } from "@supabase/auth-js/dist/module/lib/types";
+import { Session } from "@supabase/supabase-js"; // Importazione corretta di Session
 import { usePostComments, Comment } from "@hooks/usePostComments";
 import { useCustomToast } from "@hooks/useIonToast";
 

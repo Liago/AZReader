@@ -1,17 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import {
-	IonList,
-	IonRefresher,
-	IonRefresherContent,
-	IonInfiniteScroll,
-	IonInfiniteScrollContent,
-	RefresherEventDetail,
-	useIonModal,
-} from "@ionic/react";
+import { IonList, IonRefresher, IonRefresherContent, IonInfiniteScroll, IonInfiniteScrollContent, RefresherEventDetail } from "@ionic/react";
 import { Session } from "@supabase/auth-js";
 import { Clock } from "lucide-react";
+import { useHistory } from "react-router-dom";
 import MessageListItem from "./messageListItem";
-import Article from "./article";
 import LoadingSpinner from "./ui/loadingSpinner";
 import useArticles from "@hooks/useArticles";
 import { useCustomToast } from "@hooks/useIonToast";
@@ -69,74 +61,12 @@ const TodaysGoal: React.FC = () => {
 	);
 };
 
-const convertPostToArticleParsed = (post: Post): ArticleParsed => {
-	return {
-		title: post.title ?? "",
-		content: post.content ?? "",
-		date_published: post.date_published ?? "",
-		lead_image_url: post.lead_image_url ?? "",
-		url: post.url ?? "",
-		domain: post.domain ?? "",
-		excerpt: post.excerpt ?? "",
-	};
-};
-
 const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 	const { postFromDb, fetchPostsFromDb, changePage, pagination, isLoading, refresh } = useArticles(session) as UseArticlesReturn;
 	const [todaysPosts, setTodaysPosts] = useState<Post[]>([]);
-	const [selectedArticle, setSelectedArticle] = useState<ArticleParsed | null>(null);
-	const [currentPostId, setCurrentPostId] = useState<string | null>(null);
 	const [isInfiniteDisabled, setInfiniteDisabled] = useState<boolean>(false);
-	const isModalDismissing = useRef(false);
 	const showToast = useCustomToast();
-
-	const ArticleWrapper = useCallback(
-		({ onDismiss }: { onDismiss: () => void }) => {
-			if (!selectedArticle || !currentPostId) return null;
-			return (
-				<Article
-					articleParsed={selectedArticle}
-					postId={currentPostId}
-					onDismiss={onDismiss}
-					session={session} // Aggiungi la sessione qui
-				/>
-			);
-		},
-		[selectedArticle, currentPostId]
-	);
-
-	const [present, dismiss] = useIonModal(ArticleWrapper, {
-		onDismiss: () => {
-			isModalDismissing.current = true;
-			dismiss();
-		},
-	});
-
-	useEffect(() => {
-		if (isModalDismissing.current) {
-			const timer = setTimeout(() => {
-				setSelectedArticle(null);
-				setCurrentPostId(null);
-				isModalDismissing.current = false;
-			}, 150);
-			return () => clearTimeout(timer);
-		}
-	}, [isModalDismissing.current]);
-
-	const handleOpenArticle = useCallback(
-		(post: Post) => {
-			if (isModalDismissing.current) return;
-
-			setSelectedArticle(convertPostToArticleParsed(post));
-			setCurrentPostId(post.id);
-			present({
-				breakpoints: [0, 1],
-				initialBreakpoint: 1,
-				backdropBreakpoint: 1,
-			});
-		},
-		[present]
-	);
+	const history = useHistory();
 
 	useEffect(() => {
 		fetchPostsFromDb(true);
@@ -190,11 +120,20 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 		[showToast, refresh]
 	);
 
+	// Gestisce la navigazione all'articolo invece di aprire una modale
+	const handleOpenArticle = useCallback(
+		(post: Post) => {
+			// Naviga all'articolo utilizzando l'ID del post
+			history.push(`/article/${post.id}`);
+		},
+		[history]
+	);
+
 	const renderTopPicks = () => {
 		if (isEmpty(todaysPosts)) return null;
 
 		return (
-			<div className="px-4 mb-8">
+			<div className="px-4 mb-8 pt-32">
 				<TodaysGoal />
 				<h2 className="text-2xl font-bold mb-4">Today's pick</h2>
 				<div className="flex overflow-x-auto snap-x snap-mandatory pb-4 px-4">
