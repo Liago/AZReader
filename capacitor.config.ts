@@ -28,14 +28,38 @@ const config: ExtendedCapacitorConfig = {
 		CapacitorHttp: {
 			enabled: true,
 		},
+		Share: {
+			enabled: true,
+		},
+	},
+	android: {
+		intentFilters: [
+			{
+				action: "VIEW",
+				autoVerify: true,
+				data: [
+					{
+						scheme: "azreader",
+						host: "auth",
+						pathPrefix: "/confirm",
+					},
+					{
+						scheme: "azreader",
+						host: "article",
+						pathPrefix: "/",
+					},
+				],
+				category: ["BROWSABLE", "DEFAULT"],
+			},
+		],
 	},
 	ios: {
 		scheme: "azreader",
 		limitsNavigationsToAppBoundDomains: true,
 		contentInset: "always",
 		allowsLinkPreview: false,
-		backgroundColor: "#ffffff", // Aggiunto questo
-		preferredContentMode: "mobile", // Aggiunto questo
+		backgroundColor: "#ffffff",
+		preferredContentMode: "mobile",
 	},
 };
 

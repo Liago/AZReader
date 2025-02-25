@@ -30,6 +30,7 @@
 			<key>CFBundleURLPatterns</key>
 			<array>
 				<string>auth/*</string>
+				<string>article/*</string>
 			</array>
 			<key>CFBundleURLSchemes</key>
 			<array>
@@ -90,5 +91,12 @@
 	<array>
 		<string>localhost</string>
 	</array>
+	<!-- Permessi per la condivisione -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Questa app richiede l'accesso alla libreria foto per salvare immagini condivise</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Questa app richiede l'accesso alla libreria foto per condividere immagini</string>
+	<key>MinimumOSVersion</key>
+	<string>16.0</string>
 </dict>
 </plist>
