@@ -1,3 +1,12 @@
+# [1.11.0](https://github.com/Liago/AZReader/compare/v1.10.0...v1.11.0) (2025-02-25)
+
+
+### Features
+
+* added a parser Test page ([0bda11c](https://github.com/Liago/AZReader/commit/0bda11cfd2795a9305a591cd93b2189c9c121cae))
+* added new Share button with its service ([a31d7fc](https://github.com/Liago/AZReader/commit/a31d7fc37de959620712788cc69d88142d87134e))
+* update Ionic / React to latest ([9d8eeec](https://github.com/Liago/AZReader/commit/9d8eeecbea2556da1466a64724b55b7cb28ef6ce))
+
 # [1.10.0](https://github.com/Liago/AZReader/compare/v1.9.0...v1.10.0) (2025-02-21)
 
 

@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.10.0</string>
+	<string>1.11.0</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -39,7 +39,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1.10.0</string>
+	<string>1.11.0</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>capacitor</string>
@@ -47,6 +47,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>MinimumOSVersion</key>
+	<string>16.0</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -64,6 +66,10 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Questa app richiede l'accesso alla libreria foto per salvare immagini condivise</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Questa app richiede l'accesso alla libreria foto per condividere immagini</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -91,12 +97,5 @@
 	<array>
 		<string>localhost</string>
 	</array>
-	<!-- Permessi per la condivisione -->
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Questa app richiede l'accesso alla libreria foto per salvare immagini condivise</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Questa app richiede l'accesso alla libreria foto per condividere immagini</string>
-	<key>MinimumOSVersion</key>
-	<string>16.0</string>
 </dict>
 </plist>
