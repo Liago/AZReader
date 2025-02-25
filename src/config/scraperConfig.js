@@ -65,4 +65,8 @@ export const scraperConfig = [
 		"url": "www.engadget.com",
 		"parser": "rapidApi",
 	},
+	// {
+	// 	"url": "www.ilpost.it",
+	// 	"parser": "rapidApi",
+	// }
 ]
