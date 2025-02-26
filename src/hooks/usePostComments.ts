@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Session } from "@supabase/auth-js/dist/module/lib/types";
-import { getPostCommentsCount, getPostComments, addComment, updateComment, deleteComment } from "@store/rest";
+import { getPostCommentsCount, getPostComments, addComment, updateComment, deleteComment, getHierarchicalComments } from "@store/rest";
 
 export interface CommentProfile {
-	username: string;
+	username: string | null;
 	avatar_url: string | null;
-	email?: string;
+	email?: string | null;
 	user_id?: string;
 }
 
@@ -19,8 +19,13 @@ export interface Comment {
 	profiles: CommentProfile;
 }
 
+export interface CommentWithReplies extends Comment {
+	replies: CommentWithReplies[];
+}
+
 interface UsePostCommentsReturn {
 	comments: Comment[];
+	organizedComments: CommentWithReplies[];
 	commentsCount: number;
 	isLoading: boolean;
 	error: Error | null;
@@ -32,6 +37,7 @@ interface UsePostCommentsReturn {
 
 export const usePostComments = (postId: string, session: Session | null): UsePostCommentsReturn => {
 	const [comments, setComments] = useState<Comment[]>([]);
+	const [organizedComments, setOrganizedComments] = useState<CommentWithReplies[]>([]);
 	const [commentsCount, setCommentsCount] = useState<number>(0);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [error, setError] = useState<Error | null>(null);
@@ -40,6 +46,37 @@ export const usePostComments = (postId: string, session: Session | null): UsePos
 	useEffect(() => {
 		console.log("usePostComments hook:", { postId, sessionExists: !!session, userId: session?.user?.id });
 	}, [postId, session]);
+
+	// Funzione per organizzare i commenti in una struttura gerarchica
+	const organizeCommentsHierarchy = useCallback((flatComments: Comment[]): CommentWithReplies[] => {
+		const commentMap: Record<string, CommentWithReplies> = {};
+		const rootComments: CommentWithReplies[] = [];
+
+		// Prima pass: popola la mappa dei commenti
+		flatComments.forEach((comment) => {
+			commentMap[comment.id] = {
+				...comment,
+				replies: [],
+			};
+		});
+
+		// Seconda pass: organizza la gerarchia
+		flatComments.forEach((comment) => {
+			// Usiamo l'asserzione di tipo per comunicare a TypeScript che questo commento esiste
+			const commentWithReplies = commentMap[comment.id] as CommentWithReplies;
+
+			if (comment.parent_id && comment.parent_id in commentMap) {
+				// Asserzione di tipo anche per il commento padre
+				const parentComment = commentMap[comment.parent_id] as CommentWithReplies;
+				parentComment.replies.push(commentWithReplies);
+			} else {
+				// È un commento principale
+				rootComments.push(commentWithReplies);
+			}
+		});
+
+		return rootComments;
+	}, []);
 
 	const fetchComments = useCallback(async () => {
 		if (!postId) {
@@ -52,10 +89,12 @@ export const usePostComments = (postId: string, session: Session | null): UsePos
 
 		try {
 			console.log("Recupero commenti per postId:", postId);
+
+			// Versione originale: ottiene commenti piatti
 			const fetchedComments = await getPostComments(postId);
 			console.log("Commenti recuperati:", fetchedComments);
 
-			// I commenti già arrivano con il profilo collegato dalla funzione getPostComments modificata
+			// I commenti già arrivano con il profilo collegato dalla funzione getPostComments
 			const typedComments: Comment[] = Array.isArray(fetchedComments)
 				? fetchedComments.map((comment: any) => ({
 						id: comment.id,
@@ -74,13 +113,17 @@ export const usePostComments = (postId: string, session: Session | null): UsePos
 				: [];
 
 			setComments(typedComments);
+
+			// Organizziamo anche i commenti in struttura gerarchica
+			const organized = organizeCommentsHierarchy(typedComments);
+			setOrganizedComments(organized);
 		} catch (err) {
 			console.error("Error fetching comments:", err);
 			setError(err instanceof Error ? err : new Error("Failed to fetch comments"));
 		} finally {
 			setIsLoading(false);
 		}
-	}, [postId]);
+	}, [postId, organizeCommentsHierarchy]);
 
 	const fetchCommentsCount = useCallback(async () => {
 		if (!postId) {
@@ -217,6 +260,7 @@ export const usePostComments = (postId: string, session: Session | null): UsePos
 
 	return {
 		comments,
+		organizedComments,
 		commentsCount,
 		isLoading,
 		error,

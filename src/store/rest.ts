@@ -136,6 +136,13 @@ interface ProfileMap {
 	[key: string]: Profile;
 }
 
+/**
+ * Recupera tutti i commenti di un post, inclusi i dati dell'utente che ha commentato
+ * e organizzati in modo da facilitare la visualizzazione gerarchica.
+ *
+ * @param postId L'ID del post di cui recuperare i commenti
+ * @returns Array di commenti con profili utente collegati
+ */
 export async function getPostComments(postId: string) {
 	// Modifichiamo la query per evitare l'uso della relazione implicita
 	const { data, error } = await supabase
@@ -195,17 +202,11 @@ export async function getPostComments(postId: string) {
 		// Aggiungiamo le informazioni dell'email dagli utenti
 		if (users) {
 			users.forEach((user: any) => {
-				if (user.id && profilesMap[user.id]) {
-					// Utilizziamo l'operatore di optional chaining per evitare errori
-					// se profilesMap[user.id] è undefined
-					profilesMap[user.id]!.email = user.email || profilesMap[user.id]?.email || null;
-				} else if (user.id) {
-					// Se non abbiamo un profilo per questo utente, creiamo uno con le informazioni che abbiamo
+				if (user.id) {
+					// Aggiorniamo profilesMap in modo type-safe
 					profilesMap[user.id] = {
-						id: user.id,
-						username: null,
-						avatar_url: null,
-						email: user.email,
+						...(profilesMap[user.id] || { id: user.id, username: null, avatar_url: null }),
+						email: user.email || profilesMap[user.id]?.email || null,
 					};
 				}
 			});
@@ -225,19 +226,35 @@ export async function getPostComments(postId: string) {
 	return data || [];
 }
 
+/**
+ * Aggiungi un nuovo commento ad un post.
+ * Se viene specificato un parentId, il commento sarà considerato una risposta
+ * al commento indicato.
+ *
+ * @param postId L'ID del post a cui aggiungere il commento
+ * @param userId L'ID dell'utente che sta commentando
+ * @param comment Il contenuto del commento
+ * @param parentId Opzionale: l'ID del commento a cui si sta rispondendo
+ * @returns Il commento aggiunto
+ */
 export async function addComment(postId: string, userId: string, comment: string, parentId?: string) {
-	const { data, error } = await supabase
-		.from("posts_comments")
-		.insert({
-			post_id: postId,
-			user_id: userId,
-			comment,
-			parent_id: parentId,
-		})
-		.select()
-		.single();
+	console.log(`Aggiunta commento - postId: ${postId}, userId: ${userId}, parentId: ${parentId || "nessun parent"}`);
 
-	if (error) throw error;
+	const commentData = {
+		post_id: postId,
+		user_id: userId,
+		comment,
+		parent_id: parentId || null, // Assicuriamoci che sia null se non specificato
+	};
+
+	const { data, error } = await supabase.from("posts_comments").insert(commentData).select().single();
+
+	if (error) {
+		console.error("Errore durante l'aggiunta del commento:", error);
+		throw error;
+	}
+
+	console.log("Commento aggiunto con successo:", data);
 	return data;
 }
 
@@ -258,7 +275,7 @@ export async function updateComment(commentId: string, userId: string, comment: 
 }
 
 export async function deleteComment(commentId: string, userId: string) {
-	// Utilizziamo un soft delete aggiornando il campo deleted_at
+	// Utilizzando il soft delete (aggiornamento del campo deleted_at)
 	const { data, error } = await supabase
 		.from("posts_comments")
 		.update({
@@ -270,4 +287,62 @@ export async function deleteComment(commentId: string, userId: string) {
 
 	if (error) throw error;
 	return data;
+}
+
+/**
+ * Recupera le risposte dirette a un commento specifico
+ *
+ * @param commentId L'ID del commento di cui recuperare le risposte
+ * @returns Array di commenti che sono risposte al commento indicato
+ */
+export async function getCommentReplies(commentId: string) {
+	const { data, error } = await supabase
+		.from("posts_comments")
+		.select("*")
+		.eq("parent_id", commentId)
+		.is("deleted_at", null)
+		.order("created_at", { ascending: true });
+
+	if (error) throw error;
+	return data || [];
+}
+
+/**
+ * Recupera tutti i commenti di un post organizzati in struttura gerarchica
+ *
+ * @param postId L'ID del post di cui recuperare i commenti
+ * @returns Oggetto con commenti principali e le loro risposte
+ */
+export async function getHierarchicalComments(postId: string) {
+	// Prima ottieni tutti i commenti con i profili associati
+	const allComments = await getPostComments(postId);
+
+	// Organizza i commenti in una struttura gerarchica
+	const rootComments: any[] = [];
+	const commentMap: Record<string, any> = {};
+
+	// Prima pass: crea la mappa di tutti i commenti per referenza rapida
+	allComments.forEach((comment) => {
+		commentMap[comment.id] = {
+			...comment,
+			replies: [],
+		};
+	});
+
+	// Seconda pass: organizza i commenti in struttura ad albero
+	allComments.forEach((comment) => {
+		if (comment.parent_id && commentMap[comment.parent_id]) {
+			// È una risposta, aggiungila al commento genitore
+			commentMap[comment.parent_id].replies.push(commentMap[comment.id]);
+		} else {
+			// È un commento radice, aggiungilo all'array principale
+			rootComments.push(commentMap[comment.id]);
+		}
+	});
+
+	return {
+		rootComments,
+		allComments,
+		totalCount: allComments.length,
+	};
 }
