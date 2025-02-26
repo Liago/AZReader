@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/Liago/AZReader/compare/v1.11.0...v1.12.0) (2025-02-26)
+
+
+### Features
+
+* new comments UI and replies management ([7373ae5](https://github.com/Liago/AZReader/commit/7373ae519eb6ee2dd874f4901974b5fbdd9493e0))
+
 # [1.11.0](https://github.com/Liago/AZReader/compare/v1.10.0...v1.11.0) (2025-02-25)
 
 
