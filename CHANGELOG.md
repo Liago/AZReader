@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/Liago/AZReader/compare/v1.12.0...v1.13.0) (2025-02-27)
+
+
+### Features
+
+* comments UI revamped ([ff6b973](https://github.com/Liago/AZReader/commit/ff6b973aea588713167b805e50c778a0ff1809b5))
+
 # [1.12.0](https://github.com/Liago/AZReader/compare/v1.11.0...v1.12.0) (2025-02-26)
 
 
