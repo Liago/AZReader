@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	IonIcon,
 	IonSpinner,
@@ -8,34 +8,25 @@ import {
 	IonButtons,
 	IonButton,
 	IonFooter,
-	useIonModal,
-	IonPage,
-	IonSegment,
-	IonSegmentButton,
-	IonLabel,
-	IonRefresher,
-	IonRefresherContent,
-	RefresherEventDetail,
 	IonSkeletonText,
 	IonRippleEffect,
+	IonModal,
+	IonTitle,
+	IonBackdrop,
 } from "@ionic/react";
 import {
 	chevronBack,
 	ellipsisHorizontal,
-	heartOutline,
-	heart,
 	chatbubbleOutline,
 	closeOutline,
 	send,
-	thumbsUp,
-	thumbsUpOutline,
 	timeOutline,
-	lockClosedOutline,
 	flagOutline,
 	shareOutline,
 	trashOutline,
 	imageOutline,
 	happyOutline,
+	lockClosedOutline,
 } from "ionicons/icons";
 import { Session } from "@supabase/supabase-js";
 import { usePostComments, Comment } from "@hooks/usePostComments";
@@ -55,35 +46,35 @@ interface CommentWithReplies extends Comment {
 	replies: CommentWithReplies[];
 }
 
-// Colori personalizzati e gradients per gli avatar
-const AVATAR_GRADIENTS = [
-	"from-violet-500 to-purple-500",
-	"from-blue-500 to-cyan-400",
-	"from-emerald-500 to-teal-400",
-	"from-orange-500 to-amber-400",
-	"from-pink-500 to-rose-400",
-	"from-indigo-500 to-blue-400",
+// Colori personalizzati per gli avatar
+const AVATAR_COLORS = [
+	"bg-gradient-to-br from-pink-500 to-rose-500",
+	"bg-gradient-to-br from-blue-500 to-indigo-600",
+	"bg-gradient-to-br from-amber-400 to-orange-500",
+	"bg-gradient-to-br from-emerald-400 to-teal-500",
+	"bg-gradient-to-br from-violet-500 to-purple-600",
+	"bg-gradient-to-br from-red-500 to-pink-600",
 ];
 
-// Funzione per generare un gradiente casuale ma deterministico in base all'email
-const getGradientForEmail = (email: string | null | undefined): string => {
-	if (!email) return AVATAR_GRADIENTS[0] || ''; // Default gradient per email mancante
+// Funzione per generare un colore casuale ma deterministico in base all'email
+const getAvatarColorForEmail = (email: string | null | undefined): string => {
+	if (!email) return AVATAR_COLORS[0] || '';
 
 	let sum = 0;
 	for (let i = 0; i < email.length; i++) {
 		sum += email.charCodeAt(i);
 	}
-	const index = sum % AVATAR_GRADIENTS.length;
-	return AVATAR_GRADIENTS[index] || '';
+	const index = sum % AVATAR_COLORS.length;
+	return AVATAR_COLORS[index] || '';
 };
 
 const Avatar: React.FC<{
 	email: string | null | undefined;
 	size?: "xs" | "sm" | "md" | "lg";
-	showStatus?: boolean;
-}> = ({ email, size = "md", showStatus = false }) => {
+	className?: string;
+}> = ({ email, size = "md", className = "" }) => {
 	const { initials } = getAuthorInfo(email);
-	const gradient = getGradientForEmail(email);
+	const bgColor = getAvatarColorForEmail(email);
 
 	const sizeClasses = {
 		xs: "w-6 h-6 text-xs",
@@ -93,143 +84,119 @@ const Avatar: React.FC<{
 	};
 
 	return (
-		<div className="relative">
-			<div
-				className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-medium shadow-sm`}
-			>
-				{initials}
-			</div>
-			{showStatus && <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>}
+		<div
+			className={`${sizeClasses[size]} ${bgColor} rounded-full flex items-center justify-center text-white font-semibold shadow-md ${className}`}
+		>
+			{initials}
 		</div>
 	);
 };
 
 interface CommentItemProps {
 	comment: CommentWithReplies;
-	toggleLike: (id: string) => void;
-	likedComments: Set<string>;
 	startReply: (id: string, author: string) => void;
 	handleDelete: (id: string) => void;
 	level?: number;
-	isCurrentUser?: boolean;
 	session: Session | null;
 }
 
-const CommentItem: React.FC<CommentItemProps> = ({
-	comment,
-	toggleLike,
-	likedComments,
-	startReply,
-	handleDelete,
-	level = 0,
-	isCurrentUser = false,
-	session,
-}) => {
-	const { authorName, initials } = getAuthorInfo(comment.profiles?.email);
-	const isLiked = likedComments.has(comment.id);
+const CommentItem: React.FC<CommentItemProps> = ({ comment, startReply, handleDelete, level = 0, session }) => {
+	const { authorName } = getAuthorInfo(comment.profiles?.email);
 	const timeAgo = getTimeAgo(comment.created_at);
-	const likeCount = Math.floor(Math.random() * 15) + (isLiked ? 1 : 0);
 	const [showOptions, setShowOptions] = useState(false);
 
 	// Verifica se il commento è dell'utente corrente
 	const isOwnComment = session?.user?.id === comment.user_id;
 
 	return (
-		<div className={`relative ${level > 0 ? "ml-8 pl-4 border-l-2 border-gray-100" : ""}`}>
-			<div className={`py-3 px-4 ${level === 0 ? "border-b border-gray-100" : "mt-2"}`}>
-				<div className="flex items-start gap-3">
-					<Avatar email={comment.profiles?.email} showStatus={Math.random() > 0.7} />
+		<div className={`${level > 0 ? "pl-6 ml-2 relative" : ""}`}>
+			{level > 0 && <div className="absolute left-0 top-0 h-full w-0.5 bg-gradient-to-b from-gray-300 to-gray-200 rounded-full"></div>}
 
-					<div className="flex-1 min-w-0">
+			<div className={`mb-3 ${level === 0 ? "border-b border-gray-100 pb-3" : ""}`}>
+				<div className="flex items-start gap-3">
+					<Avatar email={comment.profiles?.email} />
+
+					<div className="flex-1 min-w-0 bg-gray-50 rounded-2xl px-4 py-3 shadow-sm">
 						<div className="flex items-center justify-between mb-1">
 							<div className="flex items-center">
-								<h4 className="font-semibold text-gray-900 mr-2">{authorName}</h4>
-								{isOwnComment && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Tu</span>}
+								<span className="font-semibold text-gray-900">{authorName}</span>
+								{isOwnComment && (
+									<span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Tu</span>
+								)}
 							</div>
 
-							<button className="p-1 text-gray-400 hover:text-gray-600" onClick={() => setShowOptions(!showOptions)}>
-								<IonIcon icon={ellipsisHorizontal} />
-							</button>
+							<div className="flex items-center gap-1">
+								<span className="text-xs text-gray-400">{timeAgo}</span>
+								<button
+									className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+									onClick={() => setShowOptions(!showOptions)}
+								>
+									<IonIcon icon={ellipsisHorizontal} />
+								</button>
+							</div>
 						</div>
 
-						<p className="text-gray-800 text-sm mb-2">{comment.comment}</p>
+						<p className="text-gray-800 text-sm">{comment.comment}</p>
 
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-3">
-								<button
-									className={`flex items-center text-xs ${
-										isLiked ? "text-blue-500" : "text-gray-500"
-									} transition-colors duration-200`}
-									onClick={() => toggleLike(comment.id)}
-								>
-									<IonIcon icon={isLiked ? thumbsUp : thumbsUpOutline} className="mr-1" />
-									<span>{likeCount > 0 ? likeCount : ""}</span>
-								</button>
-
-								<button
-									className="flex items-center text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200"
-									onClick={() => startReply(comment.id, authorName)}
-								>
-									<IonIcon icon={chatbubbleOutline} className="mr-1" />
-									<span>Rispondi</span>
-								</button>
-							</div>
-
-							<div className="text-xs text-gray-400 flex items-center">
-								<IonIcon icon={timeOutline} className="mr-1 text-xs" />
-								{timeAgo}
-							</div>
+						<div className="mt-2">
+							<button
+								className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+								onClick={() => startReply(comment.id, authorName)}
+							>
+								<IonIcon icon={chatbubbleOutline} className="mr-1 text-sm" />
+								<span>Rispondi</span>
+							</button>
 						</div>
 					</div>
 				</div>
 
 				{/* Menu opzioni */}
 				{showOptions && (
-					<div className="absolute right-4 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-1 text-sm">
-						{isOwnComment && (
+					<>
+						<IonBackdrop visible={true} tappable={true} stopPropagation={true} onClick={() => setShowOptions(false)} />
+						<div className="absolute right-4 mt-2 w-48 bg-white rounded-xl shadow-xl z-10 py-1 overflow-hidden">
+							{isOwnComment && (
+								<button
+									className="w-full px-4 py-3 text-left text-red-500 hover:bg-gray-50 flex items-center font-medium"
+									onClick={() => {
+										handleDelete(comment.id);
+										setShowOptions(false);
+									}}
+								>
+									<IonIcon icon={trashOutline} className="mr-3 text-lg" />
+									<span>Elimina</span>
+								</button>
+							)}
 							<button
-								className="w-full px-4 py-2 text-left text-red-500 hover:bg-gray-50 flex items-center"
-								onClick={() => {
-									handleDelete(comment.id);
-									setShowOptions(false);
-								}}
+								className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center font-medium"
+								onClick={() => setShowOptions(false)}
 							>
-								<IonIcon icon={trashOutline} className="mr-2" />
-								Elimina
+								<IonIcon icon={flagOutline} className="mr-3 text-lg" />
+								<span>Segnala</span>
 							</button>
-						)}
-						<button
-							className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center"
-							onClick={() => setShowOptions(false)}
-						>
-							<IonIcon icon={flagOutline} className="mr-2" />
-							Segnala
-						</button>
-						<button
-							className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center"
-							onClick={() => setShowOptions(false)}
-						>
-							<IonIcon icon={shareOutline} className="mr-2" />
-							Condividi
-						</button>
-					</div>
+							<button
+								className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center font-medium"
+								onClick={() => setShowOptions(false)}
+							>
+								<IonIcon icon={shareOutline} className="mr-3 text-lg" />
+								<span>Condividi</span>
+							</button>
+						</div>
+					</>
 				)}
 			</div>
 
 			{/* Commenti annidati */}
 			{comment.replies?.length > 0 && (
-				<div className="space-y-1">
+				<div className="mt-2">
 					{comment.replies.map((reply) => (
 						<CommentItem
 							key={reply.id}
 							comment={reply}
-							toggleLike={toggleLike}
-							likedComments={likedComments}
 							startReply={startReply}
 							handleDelete={handleDelete}
 							level={level + 1}
 							session={session}
-							isCurrentUser={session?.user?.id === reply.user_id}
 						/>
 					))}
 				</div>
@@ -240,20 +207,17 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
 // Componente per loading skeleton
 const CommentSkeleton: React.FC = () => (
-	<div className="p-4 border-b border-gray-100">
-		<div className="flex items-start gap-3">
-			<div className="w-10 h-10 rounded-full bg-gray-200"></div>
-			<div className="flex-1">
-				<div className="flex justify-between items-center mb-2">
-					<IonSkeletonText animated style={{ width: "30%", height: "14px" }}></IonSkeletonText>
-					<IonSkeletonText animated style={{ width: "10%", height: "14px" }}></IonSkeletonText>
-				</div>
-				<IonSkeletonText animated style={{ width: "90%", height: "16px" }}></IonSkeletonText>
-				<IonSkeletonText animated style={{ width: "95%", height: "16px" }}></IonSkeletonText>
-				<div className="flex justify-between mt-2">
-					<IonSkeletonText animated style={{ width: "20%", height: "12px" }}></IonSkeletonText>
-					<IonSkeletonText animated style={{ width: "15%", height: "12px" }}></IonSkeletonText>
-				</div>
+	<div className="p-4 flex items-start gap-3 animate-pulse">
+		<div className="w-10 h-10 rounded-full bg-gray-200"></div>
+		<div className="flex-1 bg-gray-50 rounded-2xl px-4 py-3">
+			<div className="flex justify-between items-center mb-3">
+				<IonSkeletonText animated style={{ width: "30%", height: "14px", borderRadius: "4px" }}></IonSkeletonText>
+				<IonSkeletonText animated style={{ width: "10%", height: "14px", borderRadius: "4px" }}></IonSkeletonText>
+			</div>
+			<IonSkeletonText animated style={{ width: "100%", height: "16px", borderRadius: "4px" }}></IonSkeletonText>
+			<IonSkeletonText animated style={{ width: "90%", height: "16px", borderRadius: "4px", marginTop: "4px" }}></IonSkeletonText>
+			<div className="mt-3">
+				<IonSkeletonText animated style={{ width: "20%", height: "12px", borderRadius: "4px" }}></IonSkeletonText>
 			</div>
 		</div>
 	</div>
@@ -265,66 +229,40 @@ const NoComments: React.FC<{ session: Session | null }> = ({ session }) => (
 		<div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
 			<IonIcon icon={chatbubbleOutline} className="text-gray-400 text-4xl" />
 		</div>
-		<h3 className="text-lg font-medium text-gray-800 mb-2">Nessun commento</h3>
-		<p className="text-gray-500 mb-6 max-w-xs">
+		<h3 className="text-xl font-bold text-gray-800 mb-2">Nessun commento</h3>
+		<p className="text-gray-500 mb-8 max-w-xs">
 			{session
 				? "Sii il primo a commentare questo articolo e inizia la conversazione!"
 				: "Accedi per essere il primo a commentare questo articolo."}
 		</p>
 		{!session && (
-			<button className="bg-blue-500 text-white px-6 py-2 rounded-full font-medium shadow-sm hover:bg-blue-600 transition-colors">
+			<button className="bg-blue-600 text-white px-6 py-3 rounded-full font-medium shadow-md hover:bg-blue-700 transition-colors">
 				Accedi per commentare
 			</button>
 		)}
 	</div>
 );
 
-// Componente per il modale dei commenti
-const CommentsModalContent: React.FC<{
+// Componente per il contenuto dei commenti
+const CommentsContent: React.FC<{
 	postId: string;
 	session: Session | null;
 	onDismiss: () => void;
 }> = ({ postId, session, onDismiss }) => {
 	const [newComment, setNewComment] = useState("");
 	const [isSending, setIsSending] = useState(false);
-	const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
 	const [replyingTo, setReplyingTo] = useState<string | null>(null);
 	const [replyingToAuthor, setReplyingToAuthor] = useState<string>("");
-	const [activeSegment, setActiveSegment] = useState<"tutti" | "popolari">("tutti");
 	const [isCommenting, setIsCommenting] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const contentRef = useRef<HTMLIonContentElement>(null);
 	const showToast = useCustomToast();
 
-	// Prendiamo l'email dallo store Redux
+	// Prendiamo le credenziali utente dallo store Redux
 	const userState = useSelector((state: RootState) => state.user);
 	const userEmail = userState.credentials?.email || "";
 
-	const { comments, organizedComments, commentsCount, isLoading, error, addNewComment, deleteExistingComment, refreshComments } = usePostComments(
-		postId,
-		session
-	);
-
-	const commentsSorted = useCallback(() => {
-		if (activeSegment === "popolari") {
-			// Ordina per numero di like (simulato qui)
-			return [...organizedComments].sort((a, b) => Math.floor(Math.random() * 20) - Math.floor(Math.random() * 20));
-		}
-		return organizedComments;
-	}, [organizedComments, activeSegment]);
-
-	// Gestione like
-	const toggleLike = (commentId: string) => {
-		setLikedComments((prev) => {
-			const newSet = new Set(prev);
-			if (newSet.has(commentId)) {
-				newSet.delete(commentId);
-			} else {
-				newSet.add(commentId);
-			}
-			return newSet;
-		});
-	};
+	const { comments, organizedComments, commentsCount, isLoading, addNewComment, deleteExistingComment } = usePostComments(postId, session);
 
 	// Gestione risposta
 	const startReply = (commentId: string, author: string) => {
@@ -341,12 +279,6 @@ const CommentsModalContent: React.FC<{
 		setReplyingToAuthor("");
 	};
 
-	// Aggiornamento tramite pull-to-refresh
-	const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
-		await refreshComments();
-		event.detail.complete();
-	};
-
 	// Invio commento
 	const sendComment = async () => {
 		if (!newComment.trim() || isSending) return;
@@ -361,6 +293,7 @@ const CommentsModalContent: React.FC<{
 
 		setIsSending(true);
 		try {
+			// Utilizziamo l'email dell'utente dallo stato Redux
 			await addNewComment(newComment, replyingTo || undefined);
 			setNewComment("");
 			setReplyingTo(null);
@@ -420,48 +353,29 @@ const CommentsModalContent: React.FC<{
 	};
 
 	return (
-		<IonPage>
+		<>
 			<IonHeader className="ion-no-border">
-				<IonToolbar>
+				<IonToolbar className="px-2">
 					<IonButtons slot="start">
-						<IonButton onClick={onDismiss}>
-							<IonIcon icon={chevronBack} />
+						<IonButton className="font-medium" onClick={onDismiss}>
+							<IonIcon icon={chevronBack} slot="start" />
+							<span className="ml-1">Indietro</span>
 						</IonButton>
 					</IonButtons>
-					<div className="text-center font-semibold text-gray-900">Commenti ({commentsCount})</div>
+					<IonTitle className="text-center font-bold">{commentsCount > 0 ? `${commentsCount} commenti` : "Commenti"}</IonTitle>
 					{!isCommenting && (
 						<IonButtons slot="end">
-							<IonButton onClick={toggleCommentingMode}>
-								<IonIcon icon={chatbubbleOutline} className="text-gray-600" />
+							<IonButton onClick={toggleCommentingMode} className="text-blue-600">
+								<IonIcon icon={chatbubbleOutline} />
 							</IonButton>
 						</IonButtons>
 					)}
 				</IonToolbar>
-
-				{/* Segmenti per filtrare i commenti */}
-				<IonToolbar className="px-2">
-					<IonSegment
-						value={activeSegment}
-						onIonChange={(e) => setActiveSegment(e.detail.value as "tutti" | "popolari")}
-						className="rounded-lg h-10 custom-segment"
-					>
-						<IonSegmentButton value="tutti" className="text-sm h-10">
-							<IonLabel>Tutti i commenti</IonLabel>
-						</IonSegmentButton>
-						<IonSegmentButton value="popolari" className="text-sm h-10">
-							<IonLabel>Più popolari</IonLabel>
-						</IonSegmentButton>
-					</IonSegment>
-				</IonToolbar>
 			</IonHeader>
 
-			<IonContent ref={contentRef} className="bg-white ion-padding-bottom">
-				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-					<IonRefresherContent></IonRefresherContent>
-				</IonRefresher>
-
+			<IonContent ref={contentRef} className="bg-white ion-padding">
 				{isLoading ? (
-					<div className="space-y-1">
+					<div className="space-y-4">
 						{[...Array(5)].map((_, i) => (
 							<CommentSkeleton key={i} />
 						))}
@@ -469,18 +383,9 @@ const CommentsModalContent: React.FC<{
 				) : comments.length === 0 ? (
 					<NoComments session={session} />
 				) : (
-					<div className="pb-24">
-						{commentsSorted().map((comment) => (
-							<CommentItem
-								key={comment.id}
-								comment={comment}
-								toggleLike={toggleLike}
-								likedComments={likedComments}
-								startReply={startReply}
-								handleDelete={handleDelete}
-								session={session}
-								isCurrentUser={session?.user?.id === comment.user_id}
-							/>
+					<div className="pb-24 space-y-4">
+						{organizedComments.map((comment) => (
+							<CommentItem key={comment.id} comment={comment} startReply={startReply} handleDelete={handleDelete} session={session} />
 						))}
 					</div>
 				)}
@@ -490,22 +395,22 @@ const CommentsModalContent: React.FC<{
 			{(isCommenting || replyingTo) && (
 				<IonFooter className="ion-no-border shadow-lg">
 					{replyingTo && (
-						<div className="bg-gray-50 px-4 py-2 flex justify-between items-center">
-							<div className="text-sm text-gray-600 flex items-center">
+						<div className="bg-blue-50 px-4 py-3 flex justify-between items-center border-t border-blue-100">
+							<div className="text-sm text-blue-800 flex items-center">
 								<span>Rispondi a </span>
-								<span className="font-medium ml-1 text-blue-600">{replyingToAuthor}</span>
+								<span className="font-semibold ml-1">{replyingToAuthor}</span>
 							</div>
-							<button className="p-1 rounded-full bg-gray-200 h-6 w-6 flex items-center justify-center" onClick={cancelReply}>
-								<IonIcon icon={closeOutline} className="text-gray-600 text-xs" />
+							<button className="p-1 rounded-full bg-blue-100 h-7 w-7 flex items-center justify-center" onClick={cancelReply}>
+								<IonIcon icon={closeOutline} className="text-blue-600 text-sm" />
 							</button>
 						</div>
 					)}
 
-					<div className="bg-white px-4 py-3">
-						<div className="flex items-center gap-2">
+					<div className="bg-white px-4 py-3 border-t border-gray-100">
+						<div className="flex items-center gap-3">
 							<Avatar email={userEmail} size="sm" />
 
-							<div className="flex-1 bg-gray-100 rounded-full flex items-center overflow-hidden pr-2">
+							<div className="flex-1 bg-gray-100 rounded-full flex items-center overflow-hidden pr-2 transition-all focus-within:ring-2 focus-within:ring-blue-300 focus-within:bg-white">
 								<input
 									ref={inputRef}
 									type="text"
@@ -536,24 +441,24 @@ const CommentsModalContent: React.FC<{
 							</div>
 
 							{!newComment.trim() && (
-								<div className="flex gap-1">
-									<button className="text-gray-500 p-2">
-										<IonIcon icon={imageOutline} />
+								<div className="flex">
+									<button className="w-9 h-9 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100">
+										<IonIcon icon={imageOutline} className="text-xl" />
 									</button>
-									<button className="text-gray-500 p-2">
-										<IonIcon icon={happyOutline} />
+									<button className="w-9 h-9 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100">
+										<IonIcon icon={happyOutline} className="text-xl" />
 									</button>
 								</div>
 							)}
 						</div>
 
 						{isCommenting && !replyingTo && (
-							<div className="flex justify-between items-center mt-2 px-2">
+							<div className="flex justify-between items-center mt-3 px-2">
 								<div className="text-xs text-gray-500 flex items-center">
-									<IonIcon icon={lockClosedOutline} className="mr-1" />I commenti sono moderati
+									<IonIcon icon={lockClosedOutline} className="mr-1" />I commenti sono pubblici
 								</div>
 
-								<button className="text-xs text-blue-600" onClick={toggleCommentingMode}>
+								<button className="text-xs text-blue-600 font-medium" onClick={toggleCommentingMode}>
 									Annulla
 								</button>
 							</div>
@@ -567,14 +472,14 @@ const CommentsModalContent: React.FC<{
 				<div className="fixed bottom-6 right-6 z-10">
 					<button
 						onClick={toggleCommentingMode}
-						className="w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center ion-activatable overflow-hidden"
+						className="w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center ion-activatable overflow-hidden hover:bg-blue-700 transition-colors"
 					>
 						<IonIcon icon={chatbubbleOutline} className="text-xl" />
 						<IonRippleEffect />
 					</button>
 				</div>
 			)}
-		</IonPage>
+		</>
 	);
 };
 
@@ -623,72 +528,11 @@ const getAuthorInfo = (email: string | null | undefined) => {
 };
 
 const Comments: React.FC<CommentsProps> = ({ postId, session, isOpen, onClose }) => {
-	const [presentModal, dismissModal] = useIonModal(CommentsModalContent, {
-		postId,
-		session,
-		onDismiss: () => {
-			dismissModal();
-			onClose();
-		},
-	});
-
-	useEffect(() => {
-		if (isOpen) {
-			presentModal({
-				presentingElement: document.querySelector("ion-app") as HTMLElement,
-				canDismiss: true,
-				backdropDismiss: true,
-				initialBreakpoint: 1,
-				breakpoints: [0, 1],
-			});
-		} else {
-			dismissModal();
-		}
-	}, [isOpen, presentModal, dismissModal, onClose]);
-
-	return null;
+	return (
+		<IonModal isOpen={isOpen} onDidDismiss={onClose} className="comments-modal">
+			<CommentsContent postId={postId} session={session} onDismiss={onClose} />
+		</IonModal>
+	);
 };
-
-// Aggiungi CSS personalizzato per i componenti
-document.head.insertAdjacentHTML(
-	"beforeend",
-	`<style>
-    /* Custom segment styling */
-    .custom-segment {
-      --background: #f3f4f6;
-      --background-checked: #ffffff;
-      --color: #6b7280;
-      --color-checked: #000000;
-      --indicator-color: #ffffff;
-      --indicator-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      --border-radius: 8px;
-      padding: 2px;
-    }
-    
-    /* Smooth transitions */
-    ion-segment-button {
-      transition: all 0.3s ease;
-    }
-    
-    /* Custom scrollbar */
-    ion-content::part(scroll) {
-      scrollbar-width: thin;
-      scrollbar-color: #cbd5e1 transparent;
-    }
-    
-    ion-content::part(scroll)::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    ion-content::part(scroll)::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    ion-content::part(scroll)::-webkit-scrollbar-thumb {
-      background-color: #cbd5e1;
-      border-radius: 3px;
-    }
-  </style>`
-);
 
 export default Comments;
