@@ -1,3 +1,11 @@
+# [1.14.0](https://github.com/Liago/AZReader/compare/v1.13.0...v1.14.0) (2025-03-03)
+
+
+### Features
+
+* new comment UI ([190687f](https://github.com/Liago/AZReader/commit/190687f6a14560721264dd467239b6fc78f1bb43))
+* refactor of FontSize Controls ([5f07e2d](https://github.com/Liago/AZReader/commit/5f07e2dce3309d79f2fd7c633e2ed3e1c5d392a8))
+
 # [1.13.0](https://github.com/Liago/AZReader/compare/v1.12.0...v1.13.0) (2025-02-27)
 
 
