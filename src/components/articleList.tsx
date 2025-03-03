@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { IonList, IonRefresher, IonRefresherContent, IonInfiniteScroll, IonInfiniteScrollContent, RefresherEventDetail } from "@ionic/react";
 import { Session } from "@supabase/auth-js";
-import { Clock } from "lucide-react";
+import { Clock, Heart, MessageCircle } from "lucide-react";
 import { useHistory } from "react-router-dom";
 import MessageListItem from "./messageListItem";
 import LoadingSpinner from "./ui/loadingSpinner";
@@ -10,6 +10,8 @@ import { useCustomToast } from "@hooks/useIonToast";
 import { deletePost } from "@store/rest";
 import { isEmpty } from "lodash";
 import { Post, Pagination, ArticleParsed } from "@common/interfaces";
+import { usePostLikes } from "@hooks/usePostLikes";
+import { usePostComments } from "@hooks/usePostComments";
 
 interface ArticleListProps {
 	session: Session;
@@ -27,9 +29,13 @@ interface UseArticlesReturn {
 interface TopPickCardProps {
 	post: Post;
 	onOpenArticle: (post: Post) => void;
+	session: Session | null;
 }
 
-const TopPickCard: React.FC<TopPickCardProps> = ({ post, onOpenArticle }) => {
+const TopPickCard: React.FC<TopPickCardProps> = ({ post, onOpenArticle, session }) => {
+	const { likesCount } = usePostLikes(post.id, session);
+	const { commentsCount } = usePostComments(post.id, session);
+
 	return (
 		<div
 			className="flex-shrink-0 w-72 h-96 rounded-xl overflow-hidden shadow-lg bg-white m-2 snap-start cursor-pointer"
@@ -37,6 +43,17 @@ const TopPickCard: React.FC<TopPickCardProps> = ({ post, onOpenArticle }) => {
 		>
 			<div className="h-1/2 bg-gray-200 relative">
 				{post.lead_image_url && <img src={post.lead_image_url} alt={post.title} className="w-full h-full object-cover" />}
+				
+				<div className="absolute bottom-2 right-2 flex gap-2">
+					<div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
+						<Heart size={14} className="text-red-500" />
+						<span className="text-xs font-medium">{likesCount || 0}</span>
+					</div>
+					<div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
+						<MessageCircle size={14} className="text-blue-500" />
+						<span className="text-xs font-medium">{commentsCount || 0}</span>
+					</div>
+				</div>
 			</div>
 			<div className="p-4">
 				<div className="text-sm text-gray-600 mb-2">{post.domain}</div>
@@ -64,6 +81,7 @@ const TodaysGoal: React.FC = () => {
 const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 	const { postFromDb, fetchPostsFromDb, changePage, pagination, isLoading, refresh } = useArticles(session) as UseArticlesReturn;
 	const [todaysPosts, setTodaysPosts] = useState<Post[]>([]);
+	const [staffPicks, setStaffPicks] = useState<Post[]>([]);
 	const [isInfiniteDisabled, setInfiniteDisabled] = useState<boolean>(false);
 	const showToast = useCustomToast();
 	const history = useHistory();
@@ -75,8 +93,13 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 	useEffect(() => {
 		if (postFromDb.length > 0) {
 			const today = new Date().toISOString().split("T")[0];
-			const todaysPosts = postFromDb.filter((post) => post.savedOn?.split("T")[0] === today);
-			setTodaysPosts(todaysPosts);
+			const todaysPostsArray = postFromDb.filter((post) => post.savedOn?.split("T")[0] === today);
+			setTodaysPosts(todaysPostsArray);
+			
+			// Filtra gli articoli per Staff Pick (tutti quelli non presenti in Today's Pick)
+			const todaysPostIds = todaysPostsArray.map(post => post.id);
+			const staffPicksArray = postFromDb.filter(post => !todaysPostIds.includes(post.id));
+			setStaffPicks(staffPicksArray);
 		}
 	}, [postFromDb]);
 
@@ -138,7 +161,12 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 				<h2 className="text-2xl font-bold mb-4">Today's pick</h2>
 				<div className="flex overflow-x-auto snap-x snap-mandatory pb-4 px-4">
 					{todaysPosts.map((post, index) => (
-						<TopPickCard key={`top-${post.id}-${index}`} post={post} onOpenArticle={handleOpenArticle} />
+						<TopPickCard 
+							key={`top-${post.id}-${index}`} 
+							post={post} 
+							onOpenArticle={handleOpenArticle} 
+							session={session}
+						/>
 					))}
 				</div>
 			</div>
@@ -146,9 +174,9 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 	};
 
 	const renderPostList = useCallback(() => {
-		if (isEmpty(postFromDb)) return null;
+		if (isEmpty(staffPicks)) return null;
 
-		return postFromDb.map((post: Post, index: number) => (
+		return staffPicks.map((post: Post, index: number) => (
 			<MessageListItem
 				key={`${post.id}-${index}`}
 				postId={post.id}
@@ -156,9 +184,11 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 				isLocal={false}
 				deletePost={() => handleDeletePost(post.id)}
 				onOpenArticle={handleOpenArticle}
+				showEngagementMetrics={true}
+				session={session}
 			/>
 		));
-	}, [postFromDb, handleDeletePost, handleOpenArticle]);
+	}, [staffPicks, handleDeletePost, handleOpenArticle, session]);
 
 	return (
 		<>

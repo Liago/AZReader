@@ -61,7 +61,6 @@ interface ArticleProps {
 const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom, session }) => {
 	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt, url, savedBy, savedOn } = articleParsed;
 
-	const platforms = getPlatforms();
 	const [showModal, setShowModal] = useState<boolean>(false);
 	const [searchQuery, setSearchQuery] = useState<string>("");
 	const [showShareToast, setShowShareToast] = useState<boolean>(false);
@@ -289,7 +288,13 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 				</main>
 				{renderFooter()}
 				{renderModalTags()}
-				<Comments postId={postId} session={session} isOpen={showComments} onClose={() => setShowComments(false)} />
+				<Comments 
+					postId={postId} 
+					session={session} 
+					isOpen={showComments} 
+					onClose={() => setShowComments(false)}
+					articleTitle={title || "Articolo"}
+				/>
 
 				{/* Toast per i messaggi di condivisione */}
 				<IonToast

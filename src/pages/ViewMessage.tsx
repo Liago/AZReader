@@ -339,7 +339,14 @@ const ViewMessage: React.FC = () => {
 			</IonFooter>
 
 			{renderModalTags()}
-			<Comments postId={id} session={supabaseSession} isOpen={showComments} onClose={() => setShowComments(false)} />
+			{/* <Comments postId={id} session={supabaseSession} isOpen={showComments} onClose={() => setShowComments(false)} /> */}
+			<Comments 
+					postId={id} 
+					session={supabaseSession} 
+					isOpen={showComments} 
+					onClose={() => setShowComments(false)}
+					articleTitle={article.title || "Articolo"}
+				/>
 
 			{/* Toast per i messaggi di condivisione */}
 			<IonToast

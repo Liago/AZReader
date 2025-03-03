@@ -116,6 +116,13 @@ export interface TagsResponse extends TagItem {
 
 export interface Post {
 	id: string;
+	title: string;
+	domain: string;
+	excerpt: string;
+	savedOn?: string;
+	lead_image_url?: string;
+	likes_count?: number;
+	comments_count?: number;
 	[key: string]: any; // Altri campi del post
 }
 

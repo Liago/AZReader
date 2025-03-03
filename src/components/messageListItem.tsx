@@ -1,9 +1,11 @@
-import { IonItem, IonItemOption, IonItemOptions, IonItemSliding } from "@ionic/react";
+import { IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel } from "@ionic/react";
 import PostItem from "./ui/NewsItem";
 import "./MessageListItem.css";
 import moment from "moment";
 import { Post } from "@common/interfaces";
 import { useCallback } from "react";
+import { usePostLikes } from "@hooks/usePostLikes";
+import { usePostComments } from "@hooks/usePostComments";
 
 interface PostItemProps {
 	source: string;
@@ -12,19 +14,35 @@ interface PostItemProps {
 	date: string;
 	imageUrl: string;
 	excerpt: string;
-	preview: string;
+	preview: boolean;
 	published: string;
+	likes_count: number;
+	comments_count: number;
+	showEngagementMetrics?: boolean;
 }
 
 interface MessageListItemProps {
+	postId: string;
 	post: Post;
 	isLocal: boolean;
-	postId: string;
-	deletePost: (id: string) => void;
+	deletePost: () => void;
 	onOpenArticle: (post: Post) => void;
+	showEngagementMetrics?: boolean;
+	session?: any;
 }
 
-const MessageListItem: React.FC<MessageListItemProps> = ({ post, isLocal, postId, deletePost, onOpenArticle }) => {
+const MessageListItem: React.FC<MessageListItemProps> = ({ 
+	postId, 
+	post, 
+	isLocal, 
+	deletePost, 
+	onOpenArticle,
+	showEngagementMetrics = true,
+	session = null
+}) => {
+	const { likesCount } = usePostLikes(postId, session);
+	const { commentsCount } = usePostComments(postId, session);
+
 	const displayLocalDot = (): JSX.Element => {
 		if (isLocal) {
 			return <div slot="start" className="dot dot-unread"></div>;
@@ -38,15 +56,17 @@ const MessageListItem: React.FC<MessageListItemProps> = ({ post, isLocal, postId
 
 	// Transform post data to match PostItem props
 	const postItemProps: PostItemProps = {
-		...post,
 		source: post.domain || post.source || "",
 		title: post.title || "",
 		subtitle: post.subtitle || "",
 		date: post.date_published || "",
 		imageUrl: post.lead_image_url || post.topImage || "https://placehold.co/100x100",
 		excerpt: post.excerpt || "",
-		preview: post.preview || "",
+		preview: post.preview === "true" || post.preview === true,
 		published: moment(post.date_published || Date.now()).format("MMM DD"),
+		likes_count: likesCount || 0,
+		comments_count: commentsCount || 0,
+		showEngagementMetrics
 	};
 
 	return (
@@ -55,7 +75,7 @@ const MessageListItem: React.FC<MessageListItemProps> = ({ post, isLocal, postId
 				<PostItem {...postItemProps} />
 			</IonItem>
 			<IonItemOptions>
-				<IonItemOption color="danger" onClick={() => deletePost(post.id)}>
+				<IonItemOption color="danger" onClick={() => deletePost()}>
 					Delete
 				</IonItemOption>
 			</IonItemOptions>
