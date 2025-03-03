@@ -14,7 +14,7 @@ export const scraperConfig = [
 		},
 	},
 	{
-		"url": "unaparolaalgiorno.it",
+		"url": "unaparolaalgiornoaa.it",
 		"container": "#layout-wrapper",
 		"isHTML": true,
 		"parser": "personal",
@@ -65,8 +65,16 @@ export const scraperConfig = [
 		"url": "www.engadget.com",
 		"parser": "rapidApi",
 	},
-	// {
-	// 	"url": "www.ilpost.it",
-	// 	"parser": "rapidApi",
-	// }
+	 {
+	 	"url": "www.eurosport.it",
+	 	"container": "div.atom-template-sections",
+			"isHTML": true,
+			"parser": "personal",
+			"items": {
+				"title": "h1.text-onLight-02",
+				"author": ".molecule-author-banner",
+				"content": ".organism-article-main-content",
+				//"lead_image": ".ugc--2nTu61bm.minor--3O_9dH4U"
+			}
+	 }
 ]

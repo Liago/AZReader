@@ -4,6 +4,7 @@ const environmentFile = `
 
 	export const endpoint = {
 		parser: '${process.env.CORS_PROXY}/${process.env.PARSER_ENDPOINT}',
+		RAPID_API_KEY: '${process.env.RAPID_API_KEY}',
 		api: '${process.env.API_ENDPOINT}',
 		firebase_auth: '${process.env.FIREBASE_AUTH}',
 		test_mode: ${process.env.DEBUG},

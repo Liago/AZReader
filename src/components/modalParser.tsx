@@ -39,13 +39,11 @@ const noIOSPasteStyles = {
 const ModalParser: React.FC<ModalParserProps> = ({
 	articleParsed,
 	showModal,
-	pageRef,
 	savePostHandler,
 	setShowModal,
 	searchText,
 	setSearchText,
 	savePostToServer,
-	loading,
 	isParsing,
 	session
 }) => {

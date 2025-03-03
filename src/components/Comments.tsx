@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
 	IonIcon,
 	IonSpinner,
@@ -20,7 +20,6 @@ import {
 	chatbubbleOutline,
 	closeOutline,
 	send,
-	timeOutline,
 	flagOutline,
 	shareOutline,
 	trashOutline,
