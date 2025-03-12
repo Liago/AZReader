@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/Liago/AZReader/compare/v1.14.0...v1.15.0) (2025-03-12)
+
+
+### Features
+
+* reading theme settings ([2a64a77](https://github.com/Liago/AZReader/commit/2a64a77659bfa0837557cab73aac0463e10dccc4))
+
 # [1.14.0](https://github.com/Liago/AZReader/compare/v1.13.0...v1.14.0) (2025-03-03)
 
 
