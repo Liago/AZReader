@@ -1,0 +1,65 @@
+:root {
+  --app-brightness: 100%;
+  --app-spacing: 1;
+  --app-width: 100%;
+}
+
+.theme-white {
+  --app-bg-color: #ffffff;
+  --app-text-color: #000000;
+}
+
+.theme-sepia {
+  --app-bg-color: #f8f1e3;
+  --app-text-color: #5f4b32;
+}
+
+.theme-dawn {
+  --app-bg-color: #f2f2f2;
+  --app-text-color: #333333;
+}
+
+.theme-paper {
+  --app-bg-color: #e8e8e8;
+  --app-text-color: #333333;
+}
+
+.reading-content {
+  background-color: var(--app-bg-color);
+  color: var(--app-text-color);
+  filter: brightness(var(--app-brightness));
+  letter-spacing: calc(var(--app-spacing) * 0.05em);
+  max-width: calc(var(--app-width) * 65ch);
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Font da tailwind.config.js */
+.font-gentium-book-basic, .font-gentium_book {
+  font-family: 'Gentium Book Basic', serif;
+}
+
+.font-lato {
+  font-family: 'Lato', sans-serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-open-sans, .font-open_sans {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.font-roboto-slab, .font-roboto {
+  font-family: 'Roboto Slab', serif;
+}
+
+/* Font aggiuntivi */
+.font-new-york {
+  font-family: 'New York', serif;
+}
+
+.font-san-francisco {
+  font-family: 'San Francisco', sans-serif;
+} 

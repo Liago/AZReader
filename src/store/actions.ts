@@ -309,9 +309,34 @@ export const resetPosts = () => ({
 });
 
 export const increaseFontSize = () => ({
-	type: actionTypes.INCREASE_FONT_SIZE,
+	type: actionTypes.INCREASE_FONT_SIZE as typeof actionTypes.INCREASE_FONT_SIZE,
 });
 
 export const decreaseFontSize = () => ({
-	type: actionTypes.DECREASE_FONT_SIZE,
+	type: actionTypes.DECREASE_FONT_SIZE as typeof actionTypes.DECREASE_FONT_SIZE,
+});
+
+export const setTheme = (theme: string) => ({
+	type: actionTypes.SET_THEME as typeof actionTypes.SET_THEME,
+	payload: theme,
+});
+
+export const setBrightness = (brightness: number) => ({
+	type: actionTypes.SET_BRIGHTNESS as typeof actionTypes.SET_BRIGHTNESS,
+	payload: brightness,
+});
+
+export const setFontFamily = (fontFamily: string) => ({
+	type: actionTypes.SET_FONT_FAMILY as typeof actionTypes.SET_FONT_FAMILY,
+	payload: fontFamily,
+});
+
+export const setSpacing = (spacing: number) => ({
+	type: actionTypes.SET_SPACING as typeof actionTypes.SET_SPACING,
+	payload: spacing,
+});
+
+export const setWidth = (width: number) => ({
+	type: actionTypes.SET_WIDTH as typeof actionTypes.SET_WIDTH,
+	payload: width,
 });

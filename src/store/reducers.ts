@@ -12,6 +12,11 @@ interface AppState {
 	tokenExpiration: string | null;
 	configuration?: any;
 	fontSize: string;
+	theme: string;
+	brightness: number;
+	fontFamily: string;
+	spacing: number;
+	width: number;
 }
 interface Credentials {
 	avatar?: string;
@@ -68,6 +73,11 @@ const initialState: RootState = {
 		tokenApp: null,
 		tokenExpiration: null,
 		fontSize: "base",
+		theme: "white",
+		brightness: 50,
+		fontFamily: "New York",
+		spacing: 1,
+		width: 1,
 	},
 	archive: [],
 	user: {
@@ -149,6 +159,31 @@ const app = (state = initialState.app, action: AnyAction): AppState => {
 			return {
 				...state,
 				fontSize: prevSize,
+			};
+		case actionTypes.SET_THEME:
+			return {
+				...state,
+				theme: action.payload,
+			};
+		case actionTypes.SET_BRIGHTNESS:
+			return {
+				...state,
+				brightness: action.payload,
+			};
+		case actionTypes.SET_FONT_FAMILY:
+			return {
+				...state,
+				fontFamily: action.payload,
+			};
+		case actionTypes.SET_SPACING:
+			return {
+				...state,
+				spacing: action.payload,
+			};
+		case actionTypes.SET_WIDTH:
+			return {
+				...state,
+				width: action.payload,
 			};
 		default:
 			return state;

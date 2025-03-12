@@ -75,3 +75,10 @@ export const RESET_POSTS = 'RESET_POSTS';
 
 export const INCREASE_FONT_SIZE = "INCREASE_FONT_SIZE";
 export const DECREASE_FONT_SIZE = "DECREASE_FONT_SIZE";
+
+// Azioni per il tema
+export const SET_THEME = "SET_THEME";
+export const SET_BRIGHTNESS = "SET_BRIGHTNESS";
+export const SET_FONT_FAMILY = "SET_FONT_FAMILY";
+export const SET_SPACING = "SET_SPACING";
+export const SET_WIDTH = "SET_WIDTH";

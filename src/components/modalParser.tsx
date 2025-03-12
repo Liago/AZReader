@@ -5,7 +5,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { close, saveOutline, shareSocial, clipboard } from "ionicons/icons";
 import { Clipboard } from "@capacitor/clipboard";
 import Spinner from "./ui/spinner";
-import Article from "./article";
+import Article from "./Article";
 import { isValidUrl } from "@utility/utils";
 import { isNil } from "lodash";
 import { Session } from "@supabase/supabase-js";

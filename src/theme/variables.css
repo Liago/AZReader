@@ -337,3 +337,15 @@ ion-footer.compact-footer .flex {
   --knob-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   --knob-size: 24px;
 }
+
+ion-item-sliding {
+  --background: transparent !important;
+}
+
+ion-item {
+  --background: transparent !important;
+}
+
+.item-sliding-transparent .item {
+  --background: transparent !important;
+}

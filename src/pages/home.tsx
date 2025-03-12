@@ -4,9 +4,9 @@ import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons"
 import { Session } from "@supabase/auth-js/dist/module/lib/types"; // Percorso corretto per il tipo Session
 import { ArticleParsed } from "@common/interfaces";
 import MainMenu from "@components/ui/menu";
-import ModalParser from "@components/modalParser";
+import ModalParser from "@components/ModalParser";
 import { Auth } from "@components/form/authentication";
-import ArticleList from "@components/articleList";
+import ArticleList from "@components/ArticleList";
 import useAuth from "@hooks/useAuth";
 import useArticles from "@hooks/useArticles";
 

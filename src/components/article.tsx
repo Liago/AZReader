@@ -22,7 +22,7 @@ import {
 	bookmarkOutline,
 } from "ionicons/icons";
 import { Session } from "@supabase/supabase-js";
-import ModalTags from "./modalTags";
+import ModalTags from "./ModalTags";
 import { useTagsSaver } from "@store/rest";
 import { usePostLikes } from "@hooks/usePostLikes";
 import { useCustomToast } from "@hooks/useIonToast";
@@ -262,7 +262,7 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 			<div className="flex flex-col min-h-screen bg-white">
 				{renderHeader()}
 				<main className="flex-1 overflow-y-auto pt-16 pb-20">
-					<article className="max-w-2xl mx-auto px-4 font-montserrat">
+					<article className="max-w-2xl mx-auto px-4">
 						<h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
 						{excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: excerpt }} />}
 
@@ -288,10 +288,10 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 				</main>
 				{renderFooter()}
 				{renderModalTags()}
-				<Comments 
-					postId={postId} 
-					session={session} 
-					isOpen={showComments} 
+				<Comments
+					postId={postId}
+					session={session}
+					isOpen={showComments}
 					onClose={() => setShowComments(false)}
 					articleTitle={title || "Articolo"}
 				/>

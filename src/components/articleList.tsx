@@ -3,7 +3,7 @@ import { IonList, IonRefresher, IonRefresherContent, IonInfiniteScroll, IonInfin
 import { Session } from "@supabase/auth-js";
 import { Clock, Heart, MessageCircle } from "lucide-react";
 import { useHistory } from "react-router-dom";
-import MessageListItem from "./messageListItem";
+import MessageListItem from "./MessageListItem";
 import LoadingSpinner from "./ui/loadingSpinner";
 import useArticles from "@hooks/useArticles";
 import { useCustomToast } from "@hooks/useIonToast";
@@ -12,6 +12,7 @@ import { isEmpty } from "lodash";
 import { Post, Pagination, ArticleParsed } from "@common/interfaces";
 import { usePostLikes } from "@hooks/usePostLikes";
 import { usePostComments } from "@hooks/usePostComments";
+import ReadingThemeWrapper from "./ui/ReadingThemeWrapper";
 
 interface ArticleListProps {
 	session: Session;
@@ -43,7 +44,7 @@ const TopPickCard: React.FC<TopPickCardProps> = ({ post, onOpenArticle, session 
 		>
 			<div className="h-1/2 bg-gray-200 relative">
 				{post.lead_image_url && <img src={post.lead_image_url} alt={post.title} className="w-full h-full object-cover" />}
-				
+
 				<div className="absolute bottom-2 right-2 flex gap-2">
 					<div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
 						<Heart size={14} className="text-red-500" />
@@ -95,7 +96,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 			const today = new Date().toISOString().split("T")[0];
 			const todaysPostsArray = postFromDb.filter((post) => post.savedOn?.split("T")[0] === today);
 			setTodaysPosts(todaysPostsArray);
-			
+
 			// Filtra gli articoli per Staff Pick (tutti quelli non presenti in Today's Pick)
 			const todaysPostIds = todaysPostsArray.map(post => post.id);
 			const staffPicksArray = postFromDb.filter(post => !todaysPostIds.includes(post.id));
@@ -161,10 +162,10 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 				<h2 className="text-2xl font-bold mb-4">Today's pick</h2>
 				<div className="flex overflow-x-auto snap-x snap-mandatory pb-4 px-4">
 					{todaysPosts.map((post, index) => (
-						<TopPickCard 
-							key={`top-${post.id}-${index}`} 
-							post={post} 
-							onOpenArticle={handleOpenArticle} 
+						<TopPickCard
+							key={`top-${post.id}-${index}`}
+							post={post}
+							onOpenArticle={handleOpenArticle}
 							session={session}
 						/>
 					))}
@@ -192,22 +193,24 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 
 	return (
 		<>
-			<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-				<IonRefresherContent></IonRefresherContent>
-			</IonRefresher>
+			<ReadingThemeWrapper>
+				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+					<IonRefresherContent></IonRefresherContent>
+				</IonRefresher>
 
-			<div className="relative">
-				{renderTopPicks()}
-				<div className="px-4">
-					<h2 className="text-2xl font-bold mb-4">Staff Pick</h2>
-					<IonList>{renderPostList()}</IonList>
+				<div className="relative">
+					{renderTopPicks()}
+					<div className="px-4">
+						<h2 className="text-2xl font-bold mb-4">Staff Pick</h2>
+						<IonList>{renderPostList()}</IonList>
+					</div>
+					{isLoading && <LoadingSpinner />}
 				</div>
-				{isLoading && <LoadingSpinner />}
-			</div>
 
-			<IonInfiniteScroll onIonInfinite={loadMore} threshold="100px" disabled={isInfiniteDisabled}>
-				<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Caricamento altri articoli..." />
-			</IonInfiniteScroll>
+				<IonInfiniteScroll onIonInfinite={loadMore} threshold="100px" disabled={isInfiniteDisabled}>
+					<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Caricamento altri articoli..." />
+				</IonInfiniteScroll>
+			</ReadingThemeWrapper>
 		</>
 	);
 };

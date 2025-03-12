@@ -28,6 +28,10 @@ module.exports = {
 				'.center-custom': {
 					'inset': '0px',
 				},
+				'.font-size-control': {
+					'font-size': 'var(--current-font-size)',
+					'line-height': 'var(--current-line-height)',
+				}
 			}
 			addUtilities(newUtilities, ['responsive', 'hover'])
 		}

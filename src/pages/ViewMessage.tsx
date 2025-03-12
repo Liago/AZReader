@@ -29,12 +29,13 @@ import { RootState } from "@store/reducers";
 import { supabase } from "@store/rest";
 
 import { useTagsSaver } from "@store/rest";
-import ModalTags from "@components/modalTags";
+import ModalTags from "@components/ModalTags";
 import FontSizeControls from "@components/ui/FontSizeControls";
 import FontSizeWrapper from "@components/FontSizeWrapper";
 import Comments from "@components/Comments";
 import { Session } from "@supabase/supabase-js";
 import { ShareService } from "@utility/shareService";
+import ReadingThemeWrapper from "@components/ui/ReadingThemeWrapper";
 
 interface ParamTypes {
 	id: string;
@@ -266,44 +267,46 @@ const ViewMessage: React.FC = () => {
 			</IonHeader>
 
 			<IonContent fullscreen>
-				<div className="pb-16">
-					<article className="max-w-2xl mx-auto px-4 pt-32 font-montserrat">
-						<h1 className="text-3xl font-bold text-gray-900 mb-3">{article.title}</h1>
-						{article.excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: article.excerpt }} />}
+				<ReadingThemeWrapper>
+					<div className="pb-16">
+						<article className="max-w-2xl mx-auto px-4 pt-32">
+							<h1 className="text-3xl font-bold text-gray-900 mb-3">{article.title}</h1>
+							{article.excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: article.excerpt }} />}
 
-						<div className="flex flex-col mb-6 border-t border-b border-gray-200 py-3">
-							<div>
-								<p className="text-sm text-gray-500 m-0">{renderArticleDatePublished(article.date || article.date_published)}</p>
-								{article.savedBy && article.savedOn && (
-									<p className="text-xs m-0">
-										Salvato da: {article.savedBy.userEmail} il {moment(article.savedOn).format("DD MMMM YYYY")}
-									</p>
-								)}
-								{article.domain && <p className="text-xs text-gray-500 m-0 mt-1">{article.domain}</p>}
+							<div className="flex flex-col mb-6 border-t border-b border-gray-200 py-3">
+								<div>
+									<p className="text-sm text-gray-500 m-0">{renderArticleDatePublished(article.date || article.date_published)}</p>
+									{article.savedBy && article.savedOn && (
+										<p className="text-xs m-0">
+											Salvato da: {article.savedBy.userEmail} il {moment(article.savedOn).format("DD MMMM YYYY")}
+										</p>
+									)}
+									{article.domain && <p className="text-xs text-gray-500 m-0 mt-1">{article.domain}</p>}
+								</div>
 							</div>
-						</div>
 
-						{article.lead_image_url && (
-							<div className="mb-6">
-								<img
-									src={article.lead_image_url}
-									alt={article.title}
-									className="w-full rounded-lg shadow-sm object-cover"
-									onError={(e) => {
-										const target = e.target as HTMLImageElement;
-										target.style.display = "none";
-									}}
-								/>
+							{article.lead_image_url && (
+								<div className="mb-6">
+									<img
+										src={article.lead_image_url}
+										alt={article.title}
+										className="w-full rounded-lg shadow-sm object-cover"
+										onError={(e) => {
+											const target = e.target as HTMLImageElement;
+											target.style.display = "none";
+										}}
+									/>
+								</div>
+							)}
+
+							<div className="prose max-w-none text-gray-800 mb-12">
+								<FontSizeWrapper>
+									<div dangerouslySetInnerHTML={{ __html: article.content || article.html || "" }} />
+								</FontSizeWrapper>
 							</div>
-						)}
-
-						<div className="prose max-w-none text-gray-800 mb-12">
-							<FontSizeWrapper>
-								<div dangerouslySetInnerHTML={{ __html: article.content || article.html || "" }} />
-							</FontSizeWrapper>
-						</div>
-					</article>
-				</div>
+						</article>
+					</div>
+				</ReadingThemeWrapper>
 			</IonContent>
 
 			<IonFooter className="ion-no-border bg-white border-t">
@@ -340,13 +343,13 @@ const ViewMessage: React.FC = () => {
 
 			{renderModalTags()}
 			{/* <Comments postId={id} session={supabaseSession} isOpen={showComments} onClose={() => setShowComments(false)} /> */}
-			<Comments 
-					postId={id} 
-					session={supabaseSession} 
-					isOpen={showComments} 
-					onClose={() => setShowComments(false)}
-					articleTitle={article.title || "Articolo"}
-				/>
+			<Comments
+				postId={id}
+				session={supabaseSession}
+				isOpen={showComments}
+				onClose={() => setShowComments(false)}
+				articleTitle={article.title || "Articolo"}
+			/>
 
 			{/* Toast per i messaggi di condivisione */}
 			<IonToast
