@@ -69,7 +69,7 @@ const Home: React.FC = () => {
 		<>
 			<MainMenu />
 			<IonPage id="home-page" ref={pageRef}>
-				<IonHeader>
+				<IonHeader className="ion-no-border">
 					<IonToolbar>
 						<IonButtons slot="start">
 							<IonMenuButton />
@@ -91,7 +91,9 @@ const Home: React.FC = () => {
 						</IonButtons>
 					</IonToolbar>
 				</IonHeader>
-				<IonContent fullscreen>{renderContent()}</IonContent>
+				<IonContent>
+					{renderContent()}
+				</IonContent>
 			</IonPage>
 		</>
 	);

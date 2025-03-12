@@ -266,10 +266,10 @@ const ViewMessage: React.FC = () => {
 				</IonToolbar>
 			</IonHeader>
 
-			<IonContent fullscreen>
+			<IonContent>
 				<ReadingThemeWrapper>
 					<div className="pb-16">
-						<article className="max-w-2xl mx-auto px-4 pt-32">
+						<article className="max-w-2xl mx-auto px-4">
 							<h1 className="text-3xl font-bold text-gray-900 mb-3">{article.title}</h1>
 							{article.excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: article.excerpt }} />}
 

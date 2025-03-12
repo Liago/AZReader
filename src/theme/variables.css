@@ -349,3 +349,97 @@ ion-item {
 .item-sliding-transparent .item {
   --background: transparent !important;
 }
+
+/* Regole specifiche per iOS per garantire la trasparenza */
+.ios ion-item-sliding {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios ion-item {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios ion-card {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios .item-native {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios .item-inner {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+/* Forza trasparenza per iOS per tutti i contenitori di elementi */
+.ios .item, 
+.ios .item-content,
+.ios .item-complex,
+.ios ion-list {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+/* ===== SOLUZIONE COMPATIBILE CON IONIC 8 PER HEADER iOS ===== */
+/* Reset CSS precedente, utilizziamo solo stili compatibili con Ionic */
+
+/* Ripristino delle regole di base per l'header iOS */
+.ios ion-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+/* Semplificazione delle regole per la toolbar */
+.ios ion-toolbar {
+  --min-height: 44px;
+  --padding-top: env(safe-area-inset-top);
+}
+
+/* Rimuovi bordi non necessari */
+.ios ion-header.header-ios:after {
+  display: none;
+}
+
+/* Regole base per il posizionamento del contenuto */
+.ios ion-content {
+  --padding-top: 0;
+}
+
+/* Override per il padding nella pagina di lettura */
+.ios ion-content .pb-16 article {
+  padding-top: 12px;
+}
+
+/* Assicuriamo che l'header sia sempre visibile */
+.ios ion-header {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Previeni il padding duplicato dopo il ritorno dalla pagina dettaglio */
+.ios #home-page ion-header:not(.header-collapse-condense) ion-toolbar {
+  --min-height: 44px !important;
+  min-height: calc(44px + env(safe-area-inset-top)) !important;
+  max-height: calc(44px + env(safe-area-inset-top)) !important;
+  height: calc(44px + env(safe-area-inset-top)) !important;
+}
+
+/* Override necessario per impedire che Ionic aggiunga troppo padding */
+.ios ion-header ion-toolbar {
+  padding-top: env(safe-area-inset-top) !important;
+  --padding-top: 0 !important;
+}
+
+/* Fix per garantire una dimensione consistente dell'header */
+.ios ion-toolbar:not(.toolbar-title-default) {
+  --min-height: 44px !important;
+}

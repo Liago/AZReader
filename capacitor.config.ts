@@ -60,6 +60,9 @@ const config: ExtendedCapacitorConfig = {
 		allowsLinkPreview: false,
 		backgroundColor: "#ffffff",
 		preferredContentMode: "mobile",
+		statusBarStyle: "dark",
+		preferredStatusBarStyle: "dark",
+		handleStatusBarInsets: true,
 	},
 };
 

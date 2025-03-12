@@ -86,6 +86,10 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 setupIonicReact({
 	mode: "ios",
+	swipeBackEnabled: true,
+	statusTap: true,
+	animated: true,
+	hardwareBackButton: true
 });
 
 const AppContent: React.FC = () => {

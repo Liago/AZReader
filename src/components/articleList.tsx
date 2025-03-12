@@ -39,7 +39,7 @@ const TopPickCard: React.FC<TopPickCardProps> = ({ post, onOpenArticle, session 
 
 	return (
 		<div
-			className="flex-shrink-0 w-72 h-96 rounded-xl overflow-hidden shadow-lg bg-white m-2 snap-start cursor-pointer"
+			className="flex-shrink-0 w-72 h-96 rounded-xl overflow-hidden shadow-lg bg-transparent m-2 snap-start cursor-pointer"
 			onClick={() => onOpenArticle(post)}
 		>
 			<div className="h-1/2 bg-gray-200 relative">
@@ -157,7 +157,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 		if (isEmpty(todaysPosts)) return null;
 
 		return (
-			<div className="px-4 mb-8 pt-32">
+			<div className="px-4 mb-8 pt-2">
 				<TodaysGoal />
 				<h2 className="text-2xl font-bold mb-4">Today's pick</h2>
 				<div className="flex overflow-x-auto snap-x snap-mandatory pb-4 px-4">
