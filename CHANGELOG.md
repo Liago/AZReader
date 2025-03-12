@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/Liago/AZReader/compare/v1.15.0...v1.15.1) (2025-03-12)
+
+
+### Bug Fixes
+
+* header ([18f7163](https://github.com/Liago/AZReader/commit/18f71634bd3ee514032dcd3912f242bc3b700813))
+
 # [1.15.0](https://github.com/Liago/AZReader/compare/v1.14.0...v1.15.0) (2025-03-12)
 
 
