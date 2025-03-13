@@ -17,6 +17,7 @@ import {
 	setSpacing,
 	setWidth
 } from "@store/actions";
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 export const FontSizeControls = () => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -57,9 +58,23 @@ export const FontSizeControls = () => {
 		dispatch(setTheme(newTheme));
 	};
 
-	const handleBrightnessChange = (value: number) => {
+	const handleBrightnessChange = async (value: number) => {
+		// Salva il valore nello store (0-100)
 		dispatch(setBrightness(value));
-		// La luminosità verrà applicata tramite CSS nel ReadingThemeWrapper
+
+		// Converti il valore da 0-100 a 0-1 per il plugin di Capacitor
+		const normalizedBrightness = value / 100;
+
+		// Imposta la luminosità dello schermo utilizzando il plugin Capacitor
+		try {
+			console.log('Tentativo di impostare la luminosità a:', normalizedBrightness);
+			await ScreenBrightness.setBrightness({ brightness: normalizedBrightness });
+			console.log('Luminosità impostata con successo');
+		} catch (error) {
+			console.error('Errore durante l\'impostazione della luminosità:', error);
+			// Mostra un feedback all'utente
+			alert('Impossibile modificare la luminosità: ' + JSON.stringify(error));
+		}
 	};
 
 	const handleFontFamilyChange = (newFontFamily: string, displayName: string) => {
@@ -106,6 +121,39 @@ export const FontSizeControls = () => {
 		};
 	}, [fontDropdownOpen]);
 
+	// Modifica l'effetto per controllare la luminosità corrente e verificare se il plugin funziona
+	useEffect(() => {
+		const checkBrightnessCapabilities = async () => {
+			try {
+				console.log('Verifica delle capacità di luminosità...');
+				const { brightness: currentBrightness } = await ScreenBrightness.getBrightness();
+				console.log('Luminosità attuale del dispositivo:', currentBrightness);
+
+				// Test di modifica della luminosità
+				const testValue = 0.5; // 50%
+				console.log('Test: impostazione luminosità a', testValue);
+				await ScreenBrightness.setBrightness({ brightness: testValue });
+				console.log('Test completato con successo');
+
+				// Ripristino alla luminosità originale dopo 1 secondo
+				setTimeout(async () => {
+					// Su Android, -1 non è un valore valido per setBrightness, usiamo un valore di default
+					const restoreValue = currentBrightness === -1 ? 0.5 : currentBrightness;
+					await ScreenBrightness.setBrightness({ brightness: restoreValue });
+					console.log('Luminosità ripristinata a', restoreValue);
+				}, 1000);
+			} catch (error) {
+				console.error('Errore durante il test della luminosità:', error);
+				alert('Problema con il controllo della luminosità: ' + JSON.stringify(error));
+			}
+		};
+
+		// Esegui il test solo quando il modale viene aperto per la prima volta
+		if (isOpen) {
+			checkBrightnessCapabilities();
+		}
+	}, [isOpen]); // Esegui solo quando isOpen cambia
+
 	return (
 		<>
 			<IonModal
@@ -116,39 +164,39 @@ export const FontSizeControls = () => {
 				backdropBreakpoint={0}
 				className="reading-options-modal"
 			>
-				<div className="px-5 pt-4 pb-8">
-					<h2 className="text-xl font-semibold mb-8">Impostazioni lettura</h2>
+				<div className="px-5 pt-3 pb-6">
+					<h2 className="text-xl font-semibold mb-5">Impostazioni lettura</h2>
 
 					{/* Sezione Tema */}
-					<div className="mb-8">
-						<div className="flex justify-between items-center mb-3">
+					<div className="mb-5">
+						<div className="flex justify-between items-center mb-2">
 							<h3 className="text-lg text-gray-600">Tema</h3>
 							<div className="text-right px-3 py-1 border border-gray-300 rounded-full">
 								Match Sistema
 							</div>
 						</div>
 
-						<div className="flex justify-between gap-3">
+						<div className="flex justify-between gap-2">
 							<button
-								className={`flex-1 py-3 rounded-lg border ${theme === 'white' ? 'border-blue-500' : 'border-gray-300'}`}
+								className={`flex-1 py-2 rounded-lg border ${theme === 'white' ? 'border-blue-500' : 'border-gray-300'}`}
 								onClick={() => handleThemeSelect('white')}
 							>
 								<span className="block text-center">Bianco</span>
 							</button>
 							<button
-								className={`flex-1 py-3 rounded-lg bg-orange-50 border ${theme === 'sepia' ? 'border-blue-500' : 'border-orange-100'}`}
+								className={`flex-1 py-2 rounded-lg bg-orange-50 border ${theme === 'sepia' ? 'border-blue-500' : 'border-orange-100'}`}
 								onClick={() => handleThemeSelect('sepia')}
 							>
 								<span className="block text-center">Seppia</span>
 							</button>
 							<button
-								className={`flex-1 py-3 rounded-lg bg-gray-100 border ${theme === 'dawn' ? 'border-blue-500' : 'border-gray-200'}`}
+								className={`flex-1 py-2 rounded-lg bg-gray-100 border ${theme === 'dawn' ? 'border-blue-500' : 'border-gray-200'}`}
 								onClick={() => handleThemeSelect('dawn')}
 							>
 								<span className="block text-center">Alba</span>
 							</button>
 							<button
-								className={`flex-1 py-3 rounded-lg bg-gray-200 border ${theme === 'paper' ? 'border-blue-500' : 'border-gray-300'}`}
+								className={`flex-1 py-2 rounded-lg bg-gray-200 border ${theme === 'paper' ? 'border-blue-500' : 'border-gray-300'}`}
 								onClick={() => handleThemeSelect('paper')}
 							>
 								<span className="block text-center">Carta</span>
@@ -157,8 +205,8 @@ export const FontSizeControls = () => {
 					</div>
 
 					{/* Sezione Luminosità */}
-					<div className="mb-8">
-						<h3 className="text-lg text-gray-600 mb-2">Luminosità</h3>
+					<div className="mb-5">
+						<h3 className="text-lg text-gray-600 mb-1">Luminosità</h3>
 						<IonRange
 							value={brightness}
 							onIonChange={e => handleBrightnessChange(e.detail.value as number)}
@@ -166,18 +214,18 @@ export const FontSizeControls = () => {
 							max={100}
 							className="custom-range"
 						/>
-						<div className="flex justify-between text-xs text-gray-500 mt-1">
+						<div className="flex justify-between text-xs text-gray-500">
 							<span>Bassa</span>
 							<span>Alta</span>
 						</div>
 					</div>
 
 					{/* Sezione Font con Dropdown */}
-					<div className="mb-8">
-						<h3 className="text-lg text-gray-600 mb-2">Font</h3>
+					<div className="mb-5">
+						<h3 className="text-lg text-gray-600 mb-1">Font</h3>
 						<div className="relative" ref={fontDropdownRef}>
 							<div
-								className="border border-gray-300 rounded-lg p-3 relative cursor-pointer"
+								className="border border-gray-300 rounded-lg p-2 relative cursor-pointer"
 								onClick={toggleFontDropdown}
 							>
 								<span className="block text-center">{fontFamily}</span>
@@ -192,7 +240,7 @@ export const FontSizeControls = () => {
 									{availableFonts.map((font) => (
 										<div
 											key={font.value}
-											className={`p-3 cursor-pointer hover:bg-gray-100 ${fontFamily === font.name ? 'bg-blue-50 text-blue-600' : ''}`}
+											className={`p-2 cursor-pointer hover:bg-gray-100 ${fontFamily === font.name ? 'bg-blue-50 text-blue-600' : ''}`}
 											onClick={() => handleFontFamilyChange(font.value, font.name)}
 										>
 											<span className={`font-${font.value}`}>{font.name}</span>
@@ -204,71 +252,77 @@ export const FontSizeControls = () => {
 					</div>
 
 					{/* Sezione Dimensione Font */}
-					<div className="mb-8">
-						<h3 className="text-lg text-gray-600 mb-2">Dimensione Font</h3>
-						<div className="flex gap-3">
-							<button
-								className="flex-1 border border-gray-300 rounded-lg p-3 flex items-center justify-center"
-								onClick={decreaseFontSize}
-							>
-								<span className="text-2xl">A</span>
-								<IonIcon icon={chevronDown} className="ml-2 text-gray-500" />
-							</button>
-							<button
-								className="flex-1 border border-gray-300 rounded-lg p-3 flex items-center justify-center"
-								onClick={increaseFontSize}
-							>
-								<span className="text-2xl">A</span>
-								<IonIcon icon={chevronDown} className="ml-2 text-gray-500 transform rotate-180" />
-							</button>
+					<div className="mb-5">
+						<div className="flex items-center justify-between">
+							<h3 className="text-lg text-gray-600">Dimensione Font</h3>
+							<div className="flex gap-2">
+								<button
+									className="border border-gray-300 rounded-lg p-2 flex items-center justify-center w-14"
+									onClick={decreaseFontSize}
+								>
+									<span className="text-2xl">A</span>
+									<IonIcon icon={chevronDown} className="ml-1 text-gray-500" />
+								</button>
+								<button
+									className="border border-gray-300 rounded-lg p-2 flex items-center justify-center w-14"
+									onClick={increaseFontSize}
+								>
+									<span className="text-2xl">A</span>
+									<IonIcon icon={chevronDown} className="ml-1 text-gray-500 transform rotate-180" />
+								</button>
+							</div>
 						</div>
 					</div>
 
 					{/* Sezione Spaziatura */}
-					<div className="mb-8">
-						<h3 className="text-lg text-gray-600 mb-2">Spaziatura</h3>
-						<div className="flex gap-3">
-							<button
-								className="flex-1 border border-gray-300 rounded-lg p-3 flex items-center justify-center"
-								onClick={handleSpacingDecrease}
-							>
-								<div className="flex flex-col items-center">
-									<div className="w-8 h-1 bg-gray-700 mb-1"></div>
-									<div className="w-8 h-1 bg-gray-700"></div>
-								</div>
-								<IonIcon icon={chevronDown} className="ml-2 text-gray-500" />
-							</button>
-							<button
-								className="flex-1 border border-gray-300 rounded-lg p-3 flex items-center justify-center"
-								onClick={handleSpacingIncrease}
-							>
-								<div className="flex flex-col items-center">
-									<div className="w-8 h-1 bg-gray-700 mb-2"></div>
-									<div className="w-8 h-1 bg-gray-700"></div>
-								</div>
-								<IonIcon icon={chevronDown} className="ml-2 text-gray-500 transform rotate-180" />
-							</button>
+					<div className="mb-5">
+						<div className="flex items-center justify-between">
+							<h3 className="text-lg text-gray-600">Spaziatura</h3>
+							<div className="flex gap-2">
+								<button
+									className="border border-gray-300 rounded-lg p-2 flex items-center justify-center w-14"
+									onClick={handleSpacingDecrease}
+								>
+									<div className="flex flex-col items-center">
+										<div className="w-6 h-1 bg-gray-700 mb-1"></div>
+										<div className="w-6 h-1 bg-gray-700"></div>
+									</div>
+									<IonIcon icon={chevronDown} className="ml-1 text-gray-500" />
+								</button>
+								<button
+									className="border border-gray-300 rounded-lg p-2 flex items-center justify-center w-14"
+									onClick={handleSpacingIncrease}
+								>
+									<div className="flex flex-col items-center">
+										<div className="w-6 h-1 bg-gray-700 mb-2"></div>
+										<div className="w-6 h-1 bg-gray-700"></div>
+									</div>
+									<IonIcon icon={chevronDown} className="ml-1 text-gray-500 transform rotate-180" />
+								</button>
+							</div>
 						</div>
 					</div>
 
 					{/* Sezione Larghezza */}
 					<div className="mb-4">
-						<h3 className="text-lg text-gray-600 mb-2">Larghezza</h3>
-						<div className="flex gap-3">
-							<button
-								className="flex-1 border border-gray-300 rounded-lg p-3 flex items-center justify-center"
-								onClick={handleWidthDecrease}
-							>
-								<div className="w-5 h-1 bg-gray-700"></div>
-								<IonIcon icon={chevronDown} className="ml-2 text-gray-500" />
-							</button>
-							<button
-								className="flex-1 border border-gray-300 rounded-lg p-3 flex items-center justify-center"
-								onClick={handleWidthIncrease}
-							>
-								<div className="w-10 h-1 bg-gray-700"></div>
-								<IonIcon icon={chevronDown} className="ml-2 text-gray-500 transform rotate-180" />
-							</button>
+						<div className="flex items-center justify-between">
+							<h3 className="text-lg text-gray-600">Larghezza</h3>
+							<div className="flex gap-2">
+								<button
+									className="border border-gray-300 rounded-lg p-2 flex items-center justify-center w-14"
+									onClick={handleWidthDecrease}
+								>
+									<div className="w-4 h-1 bg-gray-700"></div>
+									<IonIcon icon={chevronDown} className="ml-1 text-gray-500" />
+								</button>
+								<button
+									className="border border-gray-300 rounded-lg p-2 flex items-center justify-center w-14"
+									onClick={handleWidthIncrease}
+								>
+									<div className="w-8 h-1 bg-gray-700"></div>
+									<IonIcon icon={chevronDown} className="ml-1 text-gray-500 transform rotate-180" />
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
