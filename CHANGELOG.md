@@ -1,3 +1,10 @@
+## [1.15.2](https://github.com/Liago/AZReader/compare/v1.15.1...v1.15.2) (2025-03-13)
+
+
+### Bug Fixes
+
+* brightness setup with commmunity capacitor plugin ([78e8bb8](https://github.com/Liago/AZReader/commit/78e8bb800f5e954313fb4f4a5948ce22891f73a8))
+
 ## [1.15.1](https://github.com/Liago/AZReader/compare/v1.15.0...v1.15.1) (2025-03-12)
 
 
