@@ -326,16 +326,9 @@ ion-footer.compact-footer .flex {
 }
 
 .reading-options-modal {
+  --backdrop-opacity: 0.25;
   --border-radius: 16px 16px 0 0;
   --box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.custom-range {
-  --bar-background: #d1d5db;
-  --bar-background-active: #3b82f6;
-  --knob-background: #ffffff;
-  --knob-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --knob-size: 24px;
 }
 
 ion-item-sliding {

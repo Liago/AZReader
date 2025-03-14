@@ -27,7 +27,7 @@
 .reading-content {
   background-color: var(--app-bg-color);
   color: var(--app-text-color);
-  filter: brightness(var(--app-brightness));
+  /* filter: brightness(var(--app-brightness)); */
   letter-spacing: calc(var(--app-spacing) * 0.05em);
   max-width: calc(var(--app-width) * 65ch);
   margin: 0 auto;

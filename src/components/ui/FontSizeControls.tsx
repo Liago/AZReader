@@ -206,13 +206,12 @@ export const FontSizeControls = () => {
 
 					{/* Sezione Luminosità */}
 					<div className="mb-5">
-						<h3 className="text-lg text-gray-600 mb-1">Luminosità</h3>
+						<h3 className="text-lg text-gray-600 mb-1">Luminosità Dispositivo</h3>
 						<IonRange
 							value={brightness}
 							onIonChange={e => handleBrightnessChange(e.detail.value as number)}
 							min={0}
 							max={100}
-							className="custom-range"
 						/>
 						<div className="flex justify-between text-xs text-gray-500">
 							<span>Bassa</span>
