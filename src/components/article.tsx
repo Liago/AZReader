@@ -1,36 +1,28 @@
 import React, { useState } from "react";
 import {
 	IonIcon,
-	getPlatforms,
-	IonModal,
 	IonToolbar,
 	IonButtons,
 	IonButton,
 	IonFooter,
-	IonPage,
+	IonContent,
 	IonToast,
 } from "@ionic/react";
 import {
-	bookmark,
 	chevronBack,
 	ellipsisHorizontal,
 	chatbubbleOutline,
 	heart,
 	heartOutline,
 	shareOutline,
-	searchOutline,
 	bookmarkOutline,
 } from "ionicons/icons";
 import { Session } from "@supabase/supabase-js";
-import ModalTags from "./ModalTags";
-import { useTagsSaver } from "@store/rest";
 import { usePostLikes } from "@hooks/usePostLikes";
 import { useCustomToast } from "@hooks/useIonToast";
-import { isEmpty } from "lodash";
 import { renderArticleDatePublished } from "../utility/utils";
 import FontSizeWrapper from "./FontSizeWrapper";
 import FontSizeControls from "./ui/FontSizeControls";
-import moment from "moment";
 import { usePostComments } from "@hooks/usePostComments";
 import Comments from "./Comments";
 import { ShareService } from "@utility/shareService";
@@ -59,10 +51,8 @@ interface ArticleProps {
 }
 
 const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom, session }) => {
-	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt, url, savedBy, savedOn } = articleParsed;
+	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt, url } = articleParsed;
 
-	const [showModal, setShowModal] = useState<boolean>(false);
-	const [searchQuery, setSearchQuery] = useState<string>("");
 	const [showShareToast, setShowShareToast] = useState<boolean>(false);
 	const [shareToastMessage, setShareToastMessage] = useState<string>("");
 	const showToast = useCustomToast();
@@ -71,8 +61,6 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 	const { likesCount, hasLiked, toggleLike, isLoading: isLikeLoading, error: likeError } = usePostLikes(postId, session);
 	const [showComments, setShowComments] = useState<boolean>(false);
 	const { commentsCount } = usePostComments(postId, session);
-
-	const [saveTagsFunc, { error: tagError, loading: tagLoading, data: tagData }] = useTagsSaver();
 
 	const handleLikeClick = async () => {
 		try {
@@ -98,34 +86,6 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 				color: "danger",
 			});
 		}
-	};
-
-	const dismissTagModalHandler = async (tagsSelected: string[]) => {
-		setShowModal(false);
-		if (isEmpty(tagsSelected)) return;
-
-		try {
-			await saveTagsFunc({
-				id: postId,
-				tags: tagsSelected,
-			});
-
-			if (tagError) {
-				showToast({
-					message: "Errore durante il salvataggio dei tag",
-					color: "danger",
-				});
-			}
-		} catch (err) {
-			showToast({
-				message: "Errore durante il salvataggio dei tag",
-				color: "danger",
-			});
-		}
-	};
-
-	const insertTagHandler = () => {
-		setShowModal(true);
 	};
 
 	// Funzione per condividere l'articolo
@@ -165,9 +125,6 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 			</IonButtons>
 			<IonButtons slot="end" className="pr-safe-area">
 				<FontSizeControls />
-				<IonButton>
-					<IonIcon icon={bookmark} className="w-6 h-6 text-gray-700" />
-				</IonButton>
 				<IonButton>
 					<IonIcon icon={ellipsisHorizontal} className="w-6 h-6 text-gray-700" />
 				</IonButton>
@@ -224,89 +181,43 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 		</IonFooter>
 	);
 
-	const renderSearchBar = () => (
-		<div className="bg-gray-100 rounded-lg mx-4 my-3">
-			<div className="flex items-center px-4 py-2">
-				<IonIcon icon={searchOutline} className="w-5 h-5 text-gray-500 mr-2" />
-				<input
-					type="text"
-					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-					placeholder="Cerca un tag o inseriscine uno nuovo"
-					className="bg-transparent w-full text-gray-700 placeholder-gray-500 outline-none text-sm"
-				/>
-			</div>
-		</div>
-	);
-
-	const renderModalTags = () => (
-		<IonModal
-			isOpen={showModal}
-			onDidDismiss={() => setShowModal(false)}
-			breakpoints={[0, 0.5, 0.75]}
-			initialBreakpoint={0.75}
-			className="bg-white rounded-t-xl"
-		>
-			<div className="px-4 py-6">
-				{renderSearchBar()}
-				<div className="mt-4">
-					<h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-					<ModalTags showModal={showModal} dismissTagModalHandler={dismissTagModalHandler} postId={postId} />
-				</div>
-			</div>
-		</IonModal>
-	);
-
 	return (
-		<IonPage>
-			<div className="flex flex-col min-h-screen bg-white">
-				{renderHeader()}
-				<main className="flex-1 overflow-y-auto pt-16 pb-20">
-					<article className="max-w-2xl mx-auto px-4">
-						<h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
-						{excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: excerpt }} />}
-
-						<div className="flex justify-between items-center mb-6 border border-gray-200 p-4">
-							<div>
-								<p className="text-sm text-gray-500 m-0">{renderArticleDatePublished(date || date_published)}</p>
-								<p className="text-xs m-0">
-									Salvato da: {savedBy?.userEmail} il {moment(savedOn).format("DD MMMM YYYY")}
-								</p>
-								<p className="font-bold text-xs text-gray-900 m-0 text-right">{domain}</p>
-							</div>
-						</div>
-
-						{lead_image_url && <img src={lead_image_url} alt={title} className="w-full rounded-lg mb-6 shadow-sm object-cover" />}
-
-						<FontSizeWrapper>
-							<div
-								className="prose max-w-none text-gray-800 mb-12"
-								dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }}
-							/>
-						</FontSizeWrapper>
-					</article>
-				</main>
-				{renderFooter()}
-				{renderModalTags()}
-				<Comments
-					postId={postId}
-					session={session}
-					isOpen={showComments}
-					onClose={() => setShowComments(false)}
-					articleTitle={title || "Articolo"}
-				/>
-
-				{/* Toast per i messaggi di condivisione */}
-				<IonToast
-					isOpen={showShareToast}
-					onDidDismiss={() => setShowShareToast(false)}
-					message={shareToastMessage}
-					duration={2000}
-					position="bottom"
-					color="medium"
-				/>
+		<>
+			{displayFrom !== 'modalPreview' && renderHeader()}
+			<div className="article-content px-4">
+				{lead_image_url && (
+					<div className="mb-4">
+						<img src={lead_image_url} alt={title} className="w-full h-auto rounded-lg" />
+					</div>
+				)}
+				<h1 className="text-2xl font-bold mb-2">{title}</h1>
+				{domain && (
+					<div className="text-sm text-gray-500 mb-2">
+						{domain} • {renderArticleDatePublished(date_published || date)}
+					</div>
+				)}
+				{excerpt && <div className="text-lg text-gray-700 mb-4">{excerpt}</div>}
+				<FontSizeWrapper>
+					<div className="prose max-w-none pb-20" dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }} />
+				</FontSizeWrapper>
 			</div>
-		</IonPage>
+			{displayFrom !== 'modalPreview' && renderFooter()}
+			<Comments
+				isOpen={showComments}
+				onClose={() => setShowComments(false)}
+				articleTitle={title}
+				postId={postId}
+				session={session}
+			/>
+			<IonToast
+				isOpen={showShareToast}
+				onDidDismiss={() => setShowShareToast(false)}
+				message={shareToastMessage}
+				duration={2000}
+				position="bottom"
+				color="danger"
+			/>
+		</>
 	);
 };
 

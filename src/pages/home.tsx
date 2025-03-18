@@ -1,37 +1,33 @@
 import { useRef } from "react";
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, IonPage, IonTitle, IonToolbar } from "@ionic/react";
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
-import { Session } from "@supabase/auth-js/dist/module/lib/types"; // Percorso corretto per il tipo Session
+import { Session } from "@supabase/supabase-js";
 import { ArticleParsed } from "@common/interfaces";
-import ModalParser from "@components/ModalParser";
+import ArticlePreviewModal from "@components/ArticlePreviewModal";
 import { Auth } from "@components/form/authentication";
 import ArticleList from "@components/ArticleList";
 import useAuth from "@hooks/useAuth";
 import useArticles from "@hooks/useArticles";
 
-interface ModalProps {
-	articleParsed: ArticleParsed | null;
-	showModal: boolean;
-	pageRef: React.RefObject<HTMLElement>;
-	savePostHandler: () => void;
-	setShowModal: (show: boolean) => void;
-	searchText: string;
-	setSearchText: (text: string) => void;
-	savePostToServer: () => void;
-	loading: boolean;
-	isParsing: boolean;
-	session: Session | null;
-}
-
 const Home: React.FC = () => {
 	const { session, signOut } = useAuth();
-	const { showModal, setShowModal, searchText, setSearchText, isParsing, articleParsed, savePostHandler, savePostToServer, loading } = useArticles(
-		session as Session | null
-	);
+	const {
+		showModal,
+		setShowModal,
+		isParsing,
+		articleParsed,
+		savePostHandler,
+		savePostToServer,
+		setSearchText
+	} = useArticles(session as Session | null);
 
 	const pageRef = useRef<HTMLElement>(null);
 
 	const renderTitle = (): string => (session ? "Articoli condivisi" : "I miei articoli");
+
+	const handleUrlSubmit = (url: string) => {
+		setSearchText(url);
+	};
 
 	const renderContent = (): JSX.Element => {
 		if (!session) {
@@ -41,27 +37,17 @@ const Home: React.FC = () => {
 		return (
 			<>
 				<ArticleList session={session as Session} />
-				{renderModalParser()}
+				<ArticlePreviewModal
+					isOpen={showModal}
+					onClose={() => setShowModal(false)}
+					onSave={savePostHandler}
+					article={articleParsed}
+					isLoading={isParsing}
+					session={session}
+					onUrlSubmit={handleUrlSubmit}
+				/>
 			</>
 		);
-	};
-
-	const renderModalParser = (): JSX.Element | null => {
-		const modalProps: ModalProps = {
-			articleParsed,
-			showModal,
-			pageRef,
-			savePostHandler,
-			setShowModal,
-			searchText,
-			setSearchText,
-			savePostToServer,
-			loading,
-			isParsing,
-			session: session as Session | null,
-		};
-
-		return <ModalParser {...modalProps} />;
 	};
 
 	return (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Session } from "@supabase/auth-js/dist/module/lib/types";
+import { Session } from "@supabase/supabase-js";
 
 import { ArticleParsed, RootState } from "@common/interfaces";
 
@@ -308,7 +308,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		setSearchText,
 		isParsing,
 		articleParsed: customArticleParsed || rapidArticleParsed || articleParsed,
-		savePostHandler: () => {}, // Implementazione non fornita
+		savePostHandler: () => { }, // Implementazione non fornita
 		savePostToServer,
 		loading,
 		postFromDb: postFromDb || [],

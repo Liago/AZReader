@@ -1,18 +1,10 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { Session } from "@supabase/supabase-js";
 
 import * as actionTypes from "@store/actionTypes";
 
 import { supabase } from "@store/rest";
-
-interface User {
-	id: string;
-	email?: string;
-}
-
-interface Session {
-	user: User;
-}
 
 export const useAuth = () => {
 	const [session, setSession] = useState<Session | null>(null);
