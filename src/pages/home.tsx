@@ -3,7 +3,6 @@ import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, I
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 import { Session } from "@supabase/auth-js/dist/module/lib/types"; // Percorso corretto per il tipo Session
 import { ArticleParsed } from "@common/interfaces";
-import MainMenu from "@components/ui/menu";
 import ModalParser from "@components/ModalParser";
 import { Auth } from "@components/form/authentication";
 import ArticleList from "@components/ArticleList";
@@ -28,7 +27,7 @@ const Home: React.FC = () => {
 	const { session, signOut } = useAuth();
 	const { showModal, setShowModal, searchText, setSearchText, isParsing, articleParsed, savePostHandler, savePostToServer, loading } = useArticles(
 		session as Session | null
-	); // Aggiungiamo il cast esplicito qui
+	);
 
 	const pageRef = useRef<HTMLElement>(null);
 
@@ -67,12 +66,11 @@ const Home: React.FC = () => {
 
 	return (
 		<>
-			<MainMenu />
 			<IonPage id="home-page" ref={pageRef}>
 				<IonHeader className="ion-no-border">
 					<IonToolbar>
 						<IonButtons slot="start">
-							<IonMenuButton />
+							<IonMenuButton autoHide={false} />
 						</IonButtons>
 						<IonTitle>{renderTitle()}</IonTitle>
 						<IonButtons slot="primary">
