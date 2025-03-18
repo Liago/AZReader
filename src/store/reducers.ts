@@ -13,6 +13,7 @@ interface AppState {
 	configuration?: any;
 	fontSize: string;
 	theme: string;
+	themeMode: string; // auto, light, dark
 	brightness: number;
 	fontFamily: string;
 	spacing: number;
@@ -74,6 +75,7 @@ const initialState: RootState = {
 		tokenExpiration: null,
 		fontSize: "base",
 		theme: "white",
+		themeMode: "auto", // Default: auto (segue impostazioni sistema)
 		brightness: 50,
 		fontFamily: "New York",
 		spacing: 1,
@@ -111,6 +113,8 @@ const toast = (state = initialState.toast, action: AnyAction) => {
 };
 
 const app = (state = initialState.app, action: AnyAction): AppState => {
+	console.log('Reducer app: action ricevuta =', action.type, action.payload);
+
 	switch (action.type) {
 		case actionTypes.LOGIN:
 			return {
@@ -161,9 +165,18 @@ const app = (state = initialState.app, action: AnyAction): AppState => {
 				fontSize: prevSize,
 			};
 		case actionTypes.SET_THEME:
+			console.log('SET_THEME: cambio tema a', action.payload);
 			return {
 				...state,
 				theme: action.payload,
+			};
+		case actionTypes.SET_THEME_MODE:
+			console.log('SET_THEME_MODE: cambio modalità tema a', action.payload, 'darkMode =', action.payload === "dark");
+			return {
+				...state,
+				themeMode: action.payload,
+				// Se impostiamo manualmente il tema, aggiorniamo anche darkMode
+				darkMode: action.payload === "dark",
 			};
 		case actionTypes.SET_BRIGHTNESS:
 			return {

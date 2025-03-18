@@ -321,6 +321,11 @@ export const setTheme = (theme: string) => ({
 	payload: theme,
 });
 
+export const setThemeMode = (mode: string) => ({
+	type: actionTypes.SET_THEME_MODE as typeof actionTypes.SET_THEME_MODE,
+	payload: mode,
+});
+
 export const setBrightness = (brightness: number) => ({
 	type: actionTypes.SET_BRIGHTNESS as typeof actionTypes.SET_BRIGHTNESS,
 	payload: brightness,
