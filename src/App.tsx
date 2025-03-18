@@ -8,6 +8,8 @@ import { persistor, store } from "@store/store";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { App as CapApp } from "@capacitor/app";
 import Home from "@pages/home";
+import ThemeInitializer from "./components/ui/ThemeInitializer";
+import SideMenu from "./components/SideMenu";
 
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 import VerifyEmail from "@pages/verifyEmail";
@@ -28,6 +30,7 @@ import "./css/main.css";
 import { XCircleIcon } from "lucide-react";
 import ParserHeaderTest from "@pages/Test";
 import ViewMessage from "@pages/ViewMessage";
+import UnderConstructionPage from './pages/UnderConstructionPage';
 
 interface AppUrlOpenListenerEvent {
 	url: string;
@@ -252,17 +255,36 @@ const AppContent: React.FC = () => {
 
 	console.log("AppContent rendering...");
 	return (
-		<IonApp>
-			<IonRouterOutlet>
-				<Route path="/home" component={Home} exact />
-				<Route path="/auth/confirm" component={AuthConfirmPage} exact />
-				<Route path="/article/:id" component={ViewMessage} exact />
-				<Route path="/verify-email" component={VerifyEmail} exact />
-				<Route path="/" exact render={() => <Redirect to="/home" />} />
-				<Route path="/test" component={ParserHeaderTest} exact />
-				<Route render={() => <Redirect to="/home" />} />
+		<IonReactRouter>
+			<SideMenu />
+			<IonRouterOutlet id="main">
+				<Route exact path="/home" component={Home} />
+				<Route path="/article/:id" component={ViewMessage} />
+				<Route exact path="/auth/confirm" component={AuthConfirmPage} />
+				<Route exact path="/verify-email" component={VerifyEmail} />
+				<Route exact path="/test" component={ParserHeaderTest} />
+				<Route exact path="/view-message" component={ViewMessage} />
+
+				<Route
+					exact
+					path="/profile"
+					render={() => <UnderConstructionPage title="Profilo" />}
+				/>
+				<Route
+					exact
+					path="/info"
+					render={() => <UnderConstructionPage title="Informazioni" />}
+				/>
+
+				<Route
+					render={() => <UnderConstructionPage title="Pagina non trovata" />}
+				/>
+
+				<Route exact path="/">
+					<Redirect to="/home" />
+				</Route>
 			</IonRouterOutlet>
-		</IonApp>
+		</IonReactRouter>
 	);
 };
 
@@ -272,9 +294,7 @@ const App: React.FC = () => {
 		<ErrorBoundary FallbackComponent={ErrorFallback} onError={(error) => console.error("Error caught by boundary:", error)}>
 			<Provider store={store}>
 				<PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-					<IonReactRouter>
-						<AppContent />
-					</IonReactRouter>
+					<AppContent />
 				</PersistGate>
 			</Provider>
 		</ErrorBoundary>
