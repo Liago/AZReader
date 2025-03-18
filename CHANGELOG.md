@@ -1,3 +1,17 @@
+# [1.16.0](https://github.com/Liago/AZReader/compare/v1.15.2...v1.16.0) (2025-03-18)
+
+
+### Bug Fixes
+
+* brightness control only over capacitor plugin ([4755f57](https://github.com/Liago/AZReader/commit/4755f57dd3b509818c85179a97c304cb5ea72fc5))
+
+
+### Features
+
+* add theme dark/light management ([48984f9](https://github.com/Liago/AZReader/commit/48984f9e7fb9567ca07dbf65f17e23dca98501ed))
+* Error Boundary and error page management ([2ff42f9](https://github.com/Liago/AZReader/commit/2ff42f9edd0706ca7734c9e2072b09a4ccc9acf0))
+* new side menu ([d846cda](https://github.com/Liago/AZReader/commit/d846cda490b62dcafbe4c4a5d56e54542c73b279))
+
 ## [1.15.2](https://github.com/Liago/AZReader/compare/v1.15.1...v1.15.2) (2025-03-13)
 
 
