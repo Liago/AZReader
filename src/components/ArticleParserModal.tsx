@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { Clipboard } from '@capacitor/clipboard';
 import { isValidUrl } from '@utility/utils';
 import Article from './Article';
+import { rapidApiScraper } from '@common/scraper';
 
 // Interfaccia per props
 interface ArticleParserModalProps {
@@ -13,6 +14,7 @@ interface ArticleParserModalProps {
 	article?: any;
 	isLoading?: boolean;
 	session?: Session | null;
+	error?: any; // Aggiungiamo una prop per l'errore
 }
 
 /**
@@ -25,18 +27,68 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 	onSave,
 	article,
 	isLoading,
-	session
+	session,
+	error
 }) => {
 	// Stato per l'URL
 	const [url, setUrl] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
 	const [showSuccess, setShowSuccess] = useState(false);
+	const [usingFallback, setUsingFallback] = useState(false);
+	const [fallbackArticle, setFallbackArticle] = useState<any>(null);
+	const [fallbackLoading, setFallbackLoading] = useState(false);
+
+	// Gestione dell'errore di parsing
+	useEffect(() => {
+		// Se c'è un errore e abbiamo l'URL ma non stiamo già usando il fallback
+		if (error && url && !usingFallback && !fallbackLoading && !fallbackArticle) {
+			// Controlliamo se è un errore 403 o un altro errore di parsing
+			const isParsingError =
+				(error.message && error.message.includes('403')) ||
+				(error.error === true && error.failed === true);
+
+			if (isParsingError) {
+				console.log('Errore nel parsing principale, tento con RapidAPI:', error);
+				handleFallbackParsing();
+			}
+		}
+	}, [error, url, usingFallback, fallbackLoading, fallbackArticle]);
+
+	// Funzione per eseguire il parsing fallback con RapidAPI
+	const handleFallbackParsing = async () => {
+		if (!url || fallbackLoading) return;
+
+		setFallbackLoading(true);
+		setUsingFallback(true);
+		setErrorMessage('');
+
+		try {
+			console.log('Tentativo di parsing con RapidAPI:', url);
+			const cleanedUrl = cleanUrl(url);
+			const result = await rapidApiScraper(cleanedUrl);
+
+			if (result) {
+				console.log('Parsing RapidAPI riuscito:', result);
+				setFallbackArticle(result);
+			} else {
+				setErrorMessage('Non è stato possibile analizzare questo articolo.');
+			}
+		} catch (error) {
+			console.error('Errore nel parsing RapidAPI:', error);
+			setErrorMessage('Tutti i tentativi di analisi hanno fallito. Prova con un altro URL.');
+		} finally {
+			setFallbackLoading(false);
+		}
+	};
 
 	// Funzione per resettare tutti gli stati
 	const resetStates = () => {
 		setUrl('');
 		setErrorMessage('');
 		setShowSuccess(false);
+		setUsingFallback(false);
+		setFallbackArticle(null);
+		setFallbackLoading(false);
 	};
 
 	// Funzione per leggere dalla clipboard
@@ -106,6 +158,9 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 	const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setUrl(e.target.value);
 		if (errorMessage) setErrorMessage('');
+		// Reset degli stati di fallback quando l'URL cambia
+		setUsingFallback(false);
+		setFallbackArticle(null);
 	};
 
 	// Funzione per pulire l'URL
@@ -154,6 +209,8 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 		}
 
 		console.log('Invio URL per analisi:', cleanedUrl);
+		setUsingFallback(false);
+		setFallbackArticle(null);
 		if (onSubmitUrl) {
 			onSubmitUrl(cleanedUrl);
 		}
@@ -175,7 +232,8 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 
 	// Determina il contenuto da mostrare in base allo stato
 	const renderContent = () => {
-		if (isLoading) {
+		// Mostra lo spinner di caricamento sia per il parsing principale che per il fallback
+		if (isLoading || fallbackLoading) {
 			return (
 				<div style={{ textAlign: 'center', padding: '40px' }}>
 					<div className="spinner" style={{
@@ -187,7 +245,11 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 						margin: '0 auto 20px',
 						animation: 'spin 1s linear infinite'
 					}}></div>
-					<p>Caricamento anteprima articolo...</p>
+					<p>
+						{usingFallback
+							? 'Tentativo di analisi alternativa in corso...'
+							: 'Caricamento anteprima articolo...'}
+					</p>
 					<style>{`
 						@keyframes spin {
 							0% { transform: rotate(0deg); }
@@ -198,16 +260,31 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 			);
 		}
 
-		if (article) {
+		// Mostra l'articolo (sia principale che fallback)
+		const articleToShow = fallbackArticle || article;
+		if (articleToShow) {
 			return (
 				<div style={{ padding: '20px' }}>
+					{usingFallback && (
+						<div style={{
+							backgroundColor: 'rgba(255, 193, 7, 0.1)',
+							color: '#ff9800',
+							padding: '8px 12px',
+							borderRadius: '4px',
+							marginBottom: '16px',
+							fontSize: '14px'
+						}}>
+							Analisi eseguita con metodo alternativo
+						</div>
+					)}
+
 					{/* Render anteprima articolo */}
 					<div className="article-preview">
 						<Article
-							articleParsed={article}
+							articleParsed={articleToShow}
 							onDismiss={handleClose}
 							displayFrom="modalPreview"
-							postId={article.id || ""}
+							postId={articleToShow.id || ""}
 							session={session || null}
 						/>
 					</div>
