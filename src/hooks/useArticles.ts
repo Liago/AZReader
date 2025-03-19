@@ -308,7 +308,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		setSearchText,
 		isParsing,
 		articleParsed: customArticleParsed || rapidArticleParsed || articleParsed,
-		savePostHandler: () => { }, // Implementazione non fornita
+		savePostHandler: savePostToServer,
 		savePostToServer,
 		loading,
 		postFromDb: postFromDb || [],

@@ -3,7 +3,7 @@ import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, I
 import { powerOutline, logInOutline, documentTextOutline } from "ionicons/icons";
 import { Session } from "@supabase/supabase-js";
 import { ArticleParsed } from "@common/interfaces";
-import ArticlePreviewModal from "@components/ArticlePreviewModal";
+import ArticleParserModal from "@components/ArticleParserModal";
 import { Auth } from "@components/form/authentication";
 import ArticleList from "@components/ArticleList";
 import useAuth from "@hooks/useAuth";
@@ -37,14 +37,14 @@ const Home: React.FC = () => {
 		return (
 			<>
 				<ArticleList session={session as Session} />
-				<ArticlePreviewModal
+				<ArticleParserModal
 					isOpen={showModal}
 					onClose={() => setShowModal(false)}
 					onSave={savePostHandler}
+					onSubmitUrl={handleUrlSubmit}
 					article={articleParsed}
 					isLoading={isParsing}
 					session={session}
-					onUrlSubmit={handleUrlSubmit}
 				/>
 			</>
 		);
