@@ -32,20 +32,63 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 	const [errorMessage, setErrorMessage] = useState('');
 	const [showSuccess, setShowSuccess] = useState(false);
 
-	// Gestione del body overflow quando la modale è aperta
+	// Funzione per resettare tutti gli stati
+	const resetStates = () => {
+		setUrl('');
+		setErrorMessage('');
+		setShowSuccess(false);
+	};
+
+	// Funzione per leggere dalla clipboard
+	const handleClipboardPaste = async () => {
+		console.log('Lettura clipboard');
+		setErrorMessage('');
+
+		try {
+			const result = await Clipboard.read();
+			console.log('Contenuto clipboard:', result);
+
+			if (result && result.value) {
+				const clipText = result.value.trim();
+
+				if (clipText) {
+					setUrl(clipText);
+
+					// Verifica validità URL
+					const cleanedUrl = cleanUrl(clipText);
+					if (!isValidUrl(cleanedUrl)) {
+						setErrorMessage('L\'URL incollato non sembra valido. Verificalo e correggilo se necessario.');
+					}
+				} else {
+					setErrorMessage('Nessun testo trovato negli appunti');
+				}
+			} else {
+				setErrorMessage('Clipboard vuota o non accessibile');
+			}
+		} catch (error) {
+			console.error('Errore clipboard:', error);
+			setErrorMessage('Errore durante l\'accesso alla clipboard');
+		}
+	};
+
+	// Gestione del body overflow e reset degli stati quando la modale è aperta o chiusa
 	useEffect(() => {
+		// Pulisci gli stati sia all'apertura che alla chiusura
+		resetStates();
+
 		if (isOpen) {
 			document.body.style.overflow = 'hidden';
-			// Reset degli stati all'apertura
-			setUrl('');
-			setErrorMessage('');
-			setShowSuccess(false);
+
+			// Leggi automaticamente dalla clipboard all'apertura
+			// Dopo aver resettato gli stati
+			handleClipboardPaste();
 		} else {
 			document.body.style.overflow = '';
 		}
 
 		return () => {
 			document.body.style.overflow = '';
+			resetStates();
 		};
 	}, [isOpen]);
 
@@ -55,6 +98,7 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 	// Funzione per la chiusura
 	const handleClose = () => {
 		console.log('Chiusura modale');
+		resetStates();
 		onClose();
 	};
 
@@ -112,38 +156,6 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 		console.log('Invio URL per analisi:', cleanedUrl);
 		if (onSubmitUrl) {
 			onSubmitUrl(cleanedUrl);
-		}
-	};
-
-	// Funzione per leggere dalla clipboard
-	const handleClipboardPaste = async () => {
-		console.log('Lettura clipboard');
-		setErrorMessage('');
-
-		try {
-			const result = await Clipboard.read();
-			console.log('Contenuto clipboard:', result);
-
-			if (result && result.value) {
-				const clipText = result.value.trim();
-
-				if (clipText) {
-					setUrl(clipText);
-
-					// Verifica validità URL
-					const cleanedUrl = cleanUrl(clipText);
-					if (!isValidUrl(cleanedUrl)) {
-						setErrorMessage('L\'URL incollato non sembra valido. Verificalo e correggilo se necessario.');
-					}
-				} else {
-					setErrorMessage('Nessun testo trovato negli appunti');
-				}
-			} else {
-				setErrorMessage('Clipboard vuota o non accessibile');
-			}
-		} catch (error) {
-			console.error('Errore clipboard:', error);
-			setErrorMessage('Errore durante l\'accesso alla clipboard');
 		}
 	};
 
