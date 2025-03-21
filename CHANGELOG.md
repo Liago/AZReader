@@ -1,3 +1,13 @@
+## [1.16.1](https://github.com/Liago/AZReader/compare/v1.16.0...v1.16.1) (2025-03-21)
+
+
+### Bug Fixes
+
+* add parse article fallback ([1d4c1fb](https://github.com/Liago/AZReader/commit/1d4c1fbceaf995c03852cd9b5ff8231a81461cf7))
+* clean modal fields and check URL consistency ([60c838b](https://github.com/Liago/AZReader/commit/60c838b36240c02bf3d1e5912222907cc8298e47))
+* modal parser enhanced ([16f4071](https://github.com/Liago/AZReader/commit/16f40710635311129e584c2b7b74bfbf95c46229))
+* reset all fields in scraper preview modal ([719fac7](https://github.com/Liago/AZReader/commit/719fac7e6d84a6719aadc4e1820830199462a576))
+
 # [1.16.0](https://github.com/Liago/AZReader/compare/v1.15.2...v1.16.0) (2025-03-18)
 
 
