@@ -194,6 +194,41 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 		setFallbackLoading(false);
 	};
 
+	// Funzione per pulire l'URL
+	const cleanUrl = (inputUrl: string): string => {
+		try {
+			let cleaned = inputUrl.trim();
+
+			// Rimuovi caratteri di escape
+			cleaned = cleaned.replace(/\\/g, '');
+
+			// Decodifica se necessario
+			if (cleaned.includes('%')) {
+				try {
+					cleaned = decodeURIComponent(cleaned);
+				} catch (e) {
+					console.error('Errore decodifica URL:', e);
+				}
+			}
+
+			// Prima verifica se sembra un possibile URL (contiene un dominio valido)
+			const hasDomainPattern = /^(https?:\/\/)?[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+/i;
+			if (!hasDomainPattern.test(cleaned)) {
+				return cleaned; // Non modificare testo che non assomiglia a un URL
+			}
+
+			// Aggiungi https se manca
+			if (cleaned && !cleaned.match(/^https?:\/\//i)) {
+				cleaned = 'https://' + cleaned;
+			}
+
+			return cleaned;
+		} catch (e) {
+			console.error('Errore pulizia URL:', e);
+			return inputUrl;
+		}
+	};
+
 	// Funzione per leggere dalla clipboard
 	const handleClipboardPaste = async () => {
 		console.log('Lettura clipboard');
@@ -209,10 +244,25 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 				if (clipText) {
 					setUrl(clipText);
 
+					// Prima verifica se sembra un possibile URL
+					const hasDomainPattern = /^(https?:\/\/)?[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+/i;
+					if (!hasDomainPattern.test(clipText)) {
+						setErrorMessage('Il testo incollato non sembra essere un URL. Incolla un indirizzo web valido.');
+						return;
+					}
+
 					// Verifica validità URL
 					const cleanedUrl = cleanUrl(clipText);
 					if (!isValidUrl(cleanedUrl)) {
 						setErrorMessage('L\'URL incollato non sembra valido. Verificalo e correggilo se necessario.');
+						// Non avviare l'analisi se l'URL non è valido
+						return;
+					} else {
+						// Se l'URL è valido, avvia automaticamente l'analisi
+						console.log('URL valido trovato nella clipboard, avvio analisi automatica');
+						if (onSubmitUrl) {
+							onSubmitUrl(cleanedUrl);
+						}
 					}
 				} else {
 					setErrorMessage('Nessun testo trovato negli appunti');
@@ -264,35 +314,6 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 		// Reset degli stati di fallback quando l'URL cambia
 		setUsingFallback(false);
 		setFallbackArticle(null);
-	};
-
-	// Funzione per pulire l'URL
-	const cleanUrl = (inputUrl: string): string => {
-		try {
-			let cleaned = inputUrl.trim();
-
-			// Rimuovi caratteri di escape
-			cleaned = cleaned.replace(/\\/g, '');
-
-			// Decodifica se necessario
-			if (cleaned.includes('%')) {
-				try {
-					cleaned = decodeURIComponent(cleaned);
-				} catch (e) {
-					console.error('Errore decodifica URL:', e);
-				}
-			}
-
-			// Aggiungi https se manca
-			if (cleaned && !cleaned.match(/^https?:\/\//i)) {
-				cleaned = 'https://' + cleaned;
-			}
-
-			return cleaned;
-		} catch (e) {
-			console.error('Errore pulizia URL:', e);
-			return inputUrl;
-		}
 	};
 
 	// Funzione per analizzare l'URL
