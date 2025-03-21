@@ -4,6 +4,7 @@ import { supabaseDb } from "../config/environment";
 import { PostData, UseLazyApiReturn, ArticleParseResponse, TagsResponse } from "@common/interfaces";
 import { store } from "./store";
 import { PlatformHelper } from "@utility/platform-helper";
+import { generateUniqueId } from "@utility/utils";
 import { useEffect } from "react";
 
 const { useLazyApi } = wrappedApi();
@@ -50,22 +51,107 @@ export const useTagsSaver = (): UseLazyApiReturn<{ success: boolean }> => {
 	return useLazyApi<{ success: boolean }>("POST", `tags/save?auth=${tokenApp}`);
 };
 
-export async function insertPost(postData: PostData) {
-	const now = new Date().toISOString();
-	const { data, error } = await supabase
-		.from("posts")
-		.insert({
-			...postData,
-			savedOn: now,
-		})
-		.select();
-
-	if (error) {
-		console.error("Errore durante l'inserimento del post:", error);
-		throw error;
+/**
+ * Tenta di aggiornare la cache dello schema del database.
+ * Non genera errori se la funzione non esiste o non è disponibile.
+ */
+export async function pg_stat_clear_snapshot() {
+	try {
+		const { data, error } = await supabase.rpc('pg_stat_clear_snapshot');
+		if (error) {
+			console.warn("Schema cache update not available:", error);
+			return false;
+		}
+		console.log("Schema cache successfully updated");
+		return true;
+	} catch (err) {
+		console.warn("Error updating schema cache, proceeding anyway:", err);
+		return false;
 	}
-	console.log("Post inserito con successo:", data);
-	return data;
+}
+
+export async function insertPost(postData: PostData) {
+	try {
+		// Verifica e aggiusta campi obbligatori mancanti
+		const preparedData: PostData = {
+			...postData,
+			savedOn: new Date().toISOString(),
+			// Assicura che ci sia sempre una data nel campo date_published (richiesto dallo schema)
+			date_published: postData.date_published || new Date().toISOString(),
+		};
+
+		// Rimuoviamo i campi che non esistono nella tabella
+		if ('date' in preparedData) {
+			delete preparedData.date;
+		}
+
+		if ('keywords' in preparedData) {
+			delete preparedData.keywords;
+		}
+
+		if ('length' in preparedData) {
+			delete preparedData.length;
+		}
+
+		// Converti 'description' in 'excerpt' se necessario
+		if (preparedData.description && !preparedData.excerpt) {
+			console.log('Convertito campo description in excerpt nella funzione insertPost');
+			preparedData.excerpt = preparedData.description;
+			delete preparedData.description;
+		}
+
+		// Converti 'html' in 'content' se necessario
+		if (preparedData.html && !preparedData.content) {
+			console.log('Convertito campo html in content nella funzione insertPost');
+			preparedData.content = preparedData.html;
+			delete preparedData.html;
+		}
+
+		console.log('Dati preparati per inserimento:', preparedData);
+
+		// Se manca l'id, ne generiamo uno nuovo
+		if (!preparedData.id) {
+			preparedData.id = generateUniqueId();
+		}
+
+		// Se il campo message esiste e contiene "error", potremmo avere un problema
+		// Lo convertiamo in una stringa per evitare conflitti con la colonna 'error'
+		if (preparedData.message && (typeof preparedData.message === 'object' ||
+			(typeof preparedData.message === 'string' && preparedData.message.includes('error')))) {
+			preparedData.message = JSON.stringify(preparedData.message);
+		}
+
+		// Pulizia dei campi che potrebbero creare conflitto con lo schema
+		// Utilizziamo un metodo alternativo a Object.fromEntries per compatibilità
+		const cleanedData: PostData = Object.entries(preparedData).reduce((acc: PostData, [key, value]) => {
+			if (key !== 'error' && key !== 'failed' && key !== 'POSTS204' &&
+				key !== 'date' && key !== 'description' && key !== 'html' &&
+				key !== 'keywords' && key !== 'length') {
+				acc[key] = value;
+			}
+			return acc;
+		}, {} as PostData);
+
+		const { data, error } = await supabase
+			.from("posts")
+			.insert(cleanedData)
+			.select();
+
+		if (error) {
+			console.error("Errore durante l'inserimento del post:", error);
+			if (error.message.includes("schema cache") || error.message.includes("column")) {
+				console.error("Errore di schema, verifica i campi obbligatori:", error.message);
+				console.log("Schema atteso: id, author, next_page_url, dek, total_pages, title, readingList, content, url, word_count, date_published, domain, rendered_pages, excerpt, lead_image_url, savedBy, direction, old_savedon");
+			}
+			throw error;
+		}
+
+		console.log("Post inserito con successo:", data);
+		return data;
+	} catch (err) {
+		console.error("Errore nell'operazione insertPost:", err);
+		throw err;
+	}
 }
 
 export async function deletePost(postId: string) {

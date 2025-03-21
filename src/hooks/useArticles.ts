@@ -25,7 +25,7 @@ interface UseArticlesReturn {
 	isParsing: boolean;
 	articleParsed: ArticleParsed | null;
 	savePostHandler: () => void;
-	savePostToServer: () => void;
+	savePostToServer: (articleToSave?: any) => Promise<void>;
 	loading: boolean;
 	postFromDb: ArticleParsed[];
 	fetchPostsFromDb: (isInitialFetch?: boolean) => Promise<void>;
@@ -33,6 +33,7 @@ interface UseArticlesReturn {
 	pagination: CustomPagination;
 	refresh: () => Promise<void>;
 	isLoading: boolean;
+	parseArticleError: any;
 }
 
 const useArticles = (session: Session | null): UseArticlesReturn => {
@@ -226,16 +227,72 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		await fetchPostsFromDb(true);
 	}, [dispatch, fetchPostsFromDb, isLoading]);
 
-	const savePostToServer = useCallback(async (): Promise<void> => {
+	const savePostToServer = useCallback(async (articleToSave?: any): Promise<void> => {
 		if (!isMounted.current) return;
 
 		try {
-			if (rapidArticleParsed && rapidArticleParsed.url) {
-				const url = new URL(rapidArticleParsed.url);
-				rapidArticleParsed["domain"] = url.hostname;
+			// Se viene fornito un articolo esterno, lo usiamo, altrimenti prendiamo quello interno
+			let theArticleParsed = articleToSave;
+
+			// Se non è fornito un articolo esterno, usiamo quelli interni
+			if (!theArticleParsed) {
+				if (rapidArticleParsed && rapidArticleParsed.url) {
+					const url = new URL(rapidArticleParsed.url);
+					rapidArticleParsed["domain"] = url.hostname;
+				}
+
+				theArticleParsed = customArticleParsed || rapidArticleParsed || articleParsed;
+			} else {
+				// Assicurati che l'articolo esterno abbia un dominio
+				if (theArticleParsed.url && !theArticleParsed.domain) {
+					try {
+						const url = new URL(theArticleParsed.url);
+						theArticleParsed.domain = url.hostname;
+					} catch (e) {
+						console.error('Errore nella gestione del dominio:', e);
+					}
+				}
 			}
 
-			const theArticleParsed = customArticleParsed || rapidArticleParsed || articleParsed;
+			// Assicurati che ci sia una data disponibile nel campo date_published
+			if (theArticleParsed && !theArticleParsed.date_published) {
+				console.log('Articolo senza date_published, aggiungo data corrente');
+				theArticleParsed.date_published = new Date().toISOString();
+			}
+
+			// Rimuovi eventuali campi problematici
+			if (theArticleParsed) {
+				// Rimuovi campi che non esistono nella tabella
+				delete theArticleParsed.date;
+				delete theArticleParsed.keywords;
+				delete theArticleParsed.length;
+
+				// Converti 'description' in 'excerpt' (RapidAPI usa description, ma il DB usa excerpt)
+				if (theArticleParsed.description && !theArticleParsed.excerpt) {
+					console.log('Convertito campo description in excerpt');
+					theArticleParsed.excerpt = theArticleParsed.description;
+					delete theArticleParsed.description;
+				}
+
+				// Converti 'html' in 'content' (RapidAPI usa html, ma il DB usa content)
+				if (theArticleParsed.html && !theArticleParsed.content) {
+					console.log('Convertito campo html in content');
+					theArticleParsed.content = theArticleParsed.html;
+					delete theArticleParsed.html;
+				}
+
+				// Rimuovi campi che causano conflitti con lo schema
+				delete theArticleParsed.error;
+				delete theArticleParsed.failed;
+				delete theArticleParsed.POSTS204;
+
+				// Converti eventuali campi di tipo oggetto che possono causare problemi
+				if (typeof theArticleParsed.message === 'object') {
+					theArticleParsed.message = JSON.stringify(theArticleParsed.message);
+				}
+			}
+
+			console.log('Articolo da salvare:', theArticleParsed);
 
 			if (session?.user && theArticleParsed) {
 				const enrichedArticle: ArticleParsed = {
@@ -247,9 +304,18 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 					},
 					savedOn: new Date().toISOString(),
 					id: generateUniqueId(),
+					// Assicura che date_published esista sempre (richiesto dallo schema)
+					date_published: theArticleParsed.date_published || new Date().toISOString(),
 				};
 
+				// Rimuovi il campo date se esiste (non è nella tabella)
+				if ('date' in enrichedArticle) {
+					delete enrichedArticle.date;
+				}
+
 				await insertPost(enrichedArticle);
+			} else {
+				throw new Error("Impossibile salvare: nessun articolo disponibile o utente non autenticato");
 			}
 
 			handleModalClose();
@@ -308,7 +374,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		setSearchText,
 		isParsing,
 		articleParsed: customArticleParsed || rapidArticleParsed || articleParsed,
-		savePostHandler: savePostToServer,
+		savePostHandler: () => savePostToServer(),
 		savePostToServer,
 		loading,
 		postFromDb: postFromDb || [],
@@ -317,6 +383,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		pagination,
 		refresh,
 		isLoading,
+		parseArticleError,
 	};
 };
 

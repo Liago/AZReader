@@ -10,7 +10,7 @@ interface ArticleParserModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onSubmitUrl?: (url: string) => void;
-	onSave?: () => void;
+	onSave?: (article: any) => void;
 	article?: any;
 	isLoading?: boolean;
 	session?: Session | null;
@@ -40,37 +40,140 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 
 	// Gestione dell'errore di parsing
 	useEffect(() => {
-		// Se c'è un errore e abbiamo l'URL ma non stiamo già usando il fallback
-		if (error && url && !usingFallback && !fallbackLoading && !fallbackArticle) {
-			// Controlliamo se è un errore 403 o un altro errore di parsing
-			const isParsingError =
-				(error.message && error.message.includes('403')) ||
-				(error.error === true && error.failed === true);
+		// Debug dell'errore che riceviamo
+		if (error) {
+			console.log('ArticleParserModal ricevuto errore:', error);
 
-			if (isParsingError) {
-				console.log('Errore nel parsing principale, tento con RapidAPI:', error);
-				handleFallbackParsing();
+			// Controlliamo se l'errore è in formato stringa JSON
+			if (typeof error === 'string') {
+				try {
+					const parsedError = JSON.parse(error);
+					if (parsedError.error === true && parsedError.failed === true) {
+						console.log('Errore in formato JSON string, attivo fallback');
+						handleFallbackParsing();
+						return;
+					}
+				} catch (e) {
+					// Non è JSON, continua con le altre verifiche
+				}
 			}
+
+			// Se l'errore è un oggetto
+			if (typeof error === 'object' && error !== null) {
+				console.log('Proprietà error:', Object.keys(error));
+
+				// Caso 1: error ha il messaggio che include 403
+				if (error.message && typeof error.message === 'string' && error.message.includes('403')) {
+					console.log('Errore 403 rilevato nel messaggio');
+					handleFallbackParsing();
+					return;
+				}
+
+				// Caso 2: error ha le proprietà error=true e failed=true
+				if ('error' in error && 'failed' in error && error.error === true && error.failed === true) {
+					console.log('Errore con error=true e failed=true rilevato');
+					handleFallbackParsing();
+					return;
+				}
+
+				// Caso 3: error è un oggetto con data che contiene l'errore
+				if (error.data && typeof error.data === 'object') {
+					const data = error.data;
+					if (data.error === true && data.failed === true) {
+						console.log('Errore nel campo data');
+						handleFallbackParsing();
+						return;
+					}
+				}
+
+				// Caso 4: error è la risposta stessa con error=true
+				if (error.error === true && error.message && error.message.includes('403')) {
+					console.log('Errore nella risposta principale');
+					handleFallbackParsing();
+					return;
+				}
+			}
+
+			console.log('Nessun formato di errore riconosciuto per attivare il fallback');
+		} else if (!article && !isLoading && url && isValidUrl(url) && !usingFallback && !fallbackLoading && !fallbackArticle) {
+			// Se il caricamento è terminato, abbiamo un URL valido, ma nessun articolo e nessun errore esplicito
+			// Aggiungiamo una verifica per URL valido e aggiungiamo un ritardo per dare tempo al primo parser
+			console.log('Nessun articolo ricevuto dopo il parsing, verifico...');
+
+			// Aggiungiamo un ritardo per assicurarci che il primo parser abbia avuto abbastanza tempo
+			const delay = setTimeout(() => {
+				if (!article && !isLoading && !usingFallback && !fallbackLoading && !fallbackArticle) {
+					console.log('Dopo il ritardo, ancora nessun articolo. Attivo fallback.');
+					handleFallbackParsing();
+				}
+			}, 3000); // Aumentiamo il tempo di attesa a 3 secondi prima di attivare il fallback
+
+			return () => clearTimeout(delay); // Pulizia del timeout
 		}
-	}, [error, url, usingFallback, fallbackLoading, fallbackArticle]);
+	}, [error, article, isLoading, url, usingFallback, fallbackLoading, fallbackArticle]);
 
 	// Funzione per eseguire il parsing fallback con RapidAPI
 	const handleFallbackParsing = async () => {
-		if (!url || fallbackLoading) return;
+		// Se non abbiamo un URL, proviamo a prenderlo dalla clipboard
+		if (!url) {
+			try {
+				const result = await Clipboard.read();
+				if (result && result.value && result.value.trim()) {
+					const clipText = result.value.trim();
+					setUrl(clipText);
+					if (!isValidUrl(clipText)) {
+						setErrorMessage('L\'URL dalla clipboard non è valido');
+						return;
+					}
+				} else {
+					setErrorMessage('Per favore, inserisci un URL da analizzare');
+					return;
+				}
+			} catch (err) {
+				console.error('Errore lettura clipboard:', err);
+				setErrorMessage('Per favore, inserisci un URL da analizzare');
+				return;
+			}
+		}
+
+		if (fallbackLoading) return;
 
 		setFallbackLoading(true);
 		setUsingFallback(true);
 		setErrorMessage('');
 
 		try {
-			console.log('Tentativo di parsing con RapidAPI:', url);
+			console.log('Eseguo parsing con RapidAPI per URL:', url);
 			const cleanedUrl = cleanUrl(url);
+
+			// Verifica finale validità URL
+			if (!isValidUrl(cleanedUrl)) {
+				setErrorMessage('URL non valido per l\'analisi alternativa');
+				setFallbackLoading(false);
+				return;
+			}
+
+			// Esecuzione parsing con RapidAPI
 			const result = await rapidApiScraper(cleanedUrl);
 
 			if (result) {
 				console.log('Parsing RapidAPI riuscito:', result);
+
+				// Converti 'description' in 'excerpt' per compatibilità con il database
+				if (result.description && !result.excerpt) {
+					result.excerpt = result.description;
+					delete result.description;
+				}
+
+				// Converti 'html' in 'content' per compatibilità con il database
+				if (result.html && !result.content) {
+					result.content = result.html;
+					delete result.html;
+				}
+
 				setFallbackArticle(result);
 			} else {
+				console.error('Nessun risultato da RapidAPI');
 				setErrorMessage('Non è stato possibile analizzare questo articolo.');
 			}
 		} catch (error) {
@@ -218,15 +321,96 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 
 	// Funzione per salvare l'articolo
 	const handleSaveArticle = () => {
-		console.log('Salvataggio articolo');
-		if (onSave) {
-			onSave();
-			setShowSuccess(true);
+		// Determina quale articolo usare (fallback o principale)
+		const articleToSave = fallbackArticle || article;
 
-			// Chiudi la modale dopo un breve periodo
-			setTimeout(() => {
-				handleClose();
-			}, 1500);
+		console.log('Salvataggio articolo:', articleToSave);
+
+		if (onSave && articleToSave) {
+			try {
+				// Verifichiamo che l'articolo abbia tutti i campi essenziali
+				if (!articleToSave.title) {
+					console.error('Articolo mancante del titolo');
+					return;
+				}
+
+				if (!articleToSave.url) {
+					console.error('Articolo mancante dell\'URL');
+					return;
+				}
+
+				// Verifichiamo che il campo domain sia disponibile
+				if (!articleToSave.domain && articleToSave.url) {
+					try {
+						const urlObj = new URL(articleToSave.url);
+						articleToSave.domain = urlObj.hostname;
+					} catch (e) {
+						console.error('Errore nella gestione del dominio:', e);
+					}
+				}
+
+				// Assicuriamoci che date_published esista
+				if (!articleToSave.date_published) {
+					articleToSave.date_published = new Date().toISOString();
+				}
+
+				// Rimuovi i campi che non esistono nella tabella
+				if ('date' in articleToSave) {
+					delete articleToSave.date;
+				}
+
+				if ('keywords' in articleToSave) {
+					delete articleToSave.keywords;
+				}
+
+				if ('length' in articleToSave) {
+					delete articleToSave.length;
+				}
+
+				// Converti 'description' in 'excerpt' per compatibilità con il database
+				if (articleToSave.description && !articleToSave.excerpt) {
+					articleToSave.excerpt = articleToSave.description;
+					delete articleToSave.description;
+				}
+
+				// Converti 'html' in 'content' per compatibilità con il database
+				if (articleToSave.html && !articleToSave.content) {
+					articleToSave.content = articleToSave.html;
+					delete articleToSave.html;
+				}
+
+				// Log dettagliato prima del salvataggio
+				console.log('Articolo pronto per il salvataggio:', {
+					id: articleToSave.id,
+					title: articleToSave.title,
+					url: articleToSave.url,
+					domain: articleToSave.domain,
+					date_published: articleToSave.date_published,
+					excerpt: articleToSave.excerpt,
+					hasContent: !!articleToSave.content
+				});
+
+				try {
+					// Passiamo l'articolo al chiamante
+					onSave(articleToSave);
+					console.log("Chiamata a onSave completata");
+					setShowSuccess(true);
+
+					// Chiudi la modale dopo un breve periodo
+					setTimeout(() => {
+						handleClose();
+					}, 1500);
+				} catch (saveError) {
+					console.error('Errore durante il salvataggio dell\'articolo:', saveError);
+				}
+			} catch (error) {
+				console.error('Errore durante la preparazione dell\'articolo per il salvataggio:', error);
+			}
+		} else {
+			console.error('Impossibile salvare: nessun articolo disponibile o funzione onSave non fornita', {
+				hasOnSave: !!onSave,
+				hasArticle: !!articleToSave
+			});
 		}
 	};
 

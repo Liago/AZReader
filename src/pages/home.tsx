@@ -8,6 +8,7 @@ import { Auth } from "@components/form/authentication";
 import ArticleList from "@components/ArticleList";
 import useAuth from "@hooks/useAuth";
 import useArticles from "@hooks/useArticles";
+import { supabase, pg_stat_clear_snapshot } from "@store/rest";
 
 const Home: React.FC = () => {
 	const { session, signOut } = useAuth();
@@ -18,7 +19,8 @@ const Home: React.FC = () => {
 		articleParsed,
 		savePostHandler,
 		savePostToServer,
-		setSearchText
+		setSearchText,
+		parseArticleError
 	} = useArticles(session as Session | null);
 
 	const pageRef = useRef<HTMLElement>(null);
@@ -27,6 +29,35 @@ const Home: React.FC = () => {
 
 	const handleUrlSubmit = (url: string) => {
 		setSearchText(url);
+	};
+
+	// Funzione per aggiornare lo schema del database prima di salvare
+	const clearSchemaCache = async () => {
+		// NON chiamiamo pg_stat_clear_snapshot() perché genera errore PGRST202
+		// Questo è normale perché la funzione non esiste nel database
+		console.log("Ignorato aggiornamento cache schema (funzione non disponibile)");
+		return false;
+	};
+
+	// Wrapper per il salvataggio che prima pulisce la cache
+	const handleSaveWithCacheClear = async (article: ArticleParsed | null) => {
+		try {
+			// Controlliamo se abbiamo un articolo (potrebbe essere passato come parametro o usato dall'interno)
+			console.log("Salvataggio articolo con pulizia cache:", article || articleParsed);
+
+			// Tentiamo di pulire la cache ma non blocchiamo se fallisce
+			await clearSchemaCache();
+
+			// Se abbiamo un articolo passato come parametro, usiamo savePostToServer con l'articolo
+			if (article) {
+				await savePostToServer(article);
+			} else {
+				// Altrimenti usiamo savePostHandler senza parametri (che userà articleParsed dal contesto)
+				savePostHandler();
+			}
+		} catch (err) {
+			console.error("Errore durante il salvataggio con pulizia cache:", err);
+		}
 	};
 
 	const renderContent = (): JSX.Element => {
@@ -40,11 +71,12 @@ const Home: React.FC = () => {
 				<ArticleParserModal
 					isOpen={showModal}
 					onClose={() => setShowModal(false)}
-					onSave={savePostHandler}
+					onSave={handleSaveWithCacheClear}
 					onSubmitUrl={handleUrlSubmit}
 					article={articleParsed}
 					isLoading={isParsing}
 					session={session}
+					error={parseArticleError}
 				/>
 			</>
 		);
