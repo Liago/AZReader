@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/Liago/AZReader/compare/v1.16.1...v1.17.0) (2025-03-24)
+
+
+### Features
+
+* add modal reading settings ([c8bce01](https://github.com/Liago/AZReader/commit/c8bce01987c25d0f646e007429f2813a140f975a))
+
 ## [1.16.1](https://github.com/Liago/AZReader/compare/v1.16.0...v1.16.1) (2025-03-21)
 
 
