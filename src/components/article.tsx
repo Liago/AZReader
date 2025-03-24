@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	IonIcon,
 	IonToolbar,
@@ -22,7 +22,7 @@ import { usePostLikes } from "@hooks/usePostLikes";
 import { useCustomToast } from "@hooks/useIonToast";
 import { renderArticleDatePublished } from "../utility/utils";
 import FontSizeWrapper from "./FontSizeWrapper";
-import FontSizeControls from "./ui/FontSizeControls";
+import { FontSizeControls, OpenReadingSettings } from "./ui";
 import { usePostComments } from "@hooks/usePostComments";
 import Comments from "./Comments";
 import { ShareService } from "@utility/shareService";
@@ -55,7 +55,39 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 
 	const [showShareToast, setShowShareToast] = useState<boolean>(false);
 	const [shareToastMessage, setShareToastMessage] = useState<string>("");
+	const [imagesLoaded, setImagesLoaded] = useState<{ [key: string]: boolean }>({});
 	const showToast = useCustomToast();
+
+	// Effetto per gestire il caricamento delle immagini
+	useEffect(() => {
+		// Aggiunge un listener agli eventi di caricamento delle immagini
+		const handleImageLoad = (event: Event) => {
+			const img = event.target as HTMLImageElement;
+			if (img.src) {
+				setImagesLoaded(prev => ({
+					...prev,
+					[img.src]: true
+				}));
+				img.classList.add('image-loaded');
+			}
+		};
+
+		// Cerca tutte le immagini nell'articolo
+		const images = document.querySelectorAll('.article-content img');
+		images.forEach(img => {
+			// Aggiungi la classe per l'animazione di caricamento
+			img.classList.add('image-load');
+			// Listener per il caricamento
+			img.addEventListener('load', handleImageLoad);
+		});
+
+		// Pulizia
+		return () => {
+			images.forEach(img => {
+				img.removeEventListener('load', handleImageLoad);
+			});
+		};
+	}, [articleParsed]);
 
 	// Likes handling
 	const { likesCount, hasLiked, toggleLike, isLoading: isLikeLoading, error: likeError } = usePostLikes(postId, session);
@@ -184,22 +216,47 @@ const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, dis
 	return (
 		<>
 			{displayFrom !== 'modalPreview' && renderHeader()}
-			<div className="article-content px-4">
-				{lead_image_url && (
-					<div className="mb-4">
-						<img src={lead_image_url} alt={title} className="w-full h-auto rounded-lg" />
-					</div>
-				)}
-				<h1 className="text-2xl font-bold mb-2">{title}</h1>
-				{domain && (
-					<div className="text-sm text-gray-500 mb-2">
-						{domain} • {renderArticleDatePublished(date_published || date)}
-					</div>
-				)}
-				{excerpt && <div className="text-lg text-gray-700 mb-4">{excerpt}</div>}
-				<FontSizeWrapper>
-					<div className="prose max-w-none pb-20" dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }} />
-				</FontSizeWrapper>
+			<div className="article-wrapper">
+				<div className="article-content content-fadeIn">
+					{lead_image_url && (
+						<div className="mb-6">
+							<img
+								src={lead_image_url}
+								alt={title}
+								className={`w-full rounded-lg shadow-sm object-cover image-load ${imagesLoaded[lead_image_url] ? 'image-loaded' : ''}`}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement;
+									target.style.display = "none";
+								}}
+							/>
+						</div>
+					)}
+					<h1 className="text-2xl font-bold mb-2">{title}</h1>
+					{domain && (
+						<div className="text-sm text-gray-500 mb-2">
+							{domain} • {renderArticleDatePublished(date_published || date)}
+						</div>
+					)}
+					{excerpt && <div className="text-lg text-gray-700 mb-4">{excerpt}</div>}
+					<FontSizeWrapper>
+						{htmlContent ? (
+							<div
+								className="prose prose-sm sm:prose lg:prose-lg max-w-none"
+								dangerouslySetInnerHTML={{ __html: htmlContent }}
+							/>
+						) : content ? (
+							<div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
+								{content.split("\n").map((paragraph, idx) => (
+									<p key={idx}>{paragraph}</p>
+								))}
+							</div>
+						) : (
+							<div className="text-center py-10">
+								<p>Nessun contenuto disponibile.</p>
+							</div>
+						)}
+					</FontSizeWrapper>
+				</div>
 			</div>
 			{displayFrom !== 'modalPreview' && renderFooter()}
 			<Comments

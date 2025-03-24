@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { IonList, IonRefresher, IonRefresherContent, IonInfiniteScroll, IonInfiniteScrollContent, RefresherEventDetail } from "@ionic/react";
 import { Session } from "@supabase/auth-js";
-import { Clock, Heart, MessageCircle } from "lucide-react";
+import { Clock, Heart, MessageCircle, BookOpen } from "lucide-react";
 import { useHistory } from "react-router-dom";
 import MessageListItem from "./MessageListItem";
 import LoadingSpinner from "./ui/loadingSpinner";
@@ -39,26 +39,26 @@ const TopPickCard: React.FC<TopPickCardProps> = ({ post, onOpenArticle, session 
 
 	return (
 		<div
-			className="flex-shrink-0 w-72 h-96 rounded-xl overflow-hidden shadow-lg bg-transparent m-2 snap-start cursor-pointer"
+			className="flex-shrink-0 w-72 h-96 rounded-xl overflow-hidden shadow-card bg-white border border-gray-50 m-2 snap-start cursor-pointer transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-soft"
 			onClick={() => onOpenArticle(post)}
 		>
-			<div className="h-1/2 bg-gray-200 relative">
+			<div className="h-1/2 bg-gray-100 relative">
 				{post.lead_image_url && <img src={post.lead_image_url} alt={post.title} className="w-full h-full object-cover" />}
 
-				<div className="absolute bottom-2 right-2 flex gap-2">
-					<div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
-						<Heart size={14} className="text-red-500" />
-						<span className="text-xs font-medium">{likesCount || 0}</span>
+				<div className="absolute bottom-3 right-3 flex gap-2">
+					<div className="bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+						<Heart size={14} className="text-black" />
+						<span className="text-xs font-medium text-black">{likesCount || 0}</span>
 					</div>
-					<div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
-						<MessageCircle size={14} className="text-blue-500" />
-						<span className="text-xs font-medium">{commentsCount || 0}</span>
+					<div className="bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+						<MessageCircle size={14} className="text-black" />
+						<span className="text-xs font-medium text-black">{commentsCount || 0}</span>
 					</div>
 				</div>
 			</div>
-			<div className="p-4">
-				<div className="text-sm text-gray-600 mb-2">{post.domain}</div>
-				<h3 className="text-xl font-bold mb-2 line-clamp-2">{post.title}</h3>
+			<div className="p-5">
+				<div className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">{post.domain}</div>
+				<h3 className="text-lg font-bold mb-3 line-clamp-2 text-black">{post.title}</h3>
 				<p className="text-gray-600 text-sm line-clamp-3">{post.excerpt}</p>
 			</div>
 		</div>
@@ -67,13 +67,13 @@ const TopPickCard: React.FC<TopPickCardProps> = ({ post, onOpenArticle, session 
 
 const TodaysGoal: React.FC = () => {
 	return (
-		<div className="bg-white rounded-xl p-4 shadow-lg flex items-center space-x-4 mb-6">
-			<div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-				<Clock className="w-6 h-6 text-gray-600" />
+		<div className="bg-gradient-primary rounded-xl p-5 shadow-card flex items-center space-x-4 mb-6 animate-fade-in">
+			<div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+				<BookOpen className="w-6 h-6 text-white" />
 			</div>
 			<div>
-				<div className="text-gray-600">Today's Goal</div>
-				<div className="text-xl font-semibold">Read 5 minutes</div>
+				<div className="text-white/80 text-sm">Oggi</div>
+				<div className="text-xl font-semibold text-white">Leggi 5 minuti</div>
 			</div>
 		</div>
 	);
@@ -157,10 +157,10 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 		if (isEmpty(todaysPosts)) return null;
 
 		return (
-			<div className="px-4 mb-8 pt-2">
+			<div className="px-5 mb-10 pt-5 animate-slide-in">
 				<TodaysGoal />
-				<h2 className="text-2xl font-bold mb-4">Today's pick</h2>
-				<div className="flex overflow-x-auto snap-x snap-mandatory pb-4 px-4">
+				<h2 className="text-2xl font-bold mb-5 text-black">I tuoi articoli di oggi</h2>
+				<div className="flex overflow-x-auto snap-x snap-mandatory pb-5 -mx-5 px-5 scrollbar-hide">
 					{todaysPosts.map((post, index) => (
 						<TopPickCard
 							key={`top-${post.id}-${index}`}
@@ -198,13 +198,43 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 					<IonRefresherContent></IonRefresherContent>
 				</IonRefresher>
 
-				<div className="relative">
-					{renderTopPicks()}
-					<div className="px-4">
-						<h2 className="text-2xl font-bold mb-4">Staff Pick</h2>
-						<IonList>{renderPostList()}</IonList>
+				<div className="relative bg-gray-50 dark:bg-gray-900 min-h-screen">
+					{isLoading && postFromDb.length === 0 ? (
+						<div className="px-5 pt-5 animate-fade-in">
+							<div className="h-8 w-40 article-loading rounded mb-5"></div>
+							<div className="flex overflow-x-auto pb-5 -mx-5 px-5 space-x-4">
+								{[1, 2, 3].map((idx) => (
+									<div key={`skeleton-top-${idx}`} className="w-72 flex-shrink-0 rounded-xl article-loading h-44"></div>
+								))}
+							</div>
+						</div>
+					) : (
+						renderTopPicks()
+					)}
+
+					<div className="px-5 pb-20" style={{
+						animationDelay: '0.1s',
+						animation: 'fadeIn 0.6s ease-out'
+					}}>
+						<div className="flex items-center justify-between mb-5">
+							<h2 className="text-2xl font-bold text-black dark:text-white">Articoli consigliati</h2>
+							<span className="text-xs font-medium text-primary px-3 py-1.5 bg-primary-light/10 rounded-full">
+								{staffPicks.length} articoli
+							</span>
+						</div>
+						{isLoading && postFromDb.length === 0 ? (
+							<div className="space-y-4">
+								{[1, 2, 3, 4].map((idx) => (
+									<div key={`skeleton-item-${idx}`} className="article-loading h-24 rounded-xl"></div>
+								))}
+							</div>
+						) : (
+							<div className="space-y-4">
+								{renderPostList()}
+							</div>
+						)}
 					</div>
-					{isLoading && <LoadingSpinner />}
+					{isLoading && postFromDb.length > 0 && <LoadingSpinner />}
 				</div>
 
 				<IonInfiniteScroll onIonInfinite={loadMore} threshold="100px" disabled={isInfiniteDisabled}>

@@ -1,4 +1,4 @@
-import { IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel } from "@ionic/react";
+import { IonItem, IonItemOption, IonItemOptions, IonItemSliding } from "@ionic/react";
 import PostItem from "./ui/NewsItem";
 import "./MessageListItem.css";
 import moment from "moment";
@@ -6,6 +6,7 @@ import { Post } from "@common/interfaces";
 import { useCallback } from "react";
 import { usePostLikes } from "@hooks/usePostLikes";
 import { usePostComments } from "@hooks/usePostComments";
+import { Trash2 } from "lucide-react";
 
 interface PostItemProps {
 	source: string;
@@ -31,24 +32,17 @@ interface MessageListItemProps {
 	session?: any;
 }
 
-const MessageListItem: React.FC<MessageListItemProps> = ({ 
-	postId, 
-	post, 
-	isLocal, 
-	deletePost, 
+const MessageListItem: React.FC<MessageListItemProps> = ({
+	postId,
+	post,
+	isLocal,
+	deletePost,
 	onOpenArticle,
 	showEngagementMetrics = true,
 	session = null
 }) => {
 	const { likesCount } = usePostLikes(postId, session);
 	const { commentsCount } = usePostComments(postId, session);
-
-	const displayLocalDot = (): JSX.Element => {
-		if (isLocal) {
-			return <div slot="start" className="dot dot-unread"></div>;
-		}
-		return <div slot="start" className="dot dot-unread"></div>;
-	};
 
 	const handleOpenArticle = useCallback(() => {
 		onOpenArticle(post);
@@ -60,23 +54,33 @@ const MessageListItem: React.FC<MessageListItemProps> = ({
 		title: post.title || "",
 		subtitle: post.subtitle || "",
 		date: post.date_published || "",
-		imageUrl: post.lead_image_url || post.topImage || "https://placehold.co/100x100",
+		imageUrl: post.lead_image_url || post.topImage || "https://placehold.co/600x400/f8fafc/e2e8f0?text=AZReader",
 		excerpt: post.excerpt || "",
 		preview: post.preview === "true" || post.preview === true,
-		published: moment(post.date_published || Date.now()).format("MMM DD"),
+		published: moment(post.date_published || Date.now()).format("DD MMM"),
 		likes_count: likesCount || 0,
 		comments_count: commentsCount || 0,
 		showEngagementMetrics
 	};
 
 	return (
-		<IonItemSliding>
-			<IonItem lines="none" className="py-3 border-b border-gray-200" onClick={handleOpenArticle}>
+		<IonItemSliding className="rounded-lg overflow-hidden shadow-card mb-3 bg-white">
+			<IonItem
+				lines="none"
+				className="py-4 px-1"
+				onClick={handleOpenArticle}
+				detail={false}
+			>
 				<PostItem {...postItemProps} />
 			</IonItem>
-			<IonItemOptions>
-				<IonItemOption color="danger" onClick={() => deletePost()}>
-					Delete
+			<IonItemOptions side="end">
+				<IonItemOption
+					color="danger"
+					onClick={() => deletePost()}
+					className="flex items-center justify-center"
+				>
+					<Trash2 size={20} />
+					<span className="ml-1 text-sm">Elimina</span>
 				</IonItemOption>
 			</IonItemOptions>
 		</IonItemSliding>

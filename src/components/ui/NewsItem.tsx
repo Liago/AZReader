@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, Calendar } from 'lucide-react';
 
 interface NewsItemProps {
 	source: string;
@@ -34,39 +34,60 @@ const NewsItem: React.FC<NewsItemProps> = ({
 		: Boolean(preview);
 
 	return (
-		<div className="flex items-start w-full">
-			<div className="flex-1 pr-3 min-w-0">
-				<p className="text-xs font-montserrat uppercase text-gray-600">{source}</p>
+		<div className="flex items-start w-full group">
+			<div className="flex-1 pr-4 min-w-0">
+				<div className="flex items-center space-x-2 mb-2">
+					<p className="text-xs font-medium text-black uppercase tracking-wide">{source}</p>
+					{published && (
+						<div className="flex items-center text-black/60">
+							<Calendar size={12} className="mr-1" />
+							<span className="text-xs">{published}</span>
+						</div>
+					)}
+				</div>
+
 				<h2
-					className="font-lato text-lg font-black mt-1 leading-tight"
+					className="font-bold text-base text-black leading-snug mb-2 transition-colors duration-200 group-hover:text-primary"
 					dangerouslySetInnerHTML={{ __html: title }}
 				/>
+
 				<p
-					className="font-open_sans text-xs text-gray-500 leading-snug mt-1 whitespace-normal break-words"
+					className="text-xs text-black/70 leading-relaxed whitespace-normal break-words line-clamp-2"
 					dangerouslySetInnerHTML={{ __html: excerpt }}
 				/>
-				{isPreview && <span className="text-xs font-medium text-gray-400 mt-1 block">PREVIEW</span>}
+
+				{isPreview &&
+					<span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-black mt-2">
+						PREVIEW
+					</span>
+				}
 
 				{showEngagementMetrics && (
-					<div className="flex items-center gap-3 mt-2">
-						<div className="flex items-center gap-1">
-							<Heart size={16} className="text-red-500" />
-							<span className="text-xs font-medium">{likes_count}</span>
+					<div className="flex items-center gap-3 mt-3">
+						<div className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium bg-white shadow-sm border border-gray-100">
+							<Heart size={14} className="text-black mr-1.5 flex-shrink-0" />
+							<span className="text-black leading-none">
+								{likes_count}
+							</span>
 						</div>
-						<div className="flex items-center gap-1">
-							<MessageCircle size={16} className="text-blue-500" />
-							<span className="text-xs font-medium">{comments_count}</span>
+						<div className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium bg-white shadow-sm border border-gray-100">
+							<MessageCircle size={14} className="text-black mr-1.5 flex-shrink-0" />
+							<span className="text-black leading-none">
+								{comments_count}
+							</span>
 						</div>
 					</div>
 				)}
 			</div>
-			<div className="flex flex-col items-end gap-4">
-				{published && <span className="text-xs font-bold text-gray-400 mt-1">{published}</span>}
-				<img
-					src={imageUrl}
-					className="w-20 h-20 object-cover rounded"
-					alt={title}
-				/>
+
+			<div className="flex-shrink-0">
+				<div className="w-20 h-20 overflow-hidden rounded-lg shadow-sm transition-transform duration-200 group-hover:shadow-md">
+					<img
+						src={imageUrl}
+						className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+						alt={title}
+					/>
+				</div>
 			</div>
 		</div>
 	);

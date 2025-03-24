@@ -5,25 +5,15 @@ import {
 	IonToolbar,
 	IonTitle,
 	IonContent,
-	IonList,
 	IonItem,
-	IonLabel,
 	IonIcon,
 	IonMenuToggle,
 	IonAvatar,
-	IonChip,
 	IonButton,
 	IonButtons,
-	IonListHeader,
 } from '@ionic/react';
 import { menuController } from '@ionic/core';
 import {
-	personCircle,
-	informationCircle,
-	timeOutline,
-	calendarOutline,
-	mailOutline,
-	colorPaletteOutline,
 	chevronForwardOutline,
 	arrowBack
 } from 'ionicons/icons';
@@ -32,6 +22,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store/store';
 import { useHistory } from 'react-router-dom';
 import ThemeSettingsPage from './ui/ThemeSettingsPage';
+import { Calendar, Clock, Mail, Info, User, Palette, LogOut, BookOpen, Settings, ChevronRight } from 'lucide-react';
 
 interface UserCredentials {
 	user?: {
@@ -113,64 +104,72 @@ const SideMenu: React.FC = () => {
 		const avatarBgColor = getColorFromString(email);
 
 		return (
-			<div className="user-profile p-2">
+			<div className="user-profile p-5">
 				{/* Header con Avatar e Email */}
-				<div className="flex items-center mb-4">
-					<div className="mr-3 flex-shrink-0">
+				<div className="flex items-center mb-5">
+					<div className="mr-4 flex-shrink-0">
 						{email ? (
-							<IonAvatar className="w-12 h-12 flex items-center justify-center border-2 border-white shadow-md">
-								<div
-									className="w-full h-full rounded-full flex items-center justify-center text-white font-bold"
-									style={{ backgroundColor: avatarBgColor }}
-								>
-									{initials}
-								</div>
-							</IonAvatar>
+							<div className="relative">
+								<IonAvatar className="w-14 h-14 flex items-center justify-center border-2 border-white shadow-md">
+									<div
+										className="w-full h-full rounded-full flex items-center justify-center text-white font-bold"
+										style={{ backgroundColor: avatarBgColor }}
+									>
+										{initials}
+									</div>
+								</IonAvatar>
+								{isSessionActive && (
+									<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+								)}
+							</div>
 						) : (
-							<IonAvatar className="w-12 h-12">
-								<IonIcon icon={personCircle} className="w-full h-full text-gray-400" />
-							</IonAvatar>
+							<div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+								<User size={24} className="text-black" />
+							</div>
 						)}
 					</div>
 
 					<div className="flex-1 min-w-0">
-						<h2 className="text-lg font-semibold flex items-center truncate">
-							<IonIcon icon={mailOutline} className="mr-1 text-gray-500 flex-shrink-0" />
-							<span className="truncate">{formattedEmail || 'Non autenticato'}</span>
+						<h2 className="text-base font-semibold flex items-center text-black">
+							{formattedEmail || 'Non autenticato'}
 						</h2>
 
 						{/* Badge stato sessione */}
 						<div className="mt-1">
 							{isSessionActive ? (
-								<IonChip color="success" outline={true} className="text-xs py-0 px-1 h-6">
-									<IonIcon icon={timeOutline} className="mr-1" />
-									<IonLabel>Sessione attiva{formattedTimeLeft ? `: ${formattedTimeLeft}` : ''}</IonLabel>
-								</IonChip>
+								<div className="inline-flex items-center bg-emerald-50 rounded-full px-2 py-1 text-xs text-black">
+									<Clock size={12} className="mr-1" />
+									<span>Sessione: {formattedTimeLeft}</span>
+								</div>
 							) : (
-								<IonChip color="danger" outline={true} className="text-xs py-0 px-1 h-6">
-									<IonIcon icon={timeOutline} className="mr-1" />
-									<IonLabel>Sessione scaduta</IonLabel>
-								</IonChip>
+								<div className="inline-flex items-center bg-red-50 rounded-full px-2 py-1 text-xs text-black">
+									<Clock size={12} className="mr-1" />
+									<span>Sessione scaduta</span>
+								</div>
 							)}
 						</div>
 					</div>
 				</div>
 
 				{/* Info dettagliate */}
-				<div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-					<div className="flex items-center mb-2">
-						<IonIcon icon={calendarOutline} className="mr-2 text-blue-500 flex-shrink-0" />
+				<div className="bg-white rounded-xl p-4 shadow-card">
+					<div className="flex items-center mb-3">
+						<div className="mr-3 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+							<Calendar size={16} className="text-black" />
+						</div>
 						<div className="min-w-0">
-							<div className="text-xs text-gray-500">Ultimo accesso</div>
-							<div className="font-medium truncate">{lastLogin}</div>
+							<div className="text-xs text-black/60">Ultimo accesso</div>
+							<div className="font-medium text-sm text-black truncate">{lastLogin}</div>
 						</div>
 					</div>
 
 					<div className="flex items-center">
-						<IonIcon icon={timeOutline} className="mr-2 text-purple-500 flex-shrink-0" />
+						<div className="mr-3 w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
+							<Clock size={16} className="text-black" />
+						</div>
 						<div className="min-w-0">
-							<div className="text-xs text-gray-500">Scadenza sessione</div>
-							<div className="font-medium truncate">{expires_at}</div>
+							<div className="text-xs text-black/60">Scadenza sessione</div>
+							<div className="font-medium text-sm text-black truncate">{expires_at}</div>
 						</div>
 					</div>
 				</div>
@@ -194,9 +193,9 @@ const SideMenu: React.FC = () => {
 	return (
 		<IonMenu contentId="main" menuId="main-menu">
 			<IonHeader>
-				<IonToolbar>
+				<IonToolbar className="bg-gradient-primary text-white">
 					{activeView === 'main' ? (
-						<IonTitle>AZ Reader</IonTitle>
+						<IonTitle className="text-white">AZ Reader</IonTitle>
 					) : (
 						<>
 							<IonButtons slot="start">
@@ -204,98 +203,91 @@ const SideMenu: React.FC = () => {
 									<IonIcon icon={arrowBack} />
 								</IonButton>
 							</IonButtons>
-							<IonTitle>Impostazioni tema</IonTitle>
+							<IonTitle className="text-white">Impostazioni tema</IonTitle>
 						</>
 					)}
 				</IonToolbar>
 			</IonHeader>
 
-			<IonContent className="ion-padding">
+			<IonContent className="ion-padding-0 bg-gray-50">
 				{activeView === 'main' ? (
 					<>
 						{/* Informazioni Utente */}
-						<div className="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden mb-6">
+						<div className="bg-gradient-to-b from-primary to-primary-light pt-5 pb-6 px-5 shadow-sm">
 							{renderUserInfo()}
 						</div>
 
 						{/* Menu di navigazione */}
-						<IonList lines="none" className="mt-4 rounded-xl overflow-hidden shadow-sm">
-							<IonListHeader>
-								<IonLabel>Menu</IonLabel>
-							</IonListHeader>
+						<div className="p-5">
+							<div className="text-sm font-medium uppercase text-black/60 mb-3 px-2">Menu</div>
 
-							<IonMenuToggle>
-								<IonItem
-									button
-									onClick={() => handleMenuItemClick('/profile')}
-									className="item-menu"
-								>
-									<IonIcon slot="start" icon={personCircle} className="text-blue-500" />
-									<IonLabel>Profilo</IonLabel>
-								</IonItem>
-							</IonMenuToggle>
+							<div className="bg-white rounded-xl overflow-hidden shadow-card divide-y divide-gray-100">
+								<IonMenuToggle>
+									<div
+										className="flex items-center p-4 cursor-pointer transition-colors hover:bg-gray-50"
+										onClick={() => handleMenuItemClick('/profile')}
+									>
+										<div className="mr-3 w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+											<User size={18} className="text-black" />
+										</div>
+										<div className="flex-grow text-black font-medium">Profilo</div>
+										<ChevronRight size={18} className="text-black/40" />
+									</div>
+								</IonMenuToggle>
 
-							<IonMenuToggle>
-								<IonItem
-									button
-									onClick={() => handleMenuItemClick('/info')}
-									className="item-menu"
-								>
-									<IonIcon slot="start" icon={informationCircle} className="text-green-500" />
-									<IonLabel>Informazioni</IonLabel>
-								</IonItem>
-							</IonMenuToggle>
-
-							<div className="px-4 py-2 text-xs text-gray-500 uppercase font-semibold">
-								Personalizzazione
+								<IonMenuToggle>
+									<div
+										className="flex items-center p-4 cursor-pointer transition-colors hover:bg-gray-50"
+										onClick={() => handleMenuItemClick('/info')}
+									>
+										<div className="mr-3 w-9 h-9 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+											<Info size={18} className="text-black" />
+										</div>
+										<div className="flex-grow text-black font-medium">Informazioni</div>
+										<ChevronRight size={18} className="text-black/40" />
+									</div>
+								</IonMenuToggle>
 							</div>
 
-							<IonItem
-								button
-								className="theme-settings-item"
-								onClick={handleThemeSettingsClick}
-								lines="none"
-							>
-								<IonIcon slot="start" icon={colorPaletteOutline} className="text-purple-500" />
-								<IonLabel>Impostazioni tema</IonLabel>
-								<IonIcon slot="end" icon={chevronForwardOutline} />
-							</IonItem>
-						</IonList>
+							<div className="text-sm font-medium uppercase text-black/60 mt-6 mb-3 px-2">Personalizzazione</div>
+
+							<div className="bg-white rounded-xl overflow-hidden shadow-card divide-y divide-gray-100">
+								<div
+									className="flex items-center p-4 cursor-pointer transition-colors hover:bg-gray-50"
+									onClick={handleThemeSettingsClick}
+								>
+									<div className="mr-3 w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
+										<Palette size={18} className="text-black" />
+									</div>
+									<div className="flex-grow text-black font-medium">Impostazioni tema</div>
+									<ChevronRight size={18} className="text-black/40" />
+								</div>
+							</div>
+
+							<div className="text-sm font-medium uppercase text-black/60 mt-6 mb-3 px-2">Account</div>
+
+							<div className="bg-white rounded-xl overflow-hidden shadow-card">
+								<IonMenuToggle>
+									<div
+										className="flex items-center p-4 cursor-pointer transition-colors hover:bg-gray-50"
+										onClick={() => handleMenuItemClick('/logout')}
+									>
+										<div className="mr-3 w-9 h-9 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+											<LogOut size={18} className="text-black" />
+										</div>
+										<div className="flex-grow text-black font-medium">Esci</div>
+										<ChevronRight size={18} className="text-black/40" />
+									</div>
+								</IonMenuToggle>
+							</div>
+						</div>
 					</>
 				) : (
-					<div className="theme-settings-container">
+					<div className="p-5">
 						<ThemeSettingsPage />
 					</div>
 				)}
 			</IonContent>
-
-			<style>
-				{`
-					.theme-settings-item {
-						--background: var(--ion-color-light);
-						--background-hover: rgba(var(--ion-color-primary-rgb), 0.1);
-						--background-activated: rgba(var(--ion-color-primary-rgb), 0.2);
-						margin: 8px 16px;
-						border-radius: 8px;
-					}
-					
-					.theme-settings-container {
-						animation: slideIn 0.3s forwards;
-						overflow-x: hidden;
-					}
-					
-					@keyframes slideIn {
-						from {
-							transform: translateX(100%);
-							opacity: 0;
-						}
-						to {
-							transform: translateX(0);
-							opacity: 1;
-						}
-					}
-				`}
-			</style>
 		</IonMenu>
 	);
 };
