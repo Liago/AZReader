@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { useIonRouter } from '@ionic/react';
 import { sendEmailVerification } from 'firebase/auth';
 
-import { useAuthValue } from '../context/auth/authContext';
+// import { useAuthValue } from '../context/auth/authContext'; // TODO: Update to use Supabase auth
 import { auth } from '@common/firestore';
 
 import LayoutPage from '@components/ui/layoutPage';
 
 const VerifyEmail = () => {
-
-	const { currentUser } = useAuthValue()
+	// TODO: Update to use Supabase auth
+	const currentUser = null; // const { currentUser } = useAuthValue()
 	const [time, setTime] = useState(60)
-	const { timeActive, setTimeActive } = useAuthValue()
+	const [timeActive, setTimeActive] = useState(false); // const { timeActive, setTimeActive } = useAuthValue()
 	const router = useIonRouter();
 
 	useEffect(() => {
