@@ -3,5 +3,7 @@ export * from './interfaces';
 export * from './database-types';
 export * from './api';
 export { personalScraper, rapidApiScraper } from './scraper';
+export { parseArticleWithMercury, MercuryParserService } from './mercury-parser';
+export { corsProxy, proxiedRequest, isProxyAvailable } from './cors-proxy';
 export { auth } from './firestore';
 export { supabase, authHelpers, dbHelpers } from './supabase';
