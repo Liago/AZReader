@@ -1,5 +1,7 @@
 import * as actionTypes from "./actionTypes";
 import { AnyAction } from "redux";
+import { User, Session, AuthError } from "@supabase/supabase-js";
+import { User as UserProfile } from "@common/database-types";
 
 const fontSizes = ["xs", "sm", "base", "lg", "xl", "2xl"];
 
@@ -39,6 +41,24 @@ interface UserState {
 	replied?: boolean;
 }
 
+// Enhanced Auth State for Supabase integration
+interface AuthState {
+	user: User | null;
+	session: Session | null;
+	userProfile: UserProfile | null;
+	loading: boolean;
+	initialLoading: boolean;
+	error: AuthError | string | null;
+	operationLoading: {
+		signUp: boolean;
+		signIn: boolean;
+		signOut: boolean;
+		passwordReset: boolean;
+		profileUpdate: boolean;
+		sessionRefresh: boolean;
+	};
+}
+
 interface Post {
 	id: string | number;
 	[key: string]: any;
@@ -59,6 +79,7 @@ interface RootState {
 	app: AppState;
 	archive: any[];
 	user: UserState;
+	auth: AuthState;
 	toast: any;
 	posts: PostsState;
 	loading: boolean;
@@ -87,6 +108,22 @@ const initialState: RootState = {
 		credentials: {},
 		userList: [],
 		favouritePosts: [],
+	},
+	auth: {
+		user: null,
+		session: null,
+		userProfile: null,
+		loading: false,
+		initialLoading: true,
+		error: null,
+		operationLoading: {
+			signUp: false,
+			signIn: false,
+			signOut: false,
+			passwordReset: false,
+			profileUpdate: false,
+			sessionRefresh: false,
+		},
 	},
 	toast: null,
 	posts: {
@@ -381,12 +418,247 @@ const posts = (state = initialState.posts, action: AnyAction): PostsState => {
 	}
 };
 
+const auth = (state = initialState.auth, action: AnyAction): AuthState => {
+	switch (action.type) {
+		case actionTypes.AUTH_LOADING_START:
+			return {
+				...state,
+				loading: true,
+			};
+		case actionTypes.AUTH_LOADING_STOP:
+			return {
+				...state,
+				loading: false,
+			};
+		case actionTypes.AUTH_SET_INITIAL_LOADING:
+			return {
+				...state,
+				initialLoading: action.payload,
+			};
+		case actionTypes.AUTH_SET_USER:
+			return {
+				...state,
+				user: action.payload,
+			};
+		case actionTypes.AUTH_SET_SESSION:
+			return {
+				...state,
+				session: action.payload,
+			};
+		case actionTypes.AUTH_SET_USER_PROFILE:
+			return {
+				...state,
+				userProfile: action.payload,
+			};
+		case actionTypes.AUTH_SET_ERROR:
+			return {
+				...state,
+				error: action.payload,
+			};
+		case actionTypes.AUTH_CLEAR_ERROR:
+			return {
+				...state,
+				error: null,
+			};
+		// Sign Up Operations
+		case actionTypes.AUTH_SIGN_UP_START:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					signUp: true,
+				},
+				error: null,
+			};
+		case actionTypes.AUTH_SIGN_UP_SUCCESS:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					signUp: false,
+				},
+			};
+		case actionTypes.AUTH_SIGN_UP_FAIL:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					signUp: false,
+				},
+				error: action.payload,
+			};
+		// Sign In Operations
+		case actionTypes.AUTH_SIGN_IN_START:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					signIn: true,
+				},
+				error: null,
+			};
+		case actionTypes.AUTH_SIGN_IN_SUCCESS:
+			return {
+				...state,
+				user: action.payload.user,
+				session: action.payload.session,
+				operationLoading: {
+					...state.operationLoading,
+					signIn: false,
+				},
+			};
+		case actionTypes.AUTH_SIGN_IN_FAIL:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					signIn: false,
+				},
+				error: action.payload,
+			};
+		// Sign Out Operations
+		case actionTypes.AUTH_SIGN_OUT_START:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					signOut: true,
+				},
+				error: null,
+			};
+		case actionTypes.AUTH_SIGN_OUT_SUCCESS:
+			return {
+				...state,
+				user: null,
+				session: null,
+				userProfile: null,
+				operationLoading: {
+					...state.operationLoading,
+					signOut: false,
+				},
+			};
+		case actionTypes.AUTH_SIGN_OUT_FAIL:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					signOut: false,
+				},
+				error: action.payload,
+			};
+		// Password Reset Operations
+		case actionTypes.AUTH_PASSWORD_RESET_START:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					passwordReset: true,
+				},
+				error: null,
+			};
+		case actionTypes.AUTH_PASSWORD_RESET_SUCCESS:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					passwordReset: false,
+				},
+			};
+		case actionTypes.AUTH_PASSWORD_RESET_FAIL:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					passwordReset: false,
+				},
+				error: action.payload,
+			};
+		// Profile Update Operations
+		case actionTypes.AUTH_PROFILE_UPDATE_START:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					profileUpdate: true,
+				},
+				error: null,
+			};
+		case actionTypes.AUTH_PROFILE_UPDATE_SUCCESS:
+			return {
+				...state,
+				userProfile: action.payload,
+				operationLoading: {
+					...state.operationLoading,
+					profileUpdate: false,
+				},
+			};
+		case actionTypes.AUTH_PROFILE_UPDATE_FAIL:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					profileUpdate: false,
+				},
+				error: action.payload,
+			};
+		// Session Refresh Operations
+		case actionTypes.AUTH_SESSION_REFRESH_START:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					sessionRefresh: true,
+				},
+				error: null,
+			};
+		case actionTypes.AUTH_SESSION_REFRESH_SUCCESS:
+			return {
+				...state,
+				user: action.payload.user,
+				session: action.payload.session,
+				operationLoading: {
+					...state.operationLoading,
+					sessionRefresh: false,
+				},
+			};
+		case actionTypes.AUTH_SESSION_REFRESH_FAIL:
+			return {
+				...state,
+				operationLoading: {
+					...state.operationLoading,
+					sessionRefresh: false,
+				},
+				error: action.payload,
+			};
+		// Legacy session actions for backward compatibility
+		case actionTypes.SET_SESSION:
+			const session = action.payload;
+			return {
+				...state,
+				user: session?.user || null,
+				session: session,
+				initialLoading: false,
+			};
+		case actionTypes.CLEAR_SESSION:
+			return {
+				...state,
+				user: null,
+				session: null,
+				userProfile: null,
+				initialLoading: false,
+			};
+		default:
+			return state;
+	}
+};
+
 const createRootReducer = {
 	app,
 	user,
+	auth,
 	toast,
 	posts,
 };
 
-export type { RootState, AppState, UserState, PostsState, Post };
+export type { RootState, AppState, UserState, AuthState, PostsState, Post };
 export default createRootReducer;

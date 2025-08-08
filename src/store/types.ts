@@ -22,6 +22,15 @@ export interface RootState {
 		userList: any[];
 		favouritePosts: Post[];
 	};
+	auth: {
+		user: any;
+		session: any;
+		userProfile: any;
+		loading: boolean;
+		initialLoading: boolean;
+		error: any;
+		operationLoading: any;
+	};
 	toast: null;
 	posts: {
 		list: Post[];

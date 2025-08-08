@@ -2,8 +2,10 @@ import { store } from "@store/store";
 import { supabase } from "@store/rest";
 import * as actionTypes from "./actionTypes";
 import { isEmpty } from "lodash";
-import { Session } from "@supabase/supabase-js";
+import { Session, User, AuthError } from "@supabase/supabase-js";
 import { RootState, AppDispatch, Post } from "./types";
+import { authHelpers, dbHelpers } from "@common/supabase";
+import { User as UserProfile } from "@common/database-types";
 
 interface CommentResponse {
 	[key: string]: any;
@@ -345,3 +347,363 @@ export const setWidth = (width: number) => ({
 	type: actionTypes.SET_WIDTH as typeof actionTypes.SET_WIDTH,
 	payload: width,
 });
+
+// Enhanced Auth Action Creators
+export const authLoadingStart = () => ({
+	type: actionTypes.AUTH_LOADING_START as typeof actionTypes.AUTH_LOADING_START,
+});
+
+export const authLoadingStop = () => ({
+	type: actionTypes.AUTH_LOADING_STOP as typeof actionTypes.AUTH_LOADING_STOP,
+});
+
+export const authSetInitialLoading = (loading: boolean) => ({
+	type: actionTypes.AUTH_SET_INITIAL_LOADING as typeof actionTypes.AUTH_SET_INITIAL_LOADING,
+	payload: loading,
+});
+
+export const authSetUser = (user: User | null) => ({
+	type: actionTypes.AUTH_SET_USER as typeof actionTypes.AUTH_SET_USER,
+	payload: user,
+});
+
+export const authSetSession = (session: Session | null) => ({
+	type: actionTypes.AUTH_SET_SESSION as typeof actionTypes.AUTH_SET_SESSION,
+	payload: session,
+});
+
+export const authSetUserProfile = (userProfile: UserProfile | null) => ({
+	type: actionTypes.AUTH_SET_USER_PROFILE as typeof actionTypes.AUTH_SET_USER_PROFILE,
+	payload: userProfile,
+});
+
+export const authSetError = (error: AuthError | string | null) => ({
+	type: actionTypes.AUTH_SET_ERROR as typeof actionTypes.AUTH_SET_ERROR,
+	payload: error,
+});
+
+export const authClearError = () => ({
+	type: actionTypes.AUTH_CLEAR_ERROR as typeof actionTypes.AUTH_CLEAR_ERROR,
+});
+
+// Sign Up Actions
+export const authSignUpStart = () => ({
+	type: actionTypes.AUTH_SIGN_UP_START as typeof actionTypes.AUTH_SIGN_UP_START,
+});
+
+export const authSignUpSuccess = () => ({
+	type: actionTypes.AUTH_SIGN_UP_SUCCESS as typeof actionTypes.AUTH_SIGN_UP_SUCCESS,
+});
+
+export const authSignUpFail = (error: AuthError | string) => ({
+	type: actionTypes.AUTH_SIGN_UP_FAIL as typeof actionTypes.AUTH_SIGN_UP_FAIL,
+	payload: error,
+});
+
+// Sign In Actions
+export const authSignInStart = () => ({
+	type: actionTypes.AUTH_SIGN_IN_START as typeof actionTypes.AUTH_SIGN_IN_START,
+});
+
+export const authSignInSuccess = (user: User, session: Session) => ({
+	type: actionTypes.AUTH_SIGN_IN_SUCCESS as typeof actionTypes.AUTH_SIGN_IN_SUCCESS,
+	payload: { user, session },
+});
+
+export const authSignInFail = (error: AuthError | string) => ({
+	type: actionTypes.AUTH_SIGN_IN_FAIL as typeof actionTypes.AUTH_SIGN_IN_FAIL,
+	payload: error,
+});
+
+// Sign Out Actions
+export const authSignOutStart = () => ({
+	type: actionTypes.AUTH_SIGN_OUT_START as typeof actionTypes.AUTH_SIGN_OUT_START,
+});
+
+export const authSignOutSuccess = () => ({
+	type: actionTypes.AUTH_SIGN_OUT_SUCCESS as typeof actionTypes.AUTH_SIGN_OUT_SUCCESS,
+});
+
+export const authSignOutFail = (error: AuthError | string) => ({
+	type: actionTypes.AUTH_SIGN_OUT_FAIL as typeof actionTypes.AUTH_SIGN_OUT_FAIL,
+	payload: error,
+});
+
+// Password Reset Actions
+export const authPasswordResetStart = () => ({
+	type: actionTypes.AUTH_PASSWORD_RESET_START as typeof actionTypes.AUTH_PASSWORD_RESET_START,
+});
+
+export const authPasswordResetSuccess = () => ({
+	type: actionTypes.AUTH_PASSWORD_RESET_SUCCESS as typeof actionTypes.AUTH_PASSWORD_RESET_SUCCESS,
+});
+
+export const authPasswordResetFail = (error: AuthError | string) => ({
+	type: actionTypes.AUTH_PASSWORD_RESET_FAIL as typeof actionTypes.AUTH_PASSWORD_RESET_FAIL,
+	payload: error,
+});
+
+// Profile Update Actions
+export const authProfileUpdateStart = () => ({
+	type: actionTypes.AUTH_PROFILE_UPDATE_START as typeof actionTypes.AUTH_PROFILE_UPDATE_START,
+});
+
+export const authProfileUpdateSuccess = (userProfile: UserProfile) => ({
+	type: actionTypes.AUTH_PROFILE_UPDATE_SUCCESS as typeof actionTypes.AUTH_PROFILE_UPDATE_SUCCESS,
+	payload: userProfile,
+});
+
+export const authProfileUpdateFail = (error: AuthError | string) => ({
+	type: actionTypes.AUTH_PROFILE_UPDATE_FAIL as typeof actionTypes.AUTH_PROFILE_UPDATE_FAIL,
+	payload: error,
+});
+
+// Session Refresh Actions
+export const authSessionRefreshStart = () => ({
+	type: actionTypes.AUTH_SESSION_REFRESH_START as typeof actionTypes.AUTH_SESSION_REFRESH_START,
+});
+
+export const authSessionRefreshSuccess = (user: User, session: Session) => ({
+	type: actionTypes.AUTH_SESSION_REFRESH_SUCCESS as typeof actionTypes.AUTH_SESSION_REFRESH_SUCCESS,
+	payload: { user, session },
+});
+
+export const authSessionRefreshFail = (error: AuthError | string) => ({
+	type: actionTypes.AUTH_SESSION_REFRESH_FAIL as typeof actionTypes.AUTH_SESSION_REFRESH_FAIL,
+	payload: error,
+});
+
+// Thunk Actions for Async Operations
+export const authSignUp = (email: string, password: string, userData?: { name?: string }) => 
+	async (dispatch: AppDispatch) => {
+		dispatch(authSignUpStart());
+		
+		try {
+			const { user, error } = await authHelpers.signUp(email, password, {
+				data: userData
+			});
+			
+			if (error) {
+				dispatch(authSignUpFail(error));
+				return { error };
+			}
+			
+			dispatch(authSignUpSuccess());
+			return { error: null };
+		} catch (err) {
+			const errorMsg = err instanceof Error ? err.message : 'Sign up failed';
+			dispatch(authSignUpFail(errorMsg));
+			return { error: errorMsg as any };
+		}
+	};
+
+export const authSignIn = (email: string, password: string) => 
+	async (dispatch: AppDispatch) => {
+		dispatch(authSignInStart());
+		
+		try {
+			const { user, session, error } = await authHelpers.signInWithPassword(email, password);
+			
+			if (error) {
+				dispatch(authSignInFail(error));
+				return { error };
+			}
+			
+			if (user && session) {
+				dispatch(authSignInSuccess(user, session));
+				// Load user profile
+				dispatch(authLoadUserProfile(user.id));
+			}
+			
+			return { error: null };
+		} catch (err) {
+			const errorMsg = err instanceof Error ? err.message : 'Sign in failed';
+			dispatch(authSignInFail(errorMsg));
+			return { error: errorMsg as any };
+		}
+	};
+
+export const authSignOut = () => 
+	async (dispatch: AppDispatch) => {
+		dispatch(authSignOutStart());
+		
+		try {
+			const { error } = await (authHelpers.secureSignOut || authHelpers.signOut)();
+			
+			if (error) {
+				dispatch(authSignOutFail(error));
+				return { error };
+			}
+			
+			dispatch(authSignOutSuccess());
+			return { error: null };
+		} catch (err) {
+			const errorMsg = err instanceof Error ? err.message : 'Sign out failed';
+			dispatch(authSignOutFail(errorMsg));
+			return { error: errorMsg as any };
+		}
+	};
+
+export const authResetPassword = (email: string) => 
+	async (dispatch: AppDispatch) => {
+		dispatch(authPasswordResetStart());
+		
+		try {
+			const { error } = await authHelpers.resetPassword(email);
+			
+			if (error) {
+				dispatch(authPasswordResetFail(error));
+				return { error };
+			}
+			
+			dispatch(authPasswordResetSuccess());
+			return { error: null };
+		} catch (err) {
+			const errorMsg = err instanceof Error ? err.message : 'Password reset failed';
+			dispatch(authPasswordResetFail(errorMsg));
+			return { error: errorMsg as any };
+		}
+	};
+
+export const authUpdateProfile = (updates: {
+	name?: string;
+	avatar_url?: string;
+	bio?: string;
+	website?: string;
+	is_public?: boolean;
+}) => async (dispatch: AppDispatch, getState: () => RootState) => {
+	const { auth } = getState();
+	
+	if (!auth.user) {
+		const error = 'No user logged in';
+		dispatch(authProfileUpdateFail(error));
+		return { error };
+	}
+
+	dispatch(authProfileUpdateStart());
+	
+	try {
+		const { data, error } = await dbHelpers.updateUserProfile(auth.user.id, updates);
+		
+		if (error) {
+			dispatch(authProfileUpdateFail(error.message || 'Profile update failed'));
+			return { error };
+		}
+		
+		if (data) {
+			dispatch(authProfileUpdateSuccess(data));
+		}
+		
+		return { error: null };
+	} catch (err) {
+		const errorMsg = err instanceof Error ? err.message : 'Profile update failed';
+		dispatch(authProfileUpdateFail(errorMsg));
+		return { error: errorMsg as any };
+	}
+};
+
+export const authRefreshSession = () => 
+	async (dispatch: AppDispatch) => {
+		dispatch(authSessionRefreshStart());
+		
+		try {
+			const { user, session, error } = await authHelpers.refreshSession();
+			
+			if (error) {
+				dispatch(authSessionRefreshFail(error));
+				return { error };
+			}
+			
+			if (user && session) {
+				dispatch(authSessionRefreshSuccess(user, session));
+				// Load user profile
+				dispatch(authLoadUserProfile(user.id));
+			}
+			
+			return { error: null };
+		} catch (err) {
+			const errorMsg = err instanceof Error ? err.message : 'Session refresh failed';
+			dispatch(authSessionRefreshFail(errorMsg));
+			return { error: errorMsg as any };
+		}
+	};
+
+export const authLoadUserProfile = (userId: string) => 
+	async (dispatch: AppDispatch) => {
+		try {
+			const { data, error } = await dbHelpers.getUserProfile(userId);
+			if (error) {
+				console.error('Error loading user profile:', error);
+				return;
+			}
+			dispatch(authSetUserProfile(data));
+		} catch (err) {
+			console.error('Error loading user profile:', err);
+		}
+	};
+
+export const authSyncUserProfile = (user: User) => 
+	async (dispatch: AppDispatch) => {
+		try {
+			const { data, error } = await dbHelpers.upsertUserProfile({
+				id: user.id,
+				email: user.email || '',
+				name: user.user_metadata?.name || user.user_metadata?.full_name || null,
+				avatar_url: user.user_metadata?.avatar_url || null,
+				auth_provider: user.app_metadata?.provider || 'email',
+				is_public: false
+			});
+			
+			if (error) {
+				console.error('Error syncing user profile:', error);
+				return;
+			}
+			
+			dispatch(authSetUserProfile(data));
+		} catch (err) {
+			console.error('Error syncing user profile:', err);
+		}
+	};
+
+// Enhanced session initialization with Redux integration
+export const initializeAuthSession = () => async (dispatch: AppDispatch) => {
+	dispatch(authSetInitialLoading(true));
+	
+	try {
+		const { user, session, error } = await authHelpers.getCurrentSession();
+		
+		if (error) {
+			console.error('Error getting initial session:', error);
+			dispatch(authSetError(error));
+		} else if (user && session) {
+			dispatch(authSetUser(user));
+			dispatch(authSetSession(session));
+			dispatch(authLoadUserProfile(user.id));
+		}
+	} catch (err) {
+		console.error('Error getting initial session:', err);
+		const errorMsg = err instanceof Error ? err.message : 'Failed to get session';
+		dispatch(authSetError(errorMsg));
+	} finally {
+		dispatch(authSetInitialLoading(false));
+	}
+
+	// Set up auth state listener
+	authHelpers.onAuthStateChange(async (event, session) => {
+		console.log('Auth state changed:', event, session?.user?.id);
+		
+		if (session?.user) {
+			dispatch(authSetUser(session.user));
+			dispatch(authSetSession(session));
+			dispatch(authSyncUserProfile(session.user));
+		} else {
+			dispatch(authSetUser(null));
+			dispatch(authSetSession(null));
+			dispatch(authSetUserProfile(null));
+		}
+		
+		// Clear loading states on auth events
+		dispatch(authLoadingStop());
+		dispatch(authSetInitialLoading(false));
+	});
+};
