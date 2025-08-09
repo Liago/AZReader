@@ -53,10 +53,10 @@ const initialState: AppState = {
 	
 	// Reading settings
 	fontSize: 'base',
-	fontFamily: 'New York',
-	brightness: 50,
-	spacing: 1,
-	width: 1,
+	fontFamily: 'system-ui',
+	brightness: 1.0,
+	spacing: 1.5,
+	width: 42,
 	
 	// App configuration
 	devMode: false,
@@ -140,15 +140,15 @@ const appSlice = createSlice({
 		},
 		
 		setBrightness: (state, action: PayloadAction<number>) => {
-			state.brightness = Math.max(0, Math.min(100, action.payload));
+			state.brightness = Math.max(0.3, Math.min(1.0, action.payload));
 		},
 		
 		setSpacing: (state, action: PayloadAction<number>) => {
-			state.spacing = Math.max(0.5, Math.min(3, action.payload));
+			state.spacing = Math.max(1.2, Math.min(2.0, action.payload));
 		},
 		
 		setWidth: (state, action: PayloadAction<number>) => {
-			state.width = Math.max(0.5, Math.min(2, action.payload));
+			state.width = Math.max(35, Math.min(50, action.payload));
 		},
 		
 		// App configuration actions

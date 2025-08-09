@@ -25,7 +25,7 @@ import {
 	contrast,
 } from 'ionicons/icons';
 import { Session } from '@supabase/supabase-js';
-import FontSizeControls from './ui/FontSizeControls';
+import EnhancedReadingControls from './EnhancedReadingControls';
 
 export interface ArticleReaderHeaderProps {
 	title?: string;
@@ -104,7 +104,7 @@ const ArticleReaderHeader: React.FC<ArticleReaderHeaderProps> = ({
 					{/* Action Buttons */}
 					<IonButtons slot="end">
 						{/* Reading Settings */}
-						<FontSizeControls />
+						<EnhancedReadingControls compact={true} />
 
 						{/* Favorite Toggle */}
 						{session && (

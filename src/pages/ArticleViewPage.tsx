@@ -26,6 +26,7 @@ import { useSelector } from 'react-redux';
 import ArticleReader from '@components/ArticleReader';
 import ArticleReaderHeader from '@components/ArticleReaderHeader';
 import Comments from '@components/Comments';
+import ReadingStyleProvider from '@components/ReadingStyleProvider';
 
 // Hooks and services
 import { usePostLikes } from '@hooks/usePostLikes';
@@ -297,6 +298,9 @@ const ArticleViewPage: React.FC = () => {
 
 	return (
 		<IonPage className="article-view-page">
+			{/* Reading Style Provider for CSS custom properties */}
+			<ReadingStyleProvider />
+			
 			{/* Header */}
 			<ArticleReaderHeader
 				title={article.title}
