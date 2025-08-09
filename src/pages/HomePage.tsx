@@ -131,19 +131,12 @@ const HomePage: React.FC = () => {
 					{activeTab === 'latest' && (
 						<ArticleList
 							session={session as Session}
-							articles={articles}
-							loading={isLoadingArticles}
-							onRefresh={loadArticles}
 						/>
 					)}
 					
 					{activeTab === 'saved' && (
 						<ArticleList
 							session={session as Session}
-							articles={articles.filter(article => article.is_favorite)}
-							loading={isLoadingArticles}
-							onRefresh={loadArticles}
-							emptyMessage="No saved articles yet"
 						/>
 					)}
 

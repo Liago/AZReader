@@ -23,10 +23,37 @@ export type {
 } from './store-rtk';
 
 // RTK Slices exports
-export * from './slices/postsSlice';
-export * from './slices/appSlice';
-export * from './slices/authSlice';
-export * from './slices/toastSlice';
+export type { 
+	Post as RTKPost,
+	PostsState
+} from './slices/postsSlice';
+export {
+	fetchPosts,
+	createPost,
+	updatePost,
+	deletePost,
+	toggleFavourite,
+	searchPosts,
+	setCurrentPost,
+	clearCurrentPost,
+	updateFilters,
+	clearFilters,
+	updatePagination,
+	addLocalPost,
+	removeLocalPost,
+	updateLocalPost,
+	clearErrors,
+	updateReadingProgress,
+	selectPosts,
+	selectCurrentPost,
+	selectFavourites,
+	selectPostsLoading,
+	selectPostsErrors,
+	selectPostsPagination,
+	selectPostsFilters,
+	selectFilteredPosts
+} from './slices/postsSlice';
+export { showSuccess, showError } from './slices/toastSlice';
 export * from './hooks';
 
 export { useTagsHandler } from './rest';

@@ -13,7 +13,8 @@ module.exports = {
 			'@store': path.resolve(__dirname, 'src/store'),
 			'@theme': path.resolve(__dirname, 'src/theme'),
 			'@utility': path.resolve(__dirname, 'src/utility'),
-			'@ui': path.resolve(__dirname, 'src/ui')
+			'@ui': path.resolve(__dirname, 'src/ui'),
+			'@types': path.resolve(__dirname, 'src/types')
 		}
 	}
 };

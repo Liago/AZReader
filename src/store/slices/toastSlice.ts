@@ -229,8 +229,11 @@ const toastSlice = createSlice({
 			const { id, updates } = action.payload;
 			const toastIndex = state.toasts.findIndex(toast => toast.id === id);
 			
-			if (toastIndex !== -1 && state.toasts[toastIndex]) {
-				Object.assign(state.toasts[toastIndex], updates);
+			if (toastIndex !== -1) {
+				const existingToast = state.toasts[toastIndex];
+				if (existingToast) {
+					state.toasts[toastIndex] = { ...existingToast, ...updates };
+				}
 			}
 		},
 

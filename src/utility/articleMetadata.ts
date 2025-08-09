@@ -1,4 +1,4 @@
-import { ExtendedParsedArticle } from '@types/article';
+import { ExtendedParsedArticle } from '../types/article';
 
 // Types for enhanced metadata
 export interface ArticleMetadata {

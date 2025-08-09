@@ -268,8 +268,11 @@ const postsSlice = createSlice({
 		updateLocalPost: (state, action: PayloadAction<{ id: string; updates: Partial<Post> }>) => {
 			const { id, updates } = action.payload;
 			const postIndex = state.items.findIndex(post => post.id === id);
-			if (postIndex !== -1 && state.items[postIndex]) {
-				Object.assign(state.items[postIndex], updates);
+			if (postIndex !== -1) {
+				const existingPost = state.items[postIndex];
+				if (existingPost) {
+					state.items[postIndex] = { ...existingPost, ...updates };
+				}
 			}
 		},
 		

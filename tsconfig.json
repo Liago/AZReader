@@ -33,7 +33,8 @@
 			"@store/*": ["store/*"],
 			"@theme/*": ["theme/*"],
 			"@utility/*": ["utility/*"],
-			"@ui/*": ["ui/*"]
+			"@ui/*": ["ui/*"],
+			"@types/*": ["types/*"]
 		}
 	},
 	"include": ["src"],

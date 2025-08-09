@@ -15,7 +15,7 @@ import {
 import { parseArticleWithMercury } from '@common/mercury-parser';
 import { ParsedArticle } from '@common/mercury-parser';
 import { ArticleInsert } from '@common/database-types';
-import { ExtendedParsedArticle, extendParsedArticle, toArticleInsert } from '@types/article';
+import { ExtendedParsedArticle, extendParsedArticle, toArticleInsert } from '../types/article';
 import { enhanceArticleWithMetadata, generateArticleMetadata } from '@utility/articleMetadata';
 
 export interface UseArticleParserReturn {
@@ -109,14 +109,14 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 
 		try {
 			// Use the Mercury parser we implemented in Task 4
-			const article = await parseArticleWithMercury(cleanUrl);
+			const result = await parseArticleWithMercury(cleanUrl);
 			
-			if (!article) {
-				throw new Error('No article content could be extracted from this URL');
+			if (!result.success || !result.data) {
+				throw new Error(result.error?.message || 'No article content could be extracted from this URL');
 			}
 
 			// Convert to extended article and enhance with metadata
-			const baseArticle = extendParsedArticle(article);
+			const baseArticle = extendParsedArticle(result.data);
 			const extendedArticle: ExtendedParsedArticle = {
 				...baseArticle,
 				url: cleanUrl,

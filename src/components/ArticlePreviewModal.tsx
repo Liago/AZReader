@@ -44,7 +44,7 @@ import {
 } from 'ionicons/icons';
 import { Session } from '@supabase/supabase-js';
 import { Article } from '@common/database-types';
-import { ExtendedParsedArticle } from '@types/article';
+import { ExtendedParsedArticle } from '../types/article';
 import UrlInputForm from './form/UrlInputForm';
 
 // Types
@@ -277,7 +277,7 @@ const ArticlePreviewModal: React.FC<ArticlePreviewModalProps> = ({
 				<div className="article-header">
 					{(article.image || article.lead_image_url) && (
 						<IonImg
-							src={article.image || article.lead_image_url}
+							src={article.image || article.lead_image_url || undefined}
 							alt={article.title}
 							className="article-image"
 						/>
