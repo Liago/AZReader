@@ -10,6 +10,7 @@ import appSlice from './slices/appSlice';
 import authSlice from './slices/authSlice';
 import toastSlice from './slices/toastSlice';
 import tagsSlice from './slices/tagsSlice';
+import filtersSlice from './slices/filtersSlice';
 
 // Legacy reducers (for gradual migration)
 import legacyReducers from './reducers';
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
 	auth: authSlice.reducer,
 	toast: toastSlice.reducer,
 	tags: tagsSlice.reducer,
+	filters: filtersSlice.reducer,
 	
 	// Router
 	router: routerReducer,
@@ -53,6 +55,7 @@ const persistConfig: PersistConfig<ReturnType<typeof rootReducer>> = {
 		'app', // Persist app settings
 		'auth', // Persist auth state
 		'tags', // Persist tags data and preferences
+		'filters', // Persist filter settings and presets
 		'user', // Keep legacy user state during transition
 		'archive', // Persist archived items
 	],
