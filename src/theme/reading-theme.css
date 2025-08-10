@@ -62,12 +62,13 @@
 .reading-content {
   background-color: var(--app-bg-color);
   color: var(--app-text-color);
-  /* filter: brightness(var(--app-brightness)); */
+  filter: brightness(var(--app-brightness));
   letter-spacing: calc(var(--app-spacing) * 0.05em);
-  max-width: calc(var(--app-width) * 65ch);
+  line-height: var(--app-spacing);
+  max-width: calc(var(--app-width) * 1ch);
   margin: 0 auto;
   padding: 1rem;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, filter 0.3s ease;
 }
 
 .reading-content a {
@@ -81,6 +82,22 @@
 
 .reading-content figcaption {
   color: var(--app-caption-color);
+}
+
+/* Applicazione spaziatura righe agli elementi di testo */
+.reading-content p,
+.reading-content li,
+.reading-content div {
+  line-height: var(--app-spacing);
+}
+
+.reading-content h1,
+.reading-content h2,
+.reading-content h3,
+.reading-content h4,
+.reading-content h5,
+.reading-content h6 {
+  line-height: calc(var(--app-spacing) * 0.9);
 }
 
 /* Font da tailwind.config.js */
