@@ -59,6 +59,37 @@
   --app-caption-color: #a0a0a0;
 }
 
+/* Temi ottimizzati per lettura */
+.theme-reading-light {
+  --app-bg-color: #fefefe;
+  --app-text-color: #1a1a1a;
+  --app-link-color: #2563eb;
+  --app-border-color: #e5e7eb;
+  --app-blockquote-color: #3b82f6;
+  --app-caption-color: #6b7280;
+  /* Migliore contrasto per lettura prolungata */
+}
+
+.theme-reading-dark {
+  --app-bg-color: #0f0f0f;
+  --app-text-color: #e8e8e8;
+  --app-link-color: #60a5fa;
+  --app-border-color: #374151;
+  --app-blockquote-color: #3b82f6;
+  --app-caption-color: #9ca3af;
+  /* Colori ottimizzati per lettura notturna */
+}
+
+.theme-reading-sepia {
+  --app-bg-color: #f7f3e9;
+  --app-text-color: #4a3f2a;
+  --app-link-color: #92400e;
+  --app-border-color: #d6c7a3;
+  --app-blockquote-color: #a16207;
+  --app-caption-color: #78716c;
+  /* Tema seppia per lettura rilassante */
+}
+
 .reading-content {
   background-color: var(--app-bg-color);
   color: var(--app-text-color);
@@ -68,20 +99,39 @@
   max-width: calc(var(--app-width) * 1ch);
   margin: 0 auto;
   padding: 1rem;
-  transition: background-color 0.3s ease, color 0.3s ease, filter 0.3s ease;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              filter 0.3s ease,
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .reading-content a {
   color: var(--app-link-color);
-  transition: color 0.2s ease;
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reading-content a:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
 }
 
 .reading-content blockquote {
   border-left-color: var(--app-blockquote-color);
+  transition: border-left-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .reading-content figcaption {
   color: var(--app-caption-color);
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Transizioni per elementi specifici del toggle tema */
+.reading-theme-toggle-switch {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reading-theme-toggle .ion-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Applicazione spaziatura righe agli elementi di testo */

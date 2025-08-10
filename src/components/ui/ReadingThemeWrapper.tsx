@@ -43,18 +43,21 @@ const ReadingThemeWrapper: React.FC<ReadingThemeWrapperProps> = ({ children, cla
 
 	// Determina il tema da usare basato sulle preferenze
 	const getThemeToUse = () => {
-		// Se il tema è automatico, usa il tema scuro quando il sistema è in modalità scura
-		if (themeMode === 'auto' && prefersDark) {
-			return 'dark';
+		// Per i temi di lettura ottimizzati
+		if (themeMode === 'light' || (themeMode === 'auto' && !prefersDark)) {
+			return 'reading-light';
+		}
+		
+		if (themeMode === 'dark' || (themeMode === 'auto' && prefersDark)) {
+			// Se l'utente ha selezionato un tema scuro specifico, usalo
+			if (theme === 'amoled') return 'amoled';
+			if (theme === 'dark') return 'dark';
+			// Altrimenti usa il tema di lettura scuro ottimizzato
+			return 'reading-dark';
 		}
 
-		// Se il tema è impostato esplicitamente su dark, usa dark o amoled
-		if (themeMode === 'dark') {
-			return theme === 'amoled' ? 'amoled' : 'dark';
-		}
-
-		// Altrimenti usa il tema selezionato dall'utente
-		return theme;
+		// Per compatibilità, mantieni i temi esistenti per altri casi
+		return theme || 'reading-light';
 	};
 
 	const themeClass = `theme-${getThemeToUse()}`;
