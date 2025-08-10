@@ -4,6 +4,12 @@ import ReadingProgressBar from './ReadingProgressBar';
 import ArticleNavigation from './ArticleNavigation';
 import { useReadingProgress } from '@hooks/useReadingProgress';
 import { useReadingKeyboardShortcuts } from '@hooks/useKeyboardShortcuts';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { 
+  saveScrollPosition, 
+  clearScrollPosition,
+  selectScrollPositionByArticleId 
+} from '@store/slices/appSlice';
 
 interface Article {
   id: string;
@@ -39,6 +45,7 @@ interface EnhancedReadingExperienceProps {
   showNavigation?: boolean;
   enableKeyboardShortcuts?: boolean;
   autoStartTracking?: boolean;
+  persistScrollPosition?: boolean;
   
   // UI
   progressBarVariant?: 'minimal' | 'detailed' | 'compact';
@@ -62,6 +69,7 @@ const EnhancedReadingExperience: React.FC<EnhancedReadingExperienceProps> = ({
   showNavigation = true,
   enableKeyboardShortcuts = true,
   autoStartTracking = true,
+  persistScrollPosition = true,
   progressBarVariant = 'detailed',
   navigationVariant = 'floating',
   className = '',
@@ -71,12 +79,68 @@ const EnhancedReadingExperience: React.FC<EnhancedReadingExperienceProps> = ({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isNavigating, setIsNavigating] = useState(false);
+  const [hasRestoredPosition, setHasRestoredPosition] = useState(false);
+
+  // Redux hooks
+  const dispatch = useAppDispatch();
+  const savedScrollPosition = useAppSelector(state => 
+    selectScrollPositionByArticleId(state, article.id)
+  );
 
   // Hook per il tracking del progresso di lettura
   const readingProgress = useReadingProgress(contentRef.current, {
     updateInterval: 1000,
     averageReadingSpeed: 200
   });
+
+  // Save scroll position to Redux when position changes
+  useEffect(() => {
+    if (!persistScrollPosition || !readingProgress.isTracking) return;
+
+    const saveInterval = setInterval(() => {
+      if (readingProgress.scrollProgress > 0 || readingProgress.scrollPosition > 0) {
+        dispatch(saveScrollPosition({
+          articleId: article.id,
+          scrollTop: readingProgress.scrollPosition,
+          scrollProgress: readingProgress.scrollProgress,
+          readingProgress: readingProgress.readingProgress,
+          contentHeight: readingProgress.contentHeight,
+        }));
+      }
+    }, 2000); // Save every 2 seconds
+
+    return () => clearInterval(saveInterval);
+  }, [
+    dispatch,
+    article.id,
+    persistScrollPosition,
+    readingProgress.isTracking,
+    readingProgress.scrollPosition,
+    readingProgress.scrollProgress,
+    readingProgress.readingProgress,
+    readingProgress.contentHeight,
+  ]);
+
+  // Restore scroll position when component mounts
+  const restoreScrollPosition = () => {
+    if (!savedScrollPosition || hasRestoredPosition || !contentRef.current) return;
+
+    const scrollContainer = window;
+    const targetScrollTop = savedScrollPosition.scrollTop;
+
+    // Use smooth scrolling to restore position
+    scrollContainer.scrollTo({
+      top: targetScrollTop,
+      behavior: 'smooth'
+    });
+
+    setHasRestoredPosition(true);
+    
+    // Show toast notification about restored position
+    if (savedScrollPosition.scrollProgress > 5) { // Only show if meaningful progress
+      showInfoToast(`Resumed reading at ${Math.round(savedScrollPosition.scrollProgress)}%`);
+    }
+  };
 
   // Mostra un toast informativo
   const showInfoToast = (message: string) => {
@@ -147,6 +211,13 @@ const EnhancedReadingExperience: React.FC<EnhancedReadingExperienceProps> = ({
       // Piccolo ritardo per permettere al contenuto di renderizzarsi
       const timer = setTimeout(() => {
         readingProgress.startTracking();
+        
+        // Restore scroll position after tracking starts
+        if (persistScrollPosition && savedScrollPosition && !hasRestoredPosition) {
+          setTimeout(() => {
+            restoreScrollPosition();
+          }, 300); // Small delay to ensure content is rendered
+        }
       }, 500);
       
       return () => {
@@ -154,11 +225,12 @@ const EnhancedReadingExperience: React.FC<EnhancedReadingExperienceProps> = ({
         readingProgress.stopTracking();
       };
     }
-  }, [article.id, autoStartTracking, readingProgress]);
+  }, [article.id, autoStartTracking, readingProgress, persistScrollPosition, savedScrollPosition, hasRestoredPosition]);
 
   // Reset tracking quando cambia articolo
   useEffect(() => {
     readingProgress.resetTracking();
+    setHasRestoredPosition(false); // Reset position restoration flag for new article
   }, [article.id, readingProgress]);
 
   return (
@@ -173,6 +245,8 @@ const EnhancedReadingExperience: React.FC<EnhancedReadingExperienceProps> = ({
           estimatedRemainingTime={readingProgress.estimatedRemainingTime}
           wordCount={readingProgress.wordCount}
           isReading={readingProgress.isReading}
+          savedScrollProgress={savedScrollPosition?.scrollProgress}
+          showSavedPosition={persistScrollPosition && !!savedScrollPosition}
           variant={progressBarVariant}
           position="fixed-top"
           showDetails={progressBarVariant !== 'minimal'}

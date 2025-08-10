@@ -42,6 +42,17 @@ export interface AppState {
 		articlesLoaded: number;
 		searchQueries: number;
 	};
+
+	// Reading positions for articles
+	scrollPositions: {
+		[articleId: string]: {
+			scrollTop: number;
+			scrollProgress: number;
+			readingProgress: number;
+			lastUpdated: string;
+			contentHeight: number;
+		};
+	};
 }
 
 // Initial state
@@ -82,6 +93,9 @@ const initialState: AppState = {
 		articlesLoaded: 0,
 		searchQueries: 0,
 	},
+
+	// Reading positions
+	scrollPositions: {},
 };
 
 // Font sizes array for increment/decrement
@@ -232,12 +246,60 @@ const appSlice = createSlice({
 			Object.assign(state, action.payload);
 		},
 		
+		// Scroll position management
+		saveScrollPosition: (state, action: PayloadAction<{
+			articleId: string;
+			scrollTop: number;
+			scrollProgress: number;
+			readingProgress: number;
+			contentHeight: number;
+		}>) => {
+			const { articleId, scrollTop, scrollProgress, readingProgress, contentHeight } = action.payload;
+			state.scrollPositions[articleId] = {
+				scrollTop,
+				scrollProgress,
+				readingProgress,
+				contentHeight,
+				lastUpdated: new Date().toISOString(),
+			};
+		},
+
+		restoreScrollPosition: (state, action: PayloadAction<string>) => {
+			// This action doesn't modify state, it's used for triggering scroll restoration
+			// The actual scroll restoration happens in the component
+		},
+
+		clearScrollPosition: (state, action: PayloadAction<string>) => {
+			const articleId = action.payload;
+			delete state.scrollPositions[articleId];
+		},
+
+		clearOldScrollPositions: {
+			reducer: (state, action: PayloadAction<number>) => {
+				// Clear positions older than specified days
+				const daysToKeep = action.payload;
+				const cutoffDate = new Date();
+				cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+				
+				Object.keys(state.scrollPositions).forEach(articleId => {
+					const position = state.scrollPositions[articleId];
+					if (position && new Date(position.lastUpdated) < cutoffDate) {
+						delete state.scrollPositions[articleId];
+					}
+				});
+			},
+			prepare: (daysToKeep: number = 7) => ({
+				payload: daysToKeep,
+			}),
+		},
+
 		// Reset to defaults
 		resetToDefaults: (state) => {
 			Object.assign(state, initialState, {
 				// Keep some state that shouldn't be reset
 				performanceMetrics: state.performanceMetrics,
 				isOnline: state.isOnline,
+				scrollPositions: state.scrollPositions, // Keep scroll positions on reset
 			});
 		},
 	},
@@ -273,6 +335,10 @@ export const {
 	incrementSearchQueries,
 	resetPerformanceMetrics,
 	updateReadingSettings,
+	saveScrollPosition,
+	restoreScrollPosition,
+	clearScrollPosition,
+	clearOldScrollPositions,
 	resetToDefaults,
 } = appSlice.actions;
 
@@ -298,5 +364,8 @@ export const selectNetworkState = (state: RootState) => ({
 	syncInProgress: state.app.syncInProgress,
 });
 export const selectPerformanceMetrics = (state: RootState) => state.app.performanceMetrics;
+export const selectScrollPositions = (state: RootState) => state.app.scrollPositions;
+export const selectScrollPositionByArticleId = (state: RootState, articleId: string) => 
+	state.app.scrollPositions[articleId] || null;
 
 export default appSlice;

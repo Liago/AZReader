@@ -10,6 +10,7 @@ import { App as CapApp } from "@capacitor/app";
 import Home from "@pages/home";
 import ThemeInitializer from "./components/ui/ThemeInitializer";
 import SideMenu from "./components/SideMenu";
+import { useScrollPositionCleanup } from "@hooks/useScrollPositionCleanup";
 
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 import VerifyEmail from "@pages/verifyEmail";
@@ -97,6 +98,13 @@ setupIonicReact({
 
 const AppContent: React.FC = () => {
 	const dispatch = useDispatch();
+
+	// Initialize scroll position cleanup
+	useScrollPositionCleanup({
+		retentionDays: 7, // Keep positions for 7 days
+		cleanupOnMount: true,
+		enableAutoCleanup: true,
+	});
 
 	useEffect(() => {
 		const setupAuthListener = async () => {

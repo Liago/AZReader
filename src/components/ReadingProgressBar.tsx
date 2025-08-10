@@ -12,6 +12,10 @@ interface ReadingProgressBarProps {
   wordCount: number;
   isReading: boolean;
   
+  // Scroll position indicator
+  savedScrollProgress?: number | null;
+  showSavedPosition?: boolean;
+  
   // Configurazione UI
   position?: 'top' | 'bottom' | 'fixed-top' | 'fixed-bottom';
   showDetails?: boolean;
@@ -29,6 +33,8 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
   estimatedRemainingTime,
   wordCount,
   isReading,
+  savedScrollProgress = null,
+  showSavedPosition = false,
   position = 'fixed-top',
   showDetails = true,
   showTimeInfo = true,
@@ -74,14 +80,40 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
     }
   };
 
+  // Componente progress bar con indicatore posizione salvata
+  const ProgressBarWithIndicator: React.FC<{
+    progress: number;
+    className: string;
+    height?: string;
+  }> = ({ progress, className, height = 'h-2' }) => (
+    <div className={`relative ${height}`}>
+      <IonProgressBar
+        value={progress / 100}
+        color="primary"
+        className={`${height} rounded-full ${className}`}
+      />
+      {showSavedPosition && savedScrollProgress && savedScrollProgress !== progress && (
+        <div
+          className="absolute top-0 w-0.5 bg-yellow-500 opacity-75 rounded-full"
+          style={{
+            left: `${savedScrollProgress}%`,
+            height: '100%',
+            transform: 'translateX(-50%)',
+          }}
+          title={`Last reading position: ${Math.round(savedScrollProgress)}%`}
+        />
+      )}
+    </div>
+  );
+
   // Variante minimal - solo la barra
   if (variant === 'minimal') {
     return (
       <div className={`reading-progress-minimal ${getPositionClasses()} ${className}`}>
-        <IonProgressBar
-          value={readingProgress / 100}
-          color="primary"
-          className="h-1"
+        <ProgressBarWithIndicator
+          progress={readingProgress}
+          className=""
+          height="h-1"
         />
       </div>
     );
@@ -93,10 +125,9 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
       <div className={`reading-progress-compact ${getPositionClasses()} px-4 py-2 ${className}`}>
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <IonProgressBar
-              value={readingProgress / 100}
-              color="primary"
-              className="h-2 rounded-full"
+            <ProgressBarWithIndicator
+              progress={readingProgress}
+              className=""
             />
           </div>
           <div className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-12">
@@ -127,10 +158,9 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
               {Math.round(readingProgress)}%
             </span>
           </div>
-          <IonProgressBar
-            value={readingProgress / 100}
-            color="primary"
-            className="h-2 rounded-full"
+          <ProgressBarWithIndicator
+            progress={readingProgress}
+            className=""
           />
         </div>
 

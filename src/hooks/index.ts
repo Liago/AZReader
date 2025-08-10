@@ -7,3 +7,4 @@ export { usePostComments } from './usePostComments';
 export { useScreenBrightness } from './useScreenBrightness';
 export { useReadingProgress } from './useReadingProgress';
 export { useKeyboardShortcuts, useReadingKeyboardShortcuts } from './useKeyboardShortcuts';
+export { useScrollPositionCleanup } from './useScrollPositionCleanup';
