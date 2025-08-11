@@ -13,3 +13,7 @@ export { useScrollPositionCleanup } from './useScrollPositionCleanup';
 export { default as useTagManager } from './useTagManager';
 export { default as useArticleFilters } from './useArticleFilters';
 export { useTagLazyLoading, useTagVirtualScrolling } from './useTagLazyLoading';
+
+// Search functionality hooks
+export { default as useSearchBar } from './useSearchBar';
+export { default as useFullTextSearch } from './useFullTextSearch';
