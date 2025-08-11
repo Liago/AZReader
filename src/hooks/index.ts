@@ -8,3 +8,8 @@ export { useScreenBrightness } from './useScreenBrightness';
 export { useReadingProgress } from './useReadingProgress';
 export { useKeyboardShortcuts, useReadingKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useScrollPositionCleanup } from './useScrollPositionCleanup';
+
+// Tag management hooks
+export { default as useTagManager } from './useTagManager';
+export { default as useArticleFilters } from './useArticleFilters';
+export { useTagLazyLoading, useTagVirtualScrolling } from './useTagLazyLoading';
