@@ -34,7 +34,9 @@
 			"@theme/*": ["theme/*"],
 			"@utility/*": ["utility/*"],
 			"@ui/*": ["ui/*"],
-			"@types/*": ["types/*"]
+			"@types/*": ["types/*"],
+			"@services/*": ["services/*"],
+			"@utils/*": ["utils/*"]
 		}
 	},
 	"include": ["src"],

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   IonChip,
   IonIcon,
@@ -9,12 +9,16 @@ import {
   IonItem,
   IonLabel,
   IonCheckbox,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonSkeletonText,
 } from '@ionic/react';
 import {
   pricetagOutline,
   filterOutline,
   closeOutline,
   checkmarkOutline,
+  chevronDownOutline,
 } from 'ionicons/icons';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import {
@@ -24,6 +28,7 @@ import {
   TagWithStats,
 } from '@store/slices/tagsSlice';
 import { Tag } from '@common/database-types';
+import { tagPerformanceService } from '@services/tagPerformanceService';
 
 export interface TagCloudProps {
   selectedTagIds?: string[];
@@ -38,6 +43,14 @@ export interface TagCloudProps {
   className?: string;
   sortBy?: 'usage' | 'alphabetical' | 'recent';
   direction?: 'horizontal' | 'vertical';
+  // Pagination props
+  enablePagination?: boolean;
+  pageSize?: number;
+  enableInfiniteScroll?: boolean;
+  enableLazyLoading?: boolean;
+  // Performance props
+  virtualScrolling?: boolean;
+  onLoadMore?: () => void;
 }
 
 interface TagCloudItem extends TagWithStats {
