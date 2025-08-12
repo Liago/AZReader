@@ -13,6 +13,7 @@ export { useScrollPositionCleanup } from './useScrollPositionCleanup';
 export { default as useNotifications } from './useNotifications';
 export { default as useLikes } from './useLikes';
 export { usePostCommentsWithPagination } from './usePostCommentsWithPagination';
+export { useModeration } from './useModeration';
 
 // Tag management hooks
 export { default as useTagManager } from './useTagManager';
