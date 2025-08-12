@@ -17,7 +17,10 @@ import {
   timeOutline,
   trendingUpOutline,
   filterOutline,
+  sparklesOutline,
+  refreshOutline,
 } from 'ionicons/icons';
+import { SearchSuggestion as EnhancedSearchSuggestion } from '@utils/enhancedSearchHistory';
 
 export interface SearchQuery {
   query: string;
@@ -40,11 +43,14 @@ export interface SearchBarProps {
   disabled?: boolean;
   showSuggestions?: boolean;
   suggestions?: SearchSuggestion[];
+  enhancedSuggestions?: EnhancedSearchSuggestion[];
   recentSearches?: SearchQuery[];
   onSuggestionSelect?: (suggestion: SearchSuggestion) => void;
+  onEnhancedSuggestionSelect?: (suggestion: EnhancedSearchSuggestion) => void;
   showFilterButton?: boolean;
   onFilterClick?: () => void;
   maxRecentSearches?: number;
+  prioritizeEnhancedSuggestions?: boolean;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -57,11 +63,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
   disabled = false,
   showSuggestions = true,
   suggestions = [],
+  enhancedSuggestions = [],
   recentSearches = [],
   onSuggestionSelect,
+  onEnhancedSuggestionSelect,
   showFilterButton = true,
   onFilterClick,
   maxRecentSearches = 10,
+  prioritizeEnhancedSuggestions = true,
 }) => {
   // State
   const [searchValue, setSearchValue] = useState('');
@@ -154,6 +163,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onSearch(suggestion.text);
   };
 
+  // Handle enhanced suggestion selection
+  const handleEnhancedSuggestionSelect = (suggestion: EnhancedSearchSuggestion) => {
+    setSearchValue(suggestion.text);
+    setShowSuggestionsPopover(false);
+    
+    if (onEnhancedSuggestionSelect) {
+      onEnhancedSuggestionSelect(suggestion);
+    }
+    
+    // Trigger search immediately for suggestions
+    onSearch(suggestion.text);
+  };
+
   // Handle Enter key
   const handleKeyDown = (event: any) => {
     if (event.key === 'Enter' && searchValue.trim()) {
@@ -185,30 +207,66 @@ const SearchBar: React.FC<SearchBarProps> = ({
     };
   }, []);
 
-  // Combine recent searches and suggestions
+  // Combine all suggestions
   const allSuggestions = React.useMemo(() => {
-    const combined: SearchSuggestion[] = [];
+    interface CombinedSuggestion {
+      text: string;
+      type: string;
+      metadata?: any;
+      score?: number;
+      isEnhanced?: boolean;
+      originalSuggestion?: SearchSuggestion | EnhancedSearchSuggestion;
+    }
     
-    // Add recent searches
-    const recentSuggestions = recentSearches
-      .slice(0, maxRecentSearches)
-      .map(search => ({
-        text: search.query,
-        type: 'recent' as const,
-        metadata: { timestamp: search.timestamp }
+    const combined: CombinedSuggestion[] = [];
+    
+    if (prioritizeEnhancedSuggestions && enhancedSuggestions.length > 0) {
+      // Add enhanced suggestions first (they already include recency and popularity)
+      const enhancedMapped = enhancedSuggestions.map(suggestion => ({
+        text: suggestion.text,
+        type: suggestion.type,
+        metadata: suggestion.metadata,
+        score: suggestion.score,
+        isEnhanced: true,
+        originalSuggestion: suggestion
       }));
-    
-    combined.push(...recentSuggestions);
-    
-    // Add other suggestions (filtered to avoid duplicates)
-    const filteredSuggestions = suggestions.filter(
-      suggestion => !recentSuggestions.some(recent => recent.text === suggestion.text)
-    );
-    
-    combined.push(...filteredSuggestions);
+      combined.push(...enhancedMapped);
+    } else {
+      // Add recent searches
+      const recentSuggestions = recentSearches
+        .slice(0, maxRecentSearches)
+        .map(search => ({
+          text: search.query,
+          type: 'recent',
+          metadata: { timestamp: search.timestamp },
+          isEnhanced: false,
+          originalSuggestion: {
+            text: search.query,
+            type: 'recent' as const,
+            metadata: { timestamp: search.timestamp }
+          } as SearchSuggestion
+        }));
+      
+      combined.push(...recentSuggestions);
+      
+      // Add other suggestions (filtered to avoid duplicates)
+      const filteredSuggestions = suggestions.filter(
+        suggestion => !recentSuggestions.some(recent => recent.text === suggestion.text)
+      );
+      
+      const basicMapped = filteredSuggestions.map(suggestion => ({
+        text: suggestion.text,
+        type: suggestion.type,
+        metadata: suggestion.metadata,
+        isEnhanced: false,
+        originalSuggestion: suggestion
+      }));
+      
+      combined.push(...basicMapped);
+    }
     
     return combined;
-  }, [recentSearches, suggestions, maxRecentSearches]);
+  }, [recentSearches, suggestions, enhancedSuggestions, maxRecentSearches, prioritizeEnhancedSuggestions]);
 
   // Filter suggestions based on current input
   const filteredSuggestions = React.useMemo(() => {
@@ -220,7 +278,25 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }, [allSuggestions, searchValue]);
 
   // Get suggestion icon
-  const getSuggestionIcon = (type: SearchSuggestion['type']) => {
+  const getSuggestionIcon = (type: string, isEnhanced: boolean = false) => {
+    if (isEnhanced) {
+      switch (type) {
+        case 'recent':
+          return timeOutline;
+        case 'popular':
+          return trendingUpOutline;
+        case 'trending':
+          return trendingUpOutline;
+        case 'semantic':
+          return sparklesOutline;
+        case 'typo-correction':
+          return refreshOutline;
+        default:
+          return searchOutline;
+      }
+    }
+    
+    // Basic suggestions
     switch (type) {
       case 'recent':
         return timeOutline;
@@ -232,6 +308,39 @@ const SearchBar: React.FC<SearchBarProps> = ({
         return '@';
       default:
         return searchOutline;
+    }
+  };
+
+  // Get suggestion color
+  const getSuggestionColor = (type: string, isEnhanced: boolean = false) => {
+    if (isEnhanced) {
+      switch (type) {
+        case 'recent':
+          return 'primary';
+        case 'popular':
+          return 'success';
+        case 'trending':
+          return 'warning';
+        case 'semantic':
+          return 'secondary';
+        case 'typo-correction':
+          return 'tertiary';
+        default:
+          return 'medium';
+      }
+    }
+
+    switch (type) {
+      case 'recent':
+        return 'medium';
+      case 'popular':
+        return 'success';
+      case 'tag':
+        return 'primary';
+      case 'author':
+        return 'secondary';
+      default:
+        return 'medium';
     }
   };
 
@@ -280,38 +389,45 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   <IonItem
                     key={`${suggestion.type}-${suggestion.text}-${index}`}
                     button
-                    onClick={() => handleSuggestionSelect(suggestion)}
+                    onClick={() => {
+                      if (suggestion.isEnhanced && suggestion.originalSuggestion) {
+                        handleEnhancedSuggestionSelect(suggestion.originalSuggestion as EnhancedSearchSuggestion);
+                      } else if (suggestion.originalSuggestion) {
+                        handleSuggestionSelect(suggestion.originalSuggestion as SearchSuggestion);
+                      }
+                    }}
                     className="suggestion-item"
                   >
                     <IonIcon
-                      icon={getSuggestionIcon(suggestion.type)}
+                      icon={getSuggestionIcon(suggestion.type, suggestion.isEnhanced)}
                       slot="start"
-                      className="text-gray-500"
+                      color={getSuggestionColor(suggestion.type, suggestion.isEnhanced)}
                     />
                     <IonLabel>
                       <div className="flex items-center justify-between">
-                        <span className="suggestion-text">
-                          {suggestion.text}
-                        </span>
-                        {suggestion.type !== 'recent' && (
+                        <div className="flex flex-col">
+                          <span className="suggestion-text">
+                            {suggestion.text}
+                          </span>
+                          {suggestion.isEnhanced && suggestion.metadata?.context && (
+                            <IonText color="medium" className="text-xs">
+                              {suggestion.metadata.context}
+                            </IonText>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          {suggestion.isEnhanced && typeof suggestion.score === 'number' && (
+                            <IonText color="medium" className="text-xs font-medium">
+                              {Math.round(suggestion.score * 100)}%
+                            </IonText>
+                          )}
                           <IonChip
-                            color={
-                              suggestion.type === 'popular'
-                                ? 'success'
-                                : suggestion.type === 'tag'
-                                ? 'primary'
-                                : 'medium'
-                            }
+                            color={getSuggestionColor(suggestion.type, suggestion.isEnhanced)}
                             className="suggestion-type-chip"
                           >
-                            {suggestion.type}
+                            {suggestion.type.replace('-', ' ')}
                           </IonChip>
-                        )}
-                        {suggestion.type === 'recent' && suggestion.metadata?.timestamp && (
-                          <IonText color="medium" className="text-xs">
-                            {new Date(suggestion.metadata.timestamp).toLocaleDateString()}
-                          </IonText>
-                        )}
+                        </div>
                       </div>
                     </IonLabel>
                   </IonItem>

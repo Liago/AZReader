@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { searchHistoryManager, SearchQuery } from '@utils/searchHistory';
+import { 
+  enhancedSearchHistoryManager, 
+  getSearchSuggestions,
+  addEnhancedSearch,
+  recordSearchResultClick,
+  SearchSuggestion as EnhancedSearchSuggestion,
+  SearchContext
+} from '@utils/enhancedSearchHistory';
 import { SearchSuggestion } from '@components/SearchBar';
 
 export interface UseSearchBarOptions {
@@ -10,6 +18,8 @@ export interface UseSearchBarOptions {
   enableHistory?: boolean;
   enableSuggestions?: boolean;
   initialQuery?: string;
+  enableEnhancedSuggestions?: boolean;
+  userId?: string;
 }
 
 export interface UseSearchBarReturn {
@@ -20,6 +30,7 @@ export interface UseSearchBarReturn {
   // History
   recentSearches: SearchQuery[];
   suggestions: SearchSuggestion[];
+  enhancedSuggestions: EnhancedSearchSuggestion[];
   
   // Actions
   performSearch: (query: string) => void;
@@ -35,6 +46,12 @@ export interface UseSearchBarReturn {
   
   // Suggestion handling
   handleSuggestionSelect: (suggestion: SearchSuggestion) => void;
+  handleEnhancedSuggestionSelect: (suggestion: EnhancedSearchSuggestion) => void;
+  getIntelligentSuggestions: (input: string, limit?: number) => EnhancedSearchSuggestion[];
+  
+  // Enhanced search tracking
+  recordSearchWithMetadata: (query: string, resultCount: number, executionTimeMs: number) => string;
+  recordResultInteraction: (queryId: string, clickCount: number) => void;
 }
 
 export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarReturn => {
@@ -44,7 +61,9 @@ export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarRet
     maxRecentSearches = 10,
     enableHistory = true,
     enableSuggestions = true,
+    enableEnhancedSuggestions = true,
     initialQuery = '',
+    userId,
   } = options;
 
   // State
@@ -52,6 +71,8 @@ export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarRet
   const [isLoading, setIsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<SearchQuery[]>([]);
   const [customSuggestions, setCustomSuggestions] = useState<SearchSuggestion[]>([]);
+  const [enhancedSuggestions, setEnhancedSuggestions] = useState<EnhancedSearchSuggestion[]>([]);
+  const [currentSearchId, setCurrentSearchId] = useState<string>('');
 
   // Load recent searches on mount
   useEffect(() => {
@@ -90,6 +111,24 @@ export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarRet
     return unique;
   }, [enableSuggestions, enableHistory, customSuggestions]);
 
+  // Get intelligent suggestions based on input
+  const getIntelligentSuggestions = useCallback((input: string, limit: number = 10): EnhancedSearchSuggestion[] => {
+    if (!enableEnhancedSuggestions) return [];
+    return getSearchSuggestions(input, limit);
+  }, [enableEnhancedSuggestions]);
+
+  // Update enhanced suggestions based on input
+  useEffect(() => {
+    if (enableEnhancedSuggestions && currentQuery) {
+      const suggestions = getIntelligentSuggestions(currentQuery, 8);
+      setEnhancedSuggestions(suggestions);
+    } else if (!currentQuery) {
+      // Show popular suggestions when no input
+      const suggestions = getIntelligentSuggestions('', 5);
+      setEnhancedSuggestions(suggestions);
+    }
+  }, [currentQuery, enableEnhancedSuggestions, getIntelligentSuggestions]);
+
   // Perform search
   const performSearch = useCallback(
     (query: string) => {
@@ -100,7 +139,7 @@ export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarRet
       const trimmedQuery = query.trim();
       setCurrentQuery(trimmedQuery);
 
-      // Add to history
+      // Add to basic history
       if (enableHistory) {
         searchHistoryManager.addSearch(trimmedQuery);
         const updated = searchHistoryManager.getRecentSearches(maxRecentSearches);
@@ -175,6 +214,43 @@ export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarRet
     [performSearch]
   );
 
+  // Handle enhanced suggestion selection
+  const handleEnhancedSuggestionSelect = useCallback(
+    (suggestion: EnhancedSearchSuggestion) => {
+      performSearch(suggestion.text);
+    },
+    [performSearch]
+  );
+
+  // Record search with metadata (call this after search results are available)
+  const recordSearchWithMetadata = useCallback(
+    (query: string, resultCount: number, executionTimeMs: number): string => {
+      if (!enableEnhancedSuggestions) return '';
+      
+      const searchId = addEnhancedSearch(
+        query,
+        resultCount,
+        executionTimeMs,
+        undefined, // filters - could be passed in the future
+        'manual' // source
+      );
+      
+      setCurrentSearchId(searchId);
+      return searchId;
+    },
+    [enableEnhancedSuggestions]
+  );
+
+  // Record result interaction (call when user clicks on search results)
+  const recordResultInteraction = useCallback(
+    (queryId: string, clickCount: number) => {
+      if (enableEnhancedSuggestions && queryId) {
+        recordSearchResultClick(queryId, clickCount);
+      }
+    },
+    [enableEnhancedSuggestions]
+  );
+
   // Set loading state
   const setLoadingState = useCallback((loading: boolean) => {
     setIsLoading(loading);
@@ -188,6 +264,7 @@ export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarRet
     // History
     recentSearches,
     suggestions,
+    enhancedSuggestions,
     
     // Actions
     performSearch,
@@ -203,6 +280,12 @@ export const useSearchBar = (options: UseSearchBarOptions = {}): UseSearchBarRet
     
     // Suggestion handling
     handleSuggestionSelect,
+    handleEnhancedSuggestionSelect,
+    getIntelligentSuggestions,
+    
+    // Enhanced search tracking
+    recordSearchWithMetadata,
+    recordResultInteraction,
   };
 };
 

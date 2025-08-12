@@ -30,12 +30,14 @@ import {
   bookmarkOutline,
   trendingUpOutline,
   trashOutline,
+  timeOutline,
 } from 'ionicons/icons';
 
 // Components
 import SearchBar from '@components/SearchBar';
 import SearchResultsList from '@components/SearchResultsList';
 import SearchFiltersModal from '@components/SearchFiltersModal';
+import SearchHistoryModal from '@components/SearchHistoryModal';
 
 // Hooks
 import { useSearchBar } from '@hooks/useSearchBar';
@@ -54,6 +56,7 @@ const SearchPage: React.FC = () => {
 
   // State
   const [showFiltersModal, setShowFiltersModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showSearchStats, setShowSearchStats] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -62,6 +65,7 @@ const SearchPage: React.FC = () => {
   const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
   const [availableTags, setAvailableTags] = useState<Array<{ id: string; name: string; color?: string; usage_count?: number }>>([]);
   const [availableDomains, setAvailableDomains] = useState<Array<{ domain: string; count: number }>>([]);
+  const [currentSearchId, setCurrentSearchId] = useState<string>('');
 
   // Hooks
   const searchBar = useSearchBar({
@@ -69,7 +73,9 @@ const SearchPage: React.FC = () => {
     onClear: handleClearSearch,
     enableHistory: true,
     enableSuggestions: true,
+    enableEnhancedSuggestions: true,
     maxRecentSearches: 10,
+    userId,
   });
 
   const fullTextSearch = useFullTextSearch({
@@ -89,7 +95,31 @@ const SearchPage: React.FC = () => {
   function handleSearch(query: string) {
     if (query.trim()) {
       searchBar.performSearch(query);
-      fullTextSearch.performSearch(query, fullTextSearch.currentFilters);
+      
+      // Track search with enhanced history and get performance metrics
+      const startTime = performance.now();
+      fullTextSearch.performSearch(query, fullTextSearch.currentFilters)
+        .then(() => {
+          const endTime = performance.now();
+          const executionTime = endTime - startTime;
+          const resultCount = fullTextSearch.searchResults?.totalCount || 0;
+          
+          // Record enhanced search with metadata
+          const searchId = searchBar.recordSearchWithMetadata(
+            query, 
+            resultCount, 
+            executionTime
+          );
+          setCurrentSearchId(searchId);
+        })
+        .catch((error) => {
+          console.error('Search failed:', error);
+          // Still record the search attempt
+          const endTime = performance.now();
+          const executionTime = endTime - startTime;
+          const searchId = searchBar.recordSearchWithMetadata(query, 0, executionTime);
+          setCurrentSearchId(searchId);
+        });
     }
   }
 
@@ -150,10 +180,16 @@ const SearchPage: React.FC = () => {
   // Handle result click
   const handleResultClick = useCallback((result: SearchResult) => {
     setSelectedResult(result);
+    
+    // Record result interaction for enhanced search history
+    if (currentSearchId) {
+      searchBar.recordResultInteraction(currentSearchId, 1);
+    }
+    
     // Navigate to article view
     // This would typically use React Router or Ionic navigation
     window.open(result.url, '_blank');
-  }, []);
+  }, [currentSearchId, searchBar]);
 
   // Handle bookmark toggle
   const handleToggleBookmark = useCallback(async (result: SearchResult) => {
@@ -336,8 +372,10 @@ const SearchPage: React.FC = () => {
             onClear={searchBar.clearSearch}
             loading={fullTextSearch.isLoading}
             suggestions={searchBar.suggestions}
+            enhancedSuggestions={searchBar.enhancedSuggestions}
             recentSearches={searchBar.recentSearches}
             onSuggestionSelect={searchBar.handleSuggestionSelect}
+            onEnhancedSuggestionSelect={searchBar.handleEnhancedSuggestionSelect}
             showFilterButton={true}
             onFilterClick={() => setShowFiltersModal(true)}
           />
@@ -430,6 +468,13 @@ const SearchPage: React.FC = () => {
         header="Search Options"
         buttons={[
           {
+            text: 'Search History & Analytics',
+            icon: timeOutline,
+            handler: () => {
+              setShowHistoryModal(true);
+            }
+          },
+          {
             text: 'View Statistics',
             icon: analyticsOutline,
             handler: () => {
@@ -486,6 +531,17 @@ const SearchPage: React.FC = () => {
             role: 'cancel'
           }
         ]}
+      />
+
+      {/* Search History Modal */}
+      <SearchHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        onSearchSelect={(query) => {
+          handleSearch(query);
+          setShowHistoryModal(false);
+        }}
+        showAnalytics={true}
       />
 
       {/* Toast Messages */}
