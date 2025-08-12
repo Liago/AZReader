@@ -9,6 +9,11 @@ export { useReadingProgress } from './useReadingProgress';
 export { useKeyboardShortcuts, useReadingKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useScrollPositionCleanup } from './useScrollPositionCleanup';
 
+// Social features hooks
+export { default as useNotifications } from './useNotifications';
+export { default as useLikes } from './useLikes';
+export { usePostCommentsWithPagination } from './usePostCommentsWithPagination';
+
 // Tag management hooks
 export { default as useTagManager } from './useTagManager';
 export { default as useArticleFilters } from './useArticleFilters';
