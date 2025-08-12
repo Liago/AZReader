@@ -8,7 +8,7 @@ export interface SearchFilters {
   dateFrom?: Date;
   dateTo?: Date;
   domainFilter?: string;
-  sortBy?: 'relevance' | 'date' | 'title' | 'author';
+  sortBy?: 'relevance' | 'date' | 'title' | 'author' | 'popularity';
 }
 
 export interface SearchResult extends Omit<Article, 'tags'> {

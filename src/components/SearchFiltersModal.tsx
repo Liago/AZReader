@@ -422,6 +422,13 @@ const SearchFiltersModal: React.FC<SearchFiltersModalProps> = ({
                   </IonLabel>
                   <IonRadio slot="end" value="author" />
                 </IonItem>
+                <IonItem>
+                  <IonLabel>
+                    <h3>Popularity</h3>
+                    <p>Most liked articles first</p>
+                  </IonLabel>
+                  <IonRadio slot="end" value="popularity" />
+                </IonItem>
               </IonRadioGroup>
             </IonList>
           </IonAccordion>
