@@ -36,3 +36,43 @@ yarn-error.log*
 /src/config/environment.ts
 /scripts
 env.js
+.env*
+
+# Logs
+logs
+*.log
+dev-debug.log
+# Dependency directories
+node_modules/
+# Environment variables
+.env
+# Editor directories and files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task files
+tasks.json
+tasks/ 
+.claude
+.cursor
+.taskmaster
+
+CLAUDE.md
+
+PROMPT.md
+
+.mcp.json
+
+reading-customization-test-plan.md
+
+RESPONSIVE_DESIGN_VERIFICATION.md
+
+responsive-test-verification.md
+
+*.md
+
+PERFORMANCE_OPTIMIZATION_SUMMARY.md.backup.1755024950554

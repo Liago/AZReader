@@ -14,6 +14,9 @@ export { default as useNotifications } from './useNotifications';
 export { default as useLikes } from './useLikes';
 export { usePostCommentsWithPagination } from './usePostCommentsWithPagination';
 export { useModeration } from './useModeration';
+export { usePrivacy } from './usePrivacy';
+export { useActivityFeed } from './useActivityFeed';
+export { useActivityTracking } from './useActivityTracking';
 
 // Tag management hooks
 export { default as useTagManager } from './useTagManager';

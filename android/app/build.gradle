@@ -1,20 +1,21 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 33
+    namespace 'io.ionic.starter'
+    compileSdkVersion 35 // Aggiornato da 33 a 35
     defaultConfig {
-        targetSdkVersion 33
+        targetSdkVersion 35  // Aggiornato da 33 a 35
     }
     defaultConfig {
         applicationId "liago.azreader"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        targetSdkVersion 35  // Assicurando che sia aggiornato anche qui
         versionCode 1170
         versionName "1.17.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
-             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
-             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+            // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
@@ -30,6 +31,13 @@ repositories {
     flatDir{
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
     }
+    // Aggiunti repository per trovare framework Cordova
+    google()
+    mavenCentral()
+    maven { url "https://repo.maven.apache.org/maven2/" }
+    maven { url "https://maven.google.com" }
+    maven { url "https://build.phonegap.com/maven" }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -37,9 +45,16 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation project(':capacitor-android')
     implementation project(':capacitor-cordova-android-plugins')
-    implementation 'androidx.core:core:1.9.0'
+    implementation 'androidx.core:core:1.12.0'  // Aggiornato a una versione più recente compatibile con SDK 34
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+
+    // Risolvere i conflitti con le dipendenze di Cordova
+    configurations.all {
+        resolutionStrategy {
+            force 'org.apache.cordova:framework:7.0.0'
+        }
+    }
 }
 
 apply from: 'capacitor.build.gradle'
