@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@r
 import { RootState } from '../store-rtk';
 import { Article, ArticleInsert, ArticleUpdate } from '@common/database-types';
 import { supabase } from '@common/supabase';
+import { searchCache } from '@utils/searchCache';
 
 // Types - Use the database Article type as the base
 export interface Post extends Article {
@@ -160,6 +161,21 @@ export const createPost = createAsyncThunk(
 			.single();
 
 		if (error) throw error;
+		
+		// Invalidate search cache when new content is added
+		if (data?.user_id) {
+			try {
+				const affectedTerms = [
+					data.title || '',
+					data.author || '',
+					data.domain || ''
+				].filter(Boolean);
+				searchCache.invalidateRelatedSearches(data.user_id, affectedTerms);
+			} catch (cacheError) {
+				console.warn('Failed to invalidate search cache after post creation:', cacheError);
+			}
+		}
+		
 		return data as Post;
 	}
 );
@@ -178,19 +194,51 @@ export const updatePost = createAsyncThunk(
 			.single();
 
 		if (error) throw error;
+		
+		// Invalidate search cache when content is updated
+		if (data?.user_id) {
+			try {
+				const affectedTerms = [
+					data.title || '',
+					data.author || '',
+					data.domain || '',
+					updates.title || '',
+					updates.author || '',
+					updates.domain || ''
+				].filter(Boolean);
+				searchCache.invalidateRelatedSearches(data.user_id, affectedTerms);
+			} catch (cacheError) {
+				console.warn('Failed to invalidate search cache after post update:', cacheError);
+			}
+		}
+		
 		return data as Post;
 	}
 );
 
 export const deletePost = createAsyncThunk(
 	'posts/deletePost',
-	async (postId: string) => {
+	async (postId: string, { getState }) => {
+		// Get current user ID from state to invalidate their cache
+		const state = getState() as RootState;
+		const currentUserId = state.auth?.user?.id;
+
 		const { error } = await supabase
 			.from('articles')
 			.delete()
 			.eq('id', postId);
 
 		if (error) throw error;
+		
+		// Invalidate all search cache for the user since we don't have the deleted article data
+		if (currentUserId) {
+			try {
+				searchCache.invalidateUserSearchCache(currentUserId);
+			} catch (cacheError) {
+				console.warn('Failed to invalidate search cache after post deletion:', cacheError);
+			}
+		}
+		
 		return postId;
 	}
 );

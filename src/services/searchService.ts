@@ -1,5 +1,6 @@
 import { supabase } from '@common/supabase';
 import { Article } from '@common/database-types';
+import { searchCache } from '@utils/searchCache';
 
 export interface SearchFilters {
   query: string;
@@ -61,7 +62,7 @@ export class SearchService {
   }
 
   /**
-   * Perform full-text search across articles
+   * Perform full-text search across articles with intelligent caching
    */
   async searchArticles(
     userId: string,
@@ -73,6 +74,12 @@ export class SearchService {
       throw new Error('Search query is required');
     }
 
+    // Check cache first for exact query match
+    const cachedResult = searchCache.getCachedSearchResults(userId, filters.query, filters, limit, offset);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
     const startTime = Date.now();
 
     try {
@@ -81,7 +88,7 @@ export class SearchService {
       const tagIds = filters.tagIds && filters.tagIds.length > 0 ? filters.tagIds : null;
 
       // Call the database search function
-      const { data: searchResults, error } = await supabase.rpc('search_articles', {
+      const { data: dbSearchResults, error } = await supabase.rpc('search_articles', {
         user_id_param: userId,
         search_query: sanitizedQuery,
         tag_ids: tagIds,
@@ -103,7 +110,7 @@ export class SearchService {
 
       // Process results and generate snippets
       const processedResults = await Promise.all(
-        (searchResults || []).map(async (result: any) => ({
+        (dbSearchResults || []).map(async (result: any) => ({
           ...result,
           tags: result.tags || [],
           snippet: await this.generateSnippet(result.content, sanitizedQuery)
@@ -124,7 +131,7 @@ export class SearchService {
         console.warn('Failed to log search query:', logError);
       }
 
-      return {
+      const searchResults = {
         results: processedResults,
         totalCount,
         hasMore,
@@ -132,6 +139,23 @@ export class SearchService {
         filters,
         executionTimeMs
       };
+
+      // Cache the results for future use
+      try {
+        searchCache.setCachedSearchResults(
+          userId, 
+          filters.query, 
+          filters, 
+          searchResults, 
+          executionTimeMs, 
+          limit, 
+          offset
+        );
+      } catch (cacheError) {
+        console.warn('Failed to cache search results:', cacheError);
+      }
+
+      return searchResults;
 
     } catch (error) {
       const executionTimeMs = Date.now() - startTime;
