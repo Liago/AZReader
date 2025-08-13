@@ -182,24 +182,37 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
         if (feedType === 'user' && currentUserId) {
           query = query.eq('actor_id', currentUserId);
         } else if (feedType === 'following' && currentUserId) {
-          // Get activities from followed users
-          const { data: following } = await supabase
-            .from('user_follows')
-            .select('following_id')
-            .eq('follower_id', currentUserId);
-          
-          if (following && following.length > 0) {
-            const followingIds = following.map(f => f.following_id);
-            query = query.in('actor_id', followingIds);
-          } else {
-            // No following, return empty
-            if (aggregated) {
-              setAggregates([]);
+          // Use specialized function for following activities
+          const { data, error: followingError } = await supabase.rpc('get_following_activities', {
+            p_user_id: currentUserId,
+            p_limit: limit,
+            p_offset: currentOffset,
+            p_action_types: null,
+            p_time_window_hours: 168, // 7 days
+            p_aggregated: aggregated
+          });
+
+          if (followingError) throw followingError;
+
+          const newItems = data || [];
+
+          if (aggregated) {
+            if (isMore) {
+              setAggregates(prev => [...prev, ...newItems]);
             } else {
-              setActivities([]);
+              setAggregates(newItems);
             }
-            return;
+          } else {
+            if (isMore) {
+              setActivities(prev => [...prev, ...newItems]);
+            } else {
+              setActivities(newItems);
+            }
           }
+
+          setHasMore(newItems.length === limit);
+          setOffset(prev => prev + newItems.length);
+          return;
         }
 
         if (targetType && targetId) {
@@ -430,36 +443,104 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
     }
   }, [currentUserId]);
 
-  // Set up real-time subscriptions
+  // Set up enhanced real-time subscriptions for followed users
   useEffect(() => {
     if (!realTime || !currentUserId) return;
 
-    const subscription = supabase
-      .channel('activity_feed_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'activity_feed',
-        },
-        (payload) => {
-          // Add new activity to the feed if it matches our criteria
-          const newActivity = payload.new as ActivityItem;
-          
-          if (feedType === 'global' || 
-              (feedType === 'user' && newActivity.actor_id === currentUserId)) {
-            // Refresh to get properly joined data
-            refresh();
+    let subscription: any;
+
+    const setupSubscription = async () => {
+      // Get list of followed users for targeted subscriptions
+      const followedUsers = feedType === 'following' ? await getFollowing() : [];
+      
+      subscription = supabase
+        .channel('activity_feed_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'activity_feed',
+          },
+          (payload) => {
+            const newActivity = payload.new as ActivityItem;
+            
+            // Enhanced filtering for different feed types
+            if (feedType === 'global') {
+              // Global feed: show all public activities
+              if (newActivity.visibility === 'public') {
+                refresh();
+              }
+            } else if (feedType === 'following') {
+              // Following feed: only activities from followed users
+              if (followedUsers.includes(newActivity.actor_id) && 
+                  (newActivity.visibility === 'public' || newActivity.visibility === 'followers')) {
+                refresh();
+              }
+            } else if (feedType === 'user') {
+              // User feed: only current user's activities
+              if (newActivity.actor_id === currentUserId) {
+                refresh();
+              }
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'activity_aggregates',
+          },
+          (payload) => {
+            // Handle new aggregated activities
+            const newAggregate = payload.new as ActivityAggregate;
+            
+            if (aggregated) {
+              if (feedType === 'global' || 
+                  (feedType === 'following' && followedUsers.includes(newAggregate.actor_id)) ||
+                  (feedType === 'user' && newAggregate.actor_id === currentUserId)) {
+                refresh();
+              }
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'activity_aggregates',
+          },
+          (payload) => {
+            // Handle updated aggregated activities (count changes)
+            const updatedAggregate = payload.new as ActivityAggregate;
+            
+            if (aggregated) {
+              if (feedType === 'global' || 
+                  (feedType === 'following' && followedUsers.includes(updatedAggregate.actor_id)) ||
+                  (feedType === 'user' && updatedAggregate.actor_id === currentUserId)) {
+                // Update existing aggregate in state without full refresh
+                if (feedType === 'following' || feedType === 'global') {
+                  setAggregates(prev => 
+                    prev.map(agg => agg.id === updatedAggregate.id ? updatedAggregate : agg)
+                  );
+                }
+              }
+            }
+          }
+        )
+        .subscribe();
+    };
+
+    setupSubscription();
 
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
-  }, [realTime, currentUserId, feedType, refresh]);
+  }, [realTime, currentUserId, feedType, aggregated, refresh, getFollowing]);
 
   // Initial load
   useEffect(() => {
