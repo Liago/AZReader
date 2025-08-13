@@ -251,7 +251,7 @@ export const usePrivacy = (options: UsePrivacyOptions = {}): UsePrivacyReturn =>
 
       if (error) throw error;
 
-      return data?.user_id === viewerId;
+      return (data as any)?.user_id === viewerId;
       
     } catch (err) {
       console.error('Error checking view permissions:', err);

@@ -172,11 +172,11 @@ export class SearchHistoryManager {
     let oldestSearch: Date | undefined;
 
     if (this.history.length > 0) {
-      mostRecentSearch = this.history[0].timestamp;
-      oldestSearch = this.history[this.history.length - 1].timestamp;
+      mostRecentSearch = this.history[0]?.timestamp;
+      oldestSearch = this.history[this.history.length - 1]?.timestamp;
       
       const daysDifference = Math.max(1, Math.ceil(
-        (mostRecentSearch.getTime() - oldestSearch.getTime()) / (1000 * 60 * 60 * 24)
+        (mostRecentSearch!.getTime() - oldestSearch!.getTime()) / (1000 * 60 * 60 * 24)
       ));
       
       averageSearchesPerDay = totalSearches / daysDifference;

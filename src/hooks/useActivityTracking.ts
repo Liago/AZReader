@@ -157,7 +157,7 @@ export const useActivityTracking = (options: ActivityTrackingOptions = {}): UseA
       action_type: liked ? 'article_liked' : 'article_unliked',
       target_type: 'article',
       target_id: articleId,
-      content_preview,
+      content_preview: contentPreview,
       metadata: {
         liked,
         timestamp: new Date().toISOString()
@@ -221,7 +221,7 @@ export const useActivityTracking = (options: ActivityTrackingOptions = {}): UseA
       action_type: 'article_shared',
       target_type: 'article',
       target_id: articleId,
-      content_preview,
+      content_preview: contentPreview,
       metadata: {
         share_method: method,
         timestamp: new Date().toISOString()
@@ -251,7 +251,7 @@ export const useActivityTracking = (options: ActivityTrackingOptions = {}): UseA
       action_type: followed ? 'user_followed' : 'user_unfollowed',
       target_type: 'user',
       target_id: userId,
-      content_preview,
+      content_preview: contentPreview,
       metadata: {
         followed,
         timestamp: new Date().toISOString()
@@ -270,7 +270,7 @@ export const useActivityTracking = (options: ActivityTrackingOptions = {}): UseA
       action_type: 'profile_updated',
       target_type: 'user',
       target_id: currentUserId,
-      content_preview,
+      content_preview: contentPreview,
       metadata: {
         changes: changeKeys,
         timestamp: new Date().toISOString()

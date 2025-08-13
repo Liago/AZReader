@@ -303,13 +303,13 @@ export const usePersonalizedFeed = (options: PersonalizedFeedOptions = {}): UseP
 
         return {
           ...article,
-          author_name: article.user?.name,
+          author_name: article.user?.name || undefined,
           author_email: article.user?.email,
           author_avatar_url: article.user?.avatar_url,
           follow_date: followDates[article.user_id],
           recommendation_score: rankingScore,
           recommendation_reasons: {
-            freshness_score: Math.exp(-Math.max(0, (Date.now() - new Date(article.created_at).getTime()) / (1000 * 60 * 60 * 24)) / 7) * weights.freshness,
+            freshness_score: Math.exp(-Math.max(0, (Date.now() - new Date(article.created_at || new Date().toISOString()).getTime()) / (1000 * 60 * 60 * 24)) / 7) * weights.freshness,
             author_interaction_score: Math.min(1, (userStats.authorInteractions?.[article.user_id] || 0) / 10) * weights.authorInteraction,
             content_preference_score: 0, // Calculate based on tags
             engagement_score: Math.min(1, ((article.like_count || 0) + (article.comment_count || 0)) / 20) * weights.engagement,

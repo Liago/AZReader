@@ -22,7 +22,7 @@ export { default as usePublicFeedRanking } from './usePublicFeedRanking';
 export { default as useDiscoverTab } from './useDiscoverTab';
 export { default as useUserProfile } from './useUserProfile';
 export { default as useUserRecommendations } from './useUserRecommendations';
-export { default as useActivityFeed } from './useActivityFeed';
+export { useActivityFeed } from './useActivityFeed';
 export { useActivityTracking } from './useActivityTracking';
 export { default as useActivityPreferences } from './useActivityPreferences';
 export { default as usePersonalizedFeed } from './usePersonalizedFeed';

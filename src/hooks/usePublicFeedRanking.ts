@@ -309,11 +309,11 @@ const usePublicFeedRanking = (
         const metrics: RankingMetrics = {
           likeCount: article.like_count || 0,
           commentCount: article.comment_count || 0,
-          freshness: calculateFreshness(article.created_at, opts.timeWindow || '7d'),
+          freshness: calculateFreshness(article.created_at || new Date().toISOString(), opts.timeWindow || '7d'),
           engagementRate: calculateEngagementRate(
             article.like_count || 0,
             article.comment_count || 0,
-            article.created_at
+            article.created_at || new Date().toISOString()
           ),
           authorPopularity: authorInfo?.follower_count || 0,
           contentQuality: calculateContentQuality(
@@ -327,6 +327,8 @@ const usePublicFeedRanking = (
 
         return {
           ...article,
+          like_count: article.like_count || 0,
+          comment_count: article.comment_count || 0,
           metrics,
           finalScore,
           author_info: authorInfo,

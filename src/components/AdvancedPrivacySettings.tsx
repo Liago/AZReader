@@ -162,7 +162,7 @@ const FollowRequestItem: React.FC<FollowRequestItemProps> = ({
                   size="small"
                   fill="clear"
                   color="success"
-                  onClick={() => handleAction(() => onApprove?.(request.id))}
+                  onClick={() => handleAction(async () => { await Promise.resolve(onApprove?.(request.id)); })}
                   disabled={isProcessing}
                 >
                   {isProcessing ? (
@@ -175,7 +175,7 @@ const FollowRequestItem: React.FC<FollowRequestItemProps> = ({
                   size="small"
                   fill="clear"
                   color="danger"
-                  onClick={() => handleAction(() => onDeny?.(request.id))}
+                  onClick={() => handleAction(async () => { await Promise.resolve(onDeny?.(request.id)); })}
                   disabled={isProcessing}
                 >
                   <IonIcon icon={close} />
@@ -186,7 +186,7 @@ const FollowRequestItem: React.FC<FollowRequestItemProps> = ({
                 size="small"
                 fill="clear"
                 color="medium"
-                onClick={() => handleAction(() => onCancel?.(request.id))}
+                onClick={() => handleAction(async () => { await Promise.resolve(onCancel?.(request.id)); })}
                 disabled={isProcessing}
               >
                 {isProcessing ? (

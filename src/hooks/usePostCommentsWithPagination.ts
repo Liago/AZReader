@@ -162,7 +162,7 @@ export const usePostCommentsWithPagination = (
       
       // Build query based on current settings
       let query = supabase
-        .from("posts_comments")
+        .from("comments")
         .select(`
           id,
           comment,
@@ -191,8 +191,8 @@ export const usePostCommentsWithPagination = (
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(comment => comment.user_id))];
         const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, username, avatar_url, email')
+          .from('users')
+          .select('id, name, avatar_url, email')
           .in('id', userIds);
 
         if (profileError) {
@@ -203,15 +203,15 @@ export const usePostCommentsWithPagination = (
         const profilesMap: Record<string, CommentProfile> = {};
         profiles?.forEach(profile => {
           profilesMap[profile.id] = {
-            username: profile.username,
-            avatar_url: profile.avatar_url,
-            email: profile.email,
-            user_id: profile.id
+            username: (profile as any).name || 'Anonymous',
+            avatar_url: (profile as any).avatar_url,
+            email: (profile as any).email,
+            user_id: (profile as any).id
           };
         });
 
         // Attach profiles to comments
-        const commentsWithProfiles: Comment[] = data.map(comment => ({
+        const commentsWithProfiles: Comment[] = (data as any[]).map((comment: any) => ({
           ...comment,
           profiles: profilesMap[comment.user_id] || {
             username: null,
@@ -258,7 +258,7 @@ export const usePostCommentsWithPagination = (
 
     try {
       let countQuery = supabase
-        .from("posts_comments")
+        .from("comments")
         .select("*", { count: "exact", head: true })
         .eq("post_id", postId)
         .is("deleted_at", null);
@@ -313,13 +313,13 @@ export const usePostCommentsWithPagination = (
 
     try {
       const { error } = await supabase
-        .from('posts_comments')
+        .from('comments')
         .insert({
           post_id: postId,
           user_id: session.user.id,
           comment: comment.trim(),
           parent_id: parentId || null
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -349,8 +349,8 @@ export const usePostCommentsWithPagination = (
 
     try {
       const { error } = await supabase
-        .from('posts_comments')
-        .update({ deleted_at: new Date().toISOString() })
+        .from('comments')
+        .update({ deleted_at: new Date().toISOString() } as any)
         .eq('id', commentId)
         .eq('user_id', session.user.id);
 

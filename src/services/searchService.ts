@@ -88,7 +88,7 @@ export class SearchService {
       const tagIds = filters.tagIds && filters.tagIds.length > 0 ? filters.tagIds : null;
 
       // Call the database search function
-      const { data: dbSearchResults, error } = await supabase.rpc('search_articles', {
+      const { data: dbSearchResults, error } = await supabase.rpc('search_articles' as any, {
         user_id_param: userId,
         search_query: sanitizedQuery,
         tag_ids: tagIds,
@@ -109,8 +109,9 @@ export class SearchService {
       const executionTimeMs = Date.now() - startTime;
 
       // Process results and generate snippets
+      const resultsArray = Array.isArray(dbSearchResults) ? dbSearchResults : [];
       const processedResults = await Promise.all(
-        (dbSearchResults || []).map(async (result: any) => ({
+        resultsArray.map(async (result: any) => ({
           ...result,
           tags: result.tags || [],
           snippet: await this.generateSnippet(result.content, sanitizedQuery)
@@ -185,7 +186,7 @@ export class SearchService {
     }
 
     try {
-      const { data: suggestions, error } = await supabase.rpc('get_search_suggestions', {
+      const { data: suggestions, error } = await supabase.rpc('get_search_suggestions' as any, {
         user_id_param: userId,
         query_prefix: queryPrefix.trim(),
         suggestion_limit: limit
@@ -196,7 +197,7 @@ export class SearchService {
         return [];
       }
 
-      return suggestions || [];
+      return Array.isArray(suggestions) ? suggestions : [];
 
     } catch (error) {
       console.error('Get suggestions error:', error);
@@ -209,7 +210,7 @@ export class SearchService {
    */
   async getSearchStatistics(userId: string, daysBack: number = 30): Promise<SearchStatistics | null> {
     try {
-      const { data: stats, error } = await supabase.rpc('get_search_statistics', {
+      const { data: stats, error } = await supabase.rpc('get_search_statistics' as any, {
         user_id_param: userId,
         days_back: daysBack
       });
@@ -219,7 +220,7 @@ export class SearchService {
         return null;
       }
 
-      return stats?.[0] || null;
+      return (Array.isArray(stats) && stats[0]) ? stats[0] : null;
 
     } catch (error) {
       console.error('Get search statistics error:', error);
@@ -237,7 +238,7 @@ export class SearchService {
   }>> {
     try {
       const { data: searches, error } = await supabase
-        .from('search_queries')
+        .from('search_queries' as any)
         .select('query_text, result_count, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -248,7 +249,7 @@ export class SearchService {
         return [];
       }
 
-      return searches || [];
+      return Array.isArray(searches) ? searches as any[] : [];
 
     } catch (error) {
       console.error('Get recent searches error:', error);
@@ -289,7 +290,7 @@ export class SearchService {
     }
 
     try {
-      const { data: snippet, error } = await supabase.rpc('generate_search_snippet', {
+      const { data: snippet, error } = await supabase.rpc('generate_search_snippet' as any, {
         content_text: content,
         search_query: query,
         snippet_length: length,
@@ -301,7 +302,7 @@ export class SearchService {
         return this.generateSimpleSnippet(content, query, length);
       }
 
-      return snippet;
+      return typeof snippet === 'string' ? snippet : String(snippet || '');
 
     } catch (error) {
       console.warn('Failed to generate snippet, using fallback:', error);
@@ -382,7 +383,7 @@ export class SearchService {
         hasDateFilter: !!(filters.dateFrom || filters.dateTo)
       };
 
-      await supabase.rpc('log_search_query', {
+      await supabase.rpc('log_search_query' as any, {
         user_id_param: userId,
         query_text_param: query,
         result_count_param: resultCount,
@@ -402,7 +403,7 @@ export class SearchService {
   async clearSearchHistory(userId: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('search_queries')
+        .from('search_queries' as any)
         .delete()
         .eq('user_id', userId);
 
@@ -431,7 +432,7 @@ export class SearchService {
   } | null> {
     try {
       const { data: analytics, error } = await supabase
-        .from('search_queries')
+        .from('search_queries' as any)
         .select('query_text, result_count, execution_time_ms, created_at')
         .eq('user_id', userId)
         .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
@@ -443,12 +444,12 @@ export class SearchService {
 
       // Process analytics data
       const totalSearches = analytics.length;
-      const averageResultCount = analytics.reduce((sum, q) => sum + (q.result_count || 0), 0) / totalSearches;
-      const averageExecutionTime = analytics.reduce((sum, q) => sum + (q.execution_time_ms || 0), 0) / totalSearches;
+      const averageResultCount = analytics.reduce((sum, q: any) => sum + (q.result_count || 0), 0) / totalSearches;
+      const averageExecutionTime = analytics.reduce((sum, q: any) => sum + (q.execution_time_ms || 0), 0) / totalSearches;
 
       // Popular queries
       const queryFreq: { [key: string]: number } = {};
-      analytics.forEach(q => {
+      analytics.forEach((q: any) => {
         queryFreq[q.query_text] = (queryFreq[q.query_text] || 0) + 1;
       });
       const popularQueries = Object.entries(queryFreq)
@@ -458,9 +459,9 @@ export class SearchService {
 
       // Slow queries
       const queryTimes: { [key: string]: number[] } = {};
-      analytics.forEach(q => {
+      analytics.forEach((q: any) => {
         if (!queryTimes[q.query_text]) queryTimes[q.query_text] = [];
-        queryTimes[q.query_text].push(q.execution_time_ms || 0);
+        queryTimes[q.query_text]?.push(q.execution_time_ms || 0);
       });
       const slowQueries = Object.entries(queryTimes)
         .map(([query, times]) => ({

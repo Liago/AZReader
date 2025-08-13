@@ -171,7 +171,7 @@ export class EnhancedHighlighter {
 
       configs.push({
         term,
-        color: HIGHLIGHT_COLORS[colorKey],
+        color: HIGHLIGHT_COLORS[colorKey as keyof typeof HIGHLIGHT_COLORS],
         className: `highlight-${colorKey}`,
         priority
       });

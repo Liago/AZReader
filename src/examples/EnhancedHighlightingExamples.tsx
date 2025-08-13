@@ -59,6 +59,14 @@ const sampleArticles: EnhancedSearchResult[] = [
     author: 'Dr. Sarah Johnson',
     domain: 'techblog.example.com',
     created_at: '2024-01-15T10:00:00Z',
+    user_id: 'user-1',
+    excerpt: 'This comprehensive guide explores how machine learning algorithms can be integrated...',
+    updated_at: '2024-01-15T10:00:00Z',
+    is_public: true,
+    image_url: null,
+    favicon_url: null,
+    scraped_at: '2024-01-15T10:00:00Z',
+    reading_time: 10,
     tags: [
       { id: '1', name: 'JavaScript', color: '#f7df1e' },
       { id: '2', name: 'Machine Learning', color: '#ff6b6b' },
@@ -84,6 +92,14 @@ const sampleArticles: EnhancedSearchResult[] = [
     author: 'Michael Chen',
     domain: 'reactdev.example.com',
     created_at: '2024-01-12T14:30:00Z',
+    user_id: 'user-2',
+    excerpt: 'Learn advanced React patterns including render props, compound components...',
+    updated_at: '2024-01-12T14:30:00Z',
+    is_public: true,
+    image_url: null,
+    favicon_url: null,
+    scraped_at: '2024-01-12T14:30:00Z',
+    reading_time: 8,
     tags: [
       { id: '5', name: 'React', color: '#61dafb' },
       { id: '6', name: 'JavaScript', color: '#f7df1e' },
@@ -99,7 +115,7 @@ const sampleArticles: EnhancedSearchResult[] = [
       execution_time_ms: 28.3
     },
     is_favorite: true,
-    reading_status: 'in-progress'
+    reading_status: 'reading'
   },
   {
     id: '3',
@@ -109,6 +125,14 @@ const sampleArticles: EnhancedSearchResult[] = [
     author: 'Alex Rodriguez',
     domain: 'backend.example.com',
     created_at: '2024-01-10T09:15:00Z',
+    user_id: 'user-3',
+    excerpt: 'A comprehensive guide to building production-ready APIs using Node.js...',
+    updated_at: '2024-01-10T09:15:00Z',
+    is_public: true,
+    image_url: null,
+    favicon_url: null,
+    scraped_at: '2024-01-10T09:15:00Z',
+    reading_time: 12,
     tags: [
       { id: '9', name: 'Node.js', color: '#339933' },
       { id: '10', name: 'Express', color: '#000000' },
@@ -300,7 +324,7 @@ const EnhancedHighlightingExamples: React.FC = () => {
                   <IonLabel>Field Type</IonLabel>
                   <IonSelect
                     value={selectedFieldType}
-                    onSelectionChange={(e) => setSelectedFieldType(e.detail.value)}
+                    onIonChange={(e: any) => setSelectedFieldType(e.detail.value)}
                   >
                     <IonSelectOption value="title">Title</IonSelectOption>
                     <IonSelectOption value="content">Content</IonSelectOption>

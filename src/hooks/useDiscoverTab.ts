@@ -116,13 +116,9 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
   const currentUserId = userState.credentials?.user?.id;
   const showToast = useCustomToast();
   
-  const { 
-    getTrendingArticles, 
-    getPopularArticles,
-    calculateRankingScore 
-  } = usePublicFeedRanking({
+  const publicFeedRanking = usePublicFeedRanking({
     enableCache: enableCache,
-    timeWindow: filters.timeWindow,
+    timeWindow: filters.timeWindow as any,
   });
 
   // Cache helpers
@@ -173,7 +169,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
     setTrendingSection(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const articles = await getTrendingArticles({
+      const articles = await publicFeedRanking.getTopRankedArticles({
         limit: articlesPerPage,
         offset: page * articlesPerPage,
         timeWindow: filters.timeWindow,
@@ -205,7 +201,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
         duration: 3000,
       });
     }
-  }, [filters, articlesPerPage, getTrendingArticles, getCacheKey, getCache, setCache, showToast]);
+  }, [filters, articlesPerPage, publicFeedRanking, getCacheKey, getCache, setCache, showToast]);
 
   // Load popular articles
   const loadPopularArticles = useCallback(async (page: number = 0) => {
@@ -224,7 +220,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
     setPopularSection(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const articles = await getPopularArticles({
+      const articles = await publicFeedRanking.getTopRankedArticles({
         limit: articlesPerPage,
         offset: page * articlesPerPage,
         timeWindow: filters.timeWindow,
@@ -256,7 +252,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
         duration: 3000,
       });
     }
-  }, [filters, articlesPerPage, getPopularArticles, getCacheKey, getCache, setCache, showToast]);
+  }, [filters, articlesPerPage, publicFeedRanking, getCacheKey, getCache, setCache, showToast]);
 
   // Load recent articles
   const loadRecentArticles = useCallback(async (page: number = 0) => {
@@ -333,7 +329,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
 
       setRecentSection(prev => ({
         ...prev,
-        articles: page === 0 ? formattedArticles : [...prev.articles, ...formattedArticles],
+        articles: page === 0 ? (formattedArticles as any) : [...prev.articles, ...(formattedArticles as any)],
         isLoading: false,
         hasMore: formattedArticles.length === articlesPerPage,
       }));
@@ -411,7 +407,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
         sections.push({
           id: `category_${category}`,
           title: category.charAt(0).toUpperCase() + category.slice(1),
-          articles: formattedArticles,
+          articles: formattedArticles as any,
           isLoading: false,
           hasMore: formattedArticles.length === 10,
         });

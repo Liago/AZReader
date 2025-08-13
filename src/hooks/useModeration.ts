@@ -191,7 +191,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
     try {
       // Check if user already reported this content
       const { data: existingReport } = await supabase
-        .from('content_reports')
+        .from('content_reports' as any)
         .select('id')
         .eq('content_type', contentType)
         .eq('content_id', contentId)
@@ -209,7 +209,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
       // Create new report
       const { error: insertError } = await supabase
-        .from('content_reports')
+        .from('content_reports' as any)
         .insert({
           content_type: contentType,
           content_id: contentId,
@@ -225,7 +225,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
       // Log the report action
       await supabase
-        .from('moderation_logs')
+        .from('moderation_logs' as any)
         .insert({
           moderator_id: currentUserId,
           action: 'report_submitted' as ModerationAction,
@@ -362,7 +362,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
       // Log moderation action
       await supabase
-        .from('moderation_logs')
+        .from('moderation_logs' as any)
         .insert({
           moderator_id: currentUserId!,
           action: 'hide_comment' as ModerationAction,
@@ -405,7 +405,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
     try {
       const { error } = await supabase
-        .from('user_flags')
+        .from('user_flags' as any)
         .insert({
           user_id: userId,
           flagged_by: currentUserId!,
@@ -420,7 +420,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
       // Log action
       await supabase
-        .from('moderation_logs')
+        .from('moderation_logs' as any)
         .insert({
           moderator_id: currentUserId!,
           action: 'flag_user' as ModerationAction,
@@ -467,7 +467,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
       expiresAt.setDate(expiresAt.getDate() + durationDays);
 
       const { error } = await supabase
-        .from('user_flags')
+        .from('user_flags' as any)
         .insert({
           user_id: userId,
           flagged_by: currentUserId!,
@@ -483,7 +483,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
       // Log action
       await supabase
-        .from('moderation_logs')
+        .from('moderation_logs' as any)
         .insert({
           moderator_id: currentUserId!,
           action: 'suspend_user' as ModerationAction,
@@ -523,7 +523,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
     try {
       const { error } = await supabase
-        .from('user_flags')
+        .from('user_flags' as any)
         .insert({
           user_id: userId,
           flagged_by: currentUserId!,
@@ -538,7 +538,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
       // Log action
       await supabase
-        .from('moderation_logs')
+        .from('moderation_logs' as any)
         .insert({
           moderator_id: currentUserId!,
           action: 'ban_user' as ModerationAction,
@@ -569,7 +569,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
     try {
       let query = supabase
-        .from('content_reports')
+        .from('content_reports' as any)
         .select(`
           *,
           reporter:reporter_id(email),
@@ -585,7 +585,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
       
       if (error) throw error;
       
-      return (data || []).map(report => ({
+      return ((data || []) as any[]).map((report: any) => ({
         ...report,
         reporter_email: report.reporter?.email,
         moderator_email: report.moderator?.email,
@@ -603,7 +603,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
     try {
       let query = supabase
-        .from('user_flags')
+        .from('user_flags' as any)
         .select(`
           *,
           user:user_id(email),
@@ -619,7 +619,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
       
       if (error) throw error;
       
-      return (data || []).map(flag => ({
+      return ((data || []) as any[]).map((flag: any) => ({
         ...flag,
         user_email: flag.user?.email,
         flagged_by_email: flag.flagger?.email,
@@ -637,7 +637,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
     try {
       let query = supabase
-        .from('moderation_logs')
+        .from('moderation_logs' as any)
         .select(`
           *,
           moderator:moderator_id(email)
@@ -653,7 +653,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
       
       if (error) throw error;
       
-      return (data || []).map(log => ({
+      return ((data || []) as any[]).map((log: any) => ({
         ...log,
         moderator_email: log.moderator?.email,
       }));
@@ -684,7 +684,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
     try {
       // Update report status
       const { error } = await supabase
-        .from('content_reports')
+        .from('content_reports' as any)
         .update({
           status: action === 'dismiss' ? 'dismissed' : 'resolved',
           reviewed_by: currentUserId!,
@@ -698,7 +698,7 @@ export const useModeration = (options: UseModerationOptions = {}): UseModeration
 
       // Log the review action
       await supabase
-        .from('moderation_logs')
+        .from('moderation_logs' as any)
         .insert({
           moderator_id: currentUserId!,
           action,

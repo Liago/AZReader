@@ -177,7 +177,7 @@ export class EnhancedSearchService {
       const tagIds = filters.tagIds && filters.tagIds.length > 0 ? filters.tagIds : null;
 
       // Call the enhanced database search function
-      const { data: searchResults, error } = await supabase.rpc('search_articles', {
+      const { data: searchResults, error } = await supabase.rpc('search_articles' as any, {
         user_id_param: userId,
         search_query: sanitizedQuery,
         tag_ids: tagIds,
@@ -198,8 +198,9 @@ export class EnhancedSearchService {
       const executionTimeMs = Date.now() - startTime;
 
       // Process results with enhanced information
+      const resultsArray = Array.isArray(searchResults) ? searchResults : [];
       const processedResults = await Promise.all(
-        (searchResults || []).map(async (result: any) => ({
+        resultsArray.map(async (result: any) => ({
           ...result,
           tags: result.tags || [],
           snippet: await this.generateEnhancedSnippet(result.content, sanitizedQuery, queryAnalysis),
@@ -222,7 +223,7 @@ export class EnhancedSearchService {
 
       processedResults.forEach(result => {
         if (result.matched_fields) {
-          result.matched_fields.forEach(field => {
+          result.matched_fields.forEach((field: any) => {
             if (field in fieldMatches) {
               fieldMatches[field as keyof typeof fieldMatches]++;
             }
@@ -308,7 +309,7 @@ export class EnhancedSearchService {
 
     try {
       // Use the enhanced database snippet function
-      const { data: snippet, error } = await supabase.rpc('generate_search_snippet', {
+      const { data: snippet, error } = await supabase.rpc('generate_search_snippet' as any, {
         content_text: content,
         search_query: queryAnalysis.normalized_query,
         snippet_length: length,
@@ -320,7 +321,7 @@ export class EnhancedSearchService {
         return this.generateClientSideSnippet(content, query, queryAnalysis, length);
       }
 
-      return snippet;
+      return typeof snippet === 'string' ? snippet : String(snippet || '');
 
     } catch (error) {
       console.warn('Failed to generate enhanced snippet, using fallback:', error);
@@ -438,7 +439,7 @@ export class EnhancedSearchService {
         }
       };
 
-      await supabase.rpc('log_search_query', {
+      await supabase.rpc('log_search_query' as any, {
         user_id_param: userId,
         query_text_param: query,
         result_count_param: resultCount,
@@ -472,7 +473,7 @@ export class EnhancedSearchService {
     }
 
     try {
-      const { data: suggestions, error } = await supabase.rpc('get_search_suggestions', {
+      const { data: suggestions, error } = await supabase.rpc('get_search_suggestions' as any, {
         user_id_param: userId,
         query_prefix: queryPrefix.trim(),
         suggestion_limit: limit
@@ -484,7 +485,8 @@ export class EnhancedSearchService {
       }
 
       // Enhance suggestions with context and scoring
-      return (suggestions || []).map(suggestion => ({
+      const suggestionsArray = Array.isArray(suggestions) ? suggestions : [];
+      return suggestionsArray.map((suggestion: any) => ({
         ...suggestion,
         context: this.generateSuggestionContext(suggestion),
         relevance_score: this.calculateSuggestionRelevance(suggestion, queryPrefix)

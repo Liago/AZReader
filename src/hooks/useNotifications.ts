@@ -106,13 +106,13 @@ const useNotifications = (options: UseNotificationsOptions = {}): UseNotificatio
   const getUserInfo = useCallback(async (userId: string) => {
     try {
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('username, email')
+        .from('users')
+        .select('name, email')
         .eq('id', userId)
         .single();
 
       return {
-        userName: profile?.username || 'Anonymous User',
+        userName: profile?.name || 'Anonymous User',
         userEmail: profile?.email || 'unknown@example.com',
       };
     } catch (error) {

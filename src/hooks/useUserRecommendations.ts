@@ -165,14 +165,26 @@ const useUserRecommendations = (options: UseUserRecommendationsOptions = {}): Us
     if (!currentUserId) return { score: 0, mutualFollows: [] };
 
     try {
-      // Get users that both current user and target user follow
-      const { data: mutualFollowsData } = await supabase
-        .rpc('get_mutual_follows', {
-          user1_id: currentUserId,
-          user2_id: targetUserId
-        });
+      // First get users that target user follows
+      const { data: targetUserFollows } = await supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', targetUserId);
 
-      const mutualCount = mutualFollowsData?.length || 0;
+      if (!targetUserFollows || targetUserFollows.length === 0) {
+        return { score: 0, mutualFollows: [] };
+      }
+
+      const targetFollowingIds = targetUserFollows.map(f => f.following_id);
+
+      // Get mutual follows - users that both current user and target user follow
+      const { data: mutualFollowsData } = await supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', currentUserId)
+        .in('following_id', targetFollowingIds);
+
+      const mutualCount = Array.isArray(mutualFollowsData) ? mutualFollowsData.length : 0;
       
       // Get total followers of target user for normalization
       const { data: targetFollowers } = await supabase
@@ -184,7 +196,7 @@ const useUserRecommendations = (options: UseUserRecommendationsOptions = {}): Us
       
       // Score based on mutual follows ratio
       const score = Math.min(mutualCount / Math.max(targetFollowerCount * 0.1, 1), 1);
-      const mutualFollows = mutualFollowsData?.map((f: any) => f.user_id) || [];
+      const mutualFollows = Array.isArray(mutualFollowsData) ? mutualFollowsData.map((f: any) => f.following_id) : [];
 
       return { score, mutualFollows };
     } catch (error) {
@@ -310,12 +322,11 @@ const useUserRecommendations = (options: UseUserRecommendationsOptions = {}): Us
       const { data: users } = await supabase
         .from('users')
         .select(`
-          id, email, name, avatar_url, bio, is_public,
-          follower_count, following_count, created_at
+          id, email, name, avatar_url, bio, is_public, created_at
         `)
         .eq('is_public', true)
         .not('id', 'in', `(${Array.from(excludedIds).join(',')})`)
-        .order('follower_count', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(50); // Get more candidates than needed
 
       if (!users || users.length === 0) return [];
@@ -369,7 +380,15 @@ const useUserRecommendations = (options: UseUserRecommendationsOptions = {}): Us
           calculatedScores.set(user.id, recommendationScore);
 
           scoredUsers.push({
-            ...user,
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar_url: user.avatar_url,
+            bio: user.bio,
+            is_public: user.is_public,
+            follower_count: 0, // Will be calculated separately if needed
+            following_count: 0, // Will be calculated separately if needed
+            created_at: user.created_at,
             recommendationScore: totalScore,
             reasons,
             ...(includeDebugInfo && recommendationScore.debugInfo && {
@@ -441,13 +460,6 @@ const useUserRecommendations = (options: UseUserRecommendationsOptions = {}): Us
     }
   }, [currentUserId, enableCache, cacheTimeMs, calculateRecommendations]);
 
-  // Dismiss recommendation
-  const dismissRecommendation = useCallback((userId: string) => {
-    dismissedUsers.add(userId);
-    setRecommendations(prev => prev.filter(rec => rec.id !== userId));
-    markAsInteracted(userId, 'dismissed');
-  }, []);
-
   // Mark user interaction for learning
   const markAsInteracted = useCallback((userId: string, action: 'followed' | 'dismissed' | 'viewed') => {
     const history = interactionHistory.get(userId) || [];
@@ -462,6 +474,13 @@ const useUserRecommendations = (options: UseUserRecommendationsOptions = {}): Us
       console.error('Error storing interaction history:', error);
     }
   }, []);
+
+  // Dismiss recommendation
+  const dismissRecommendation = useCallback((userId: string) => {
+    dismissedUsers.add(userId);
+    setRecommendations(prev => prev.filter(rec => rec.id !== userId));
+    markAsInteracted(userId, 'dismissed');
+  }, [markAsInteracted]);
 
   // Clear cache
   const clearCache = useCallback(() => {

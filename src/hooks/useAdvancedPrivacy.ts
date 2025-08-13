@@ -171,13 +171,13 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
 
     try {
       const { data, error: fetchError } = await supabase.rpc(
-        'get_user_privacy_settings',
+        'get_user_privacy_settings' as any,
         { p_user_id: currentUserId }
       );
 
       if (fetchError) throw fetchError;
 
-      if (data && data.length > 0) {
+      if (Array.isArray(data) && data.length > 0) {
         const settingsData = data[0];
         setSettings({
           profile_visibility: settingsData.profile_visibility,
@@ -235,7 +235,7 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
       const updatedSettings = { ...settings, ...newSettings };
 
       const { error: updateError } = await supabase
-        .from('user_privacy_settings')
+        .from('user_privacy_settings' as any)
         .upsert({
           user_id: currentUserId,
           ...updatedSettings,
@@ -312,7 +312,7 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
     try {
       // Load incoming requests
       const { data: incoming, error: incomingError } = await supabase
-        .from('follow_requests')
+        .from('follow_requests' as any)
         .select(`
           *,
           requester:users!follow_requests_requester_id_fkey(id, email, name, avatar_url)
@@ -325,7 +325,7 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
 
       // Load sent requests
       const { data: sent, error: sentError } = await supabase
-        .from('follow_requests')
+        .from('follow_requests' as any)
         .select(`
           *,
           target_user:users!follow_requests_target_user_id_fkey(id, email, name, avatar_url)
@@ -336,8 +336,8 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
 
       if (sentError) throw sentError;
 
-      setFollowRequests(incoming || []);
-      setSentRequests(sent || []);
+      setFollowRequests((incoming || []) as any);
+      setSentRequests((sent || []) as any);
     } catch (err) {
       console.error('Error loading follow requests:', err);
       setError('Failed to load follow requests');
@@ -349,7 +349,7 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
     if (!currentUserId) return false;
 
     try {
-      const { data, error } = await supabase.rpc('handle_follow_request', {
+      const { data, error } = await supabase.rpc('handle_follow_request' as any, {
         p_requester_id: currentUserId,
         p_target_user_id: targetUserId,
         p_message: message || null,
@@ -357,7 +357,7 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
 
       if (error) throw error;
 
-      const result = data as { success: boolean; message: string; type?: string };
+      const result = (Array.isArray(data) && data[0] ? data[0] : { success: false, message: 'No response' }) as { success: boolean; message: string; type?: string };
 
       showToast({
         message: result.message,
@@ -386,7 +386,7 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
     if (!currentUserId) return false;
 
     try {
-      const { data, error } = await supabase.rpc('respond_to_follow_request', {
+      const { data, error } = await supabase.rpc('respond_to_follow_request' as any, {
         p_request_id: requestId,
         p_response: response,
         p_responder_id: currentUserId,
@@ -423,11 +423,11 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
 
     try {
       const { error } = await supabase
-        .from('follow_requests')
+        .from('follow_requests' as any)
         .update({
           status: 'cancelled',
           responded_at: new Date().toISOString(),
-        })
+        } as any)
         .eq('id', requestId)
         .eq('requester_id', currentUserId);
 
@@ -458,7 +458,7 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
     if (!target) return false;
 
     try {
-      const { data, error } = await supabase.rpc('can_view_user_profile', {
+      const { data, error } = await supabase.rpc('can_view_user_profile' as any, {
         p_viewer_id: viewerId || null,
         p_target_user_id: target,
       });
@@ -551,14 +551,14 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
 
     try {
       const { data, error } = await supabase
-        .from('privacy_audit_log')
+        .from('privacy_audit_log' as any)
         .select('*')
         .eq('user_id', currentUserId)
         .order('timestamp', { ascending: false })
         .limit(limit);
 
       if (error) throw error;
-      setAuditLog(data || []);
+      setAuditLog((data || []) as any);
     } catch (err) {
       console.error('Error loading audit log:', err);
       setError('Failed to load audit log');
@@ -568,11 +568,11 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
   // Get visible profile fields
   const getVisibleProfileFields = useCallback(async (targetUserId: string, viewerId?: string): Promise<string[]> => {
     try {
-      const { data } = await supabase.rpc('get_user_privacy_settings', {
+      const { data } = await supabase.rpc('get_user_privacy_settings' as any, {
         p_user_id: targetUserId,
       });
 
-      if (!data || data.length === 0) return [];
+      if (!Array.isArray(data) || data.length === 0) return [];
 
       const userSettings = data[0];
       const visibleFields: string[] = ['id']; // Always visible
@@ -601,11 +601,11 @@ export const useAdvancedPrivacy = (): UseAdvancedPrivacyReturn => {
     viewerId?: string
   ): Promise<boolean> => {
     try {
-      const { data } = await supabase.rpc('get_user_privacy_settings', {
+      const { data } = await supabase.rpc('get_user_privacy_settings' as any, {
         p_user_id: targetUserId,
       });
 
-      if (!data || data.length === 0) return false;
+      if (!Array.isArray(data) || data.length === 0) return false;
 
       const userSettings = data[0];
 

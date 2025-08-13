@@ -150,7 +150,7 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
       if (aggregated) {
         // Load aggregated activities
         query = supabase
-          .from('activity_aggregates')
+          .from('activity_aggregates' as any)
           .select(`
             *,
             actors:sample_actors(id, email, avatar_url)
@@ -170,7 +170,7 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
       } else {
         // Load individual activities
         query = supabase
-          .from('activity_feed')
+          .from('activity_feed' as any)
           .select(`
             *,
             actor:users!activity_feed_actor_id_fkey(id, email, avatar_url)
@@ -183,7 +183,7 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
           query = query.eq('actor_id', currentUserId);
         } else if (feedType === 'following' && currentUserId) {
           // Use specialized function for following activities
-          const { data, error: followingError } = await supabase.rpc('get_following_activities', {
+          const { data, error: followingError } = await supabase.rpc('get_following_activities' as any, {
             p_user_id: currentUserId,
             p_limit: limit,
             p_offset: currentOffset,
@@ -194,19 +194,19 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
 
           if (followingError) throw followingError;
 
-          const newItems = data || [];
+          const newItems = Array.isArray(data) ? data : [];
 
           if (aggregated) {
             if (isMore) {
               setAggregates(prev => [...prev, ...newItems]);
             } else {
-              setAggregates(newItems);
+              setAggregates(newItems as any);
             }
           } else {
             if (isMore) {
               setActivities(prev => [...prev, ...newItems]);
             } else {
-              setActivities(newItems);
+              setActivities(newItems as any);
             }
           }
 
@@ -224,19 +224,19 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
 
       if (fetchError) throw fetchError;
 
-      const newItems = data || [];
+      const newItems = Array.isArray(data) ? data : [];
 
       if (aggregated) {
         if (isMore) {
-          setAggregates(prev => [...prev, ...newItems]);
+          setAggregates(prev => [...prev, ...newItems as any]);
         } else {
-          setAggregates(newItems);
+          setAggregates(newItems as any);
         }
       } else {
         if (isMore) {
-          setActivities(prev => [...prev, ...newItems]);
+          setActivities(prev => [...prev, ...newItems as any]);
         } else {
-          setActivities(newItems);
+          setActivities(newItems as any);
         }
       }
 
@@ -274,7 +274,7 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
     if (!currentUserId) return null;
 
     try {
-      const { data, error } = await supabase.rpc('create_activity', {
+      const { data, error } = await supabase.rpc('create_activity' as any, {
         p_actor_id: currentUserId,
         p_action_type: params.action_type,
         p_target_type: params.target_type,
@@ -289,7 +289,7 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
       // Refresh the feed to show new activity
       await refresh();
 
-      return data;
+      return typeof data === 'string' ? data : null;
 
     } catch (err) {
       console.error('Error creating activity:', err);

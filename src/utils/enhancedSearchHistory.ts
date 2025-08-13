@@ -156,7 +156,7 @@ export class EnhancedSearchHistoryManager {
     const frequency = existingQuery ? existingQuery.frequency + 1 : 1;
 
     // Get previous query for context
-    const previousQuery = this.history.length > 0 ? this.history[0].query : undefined;
+    const previousQuery = this.history.length > 0 ? this.history[0]?.query : undefined;
 
     const enhancedQuery: EnhancedSearchQuery = {
       id: queryId,
@@ -197,9 +197,9 @@ export class EnhancedSearchHistoryManager {
    */
   public recordResultClick(queryId: string, clickCount: number = 1): void {
     const queryIndex = this.history.findIndex(item => item.id === queryId);
-    if (queryIndex !== -1) {
-      this.history[queryIndex].clickedResults += clickCount;
-      this.history[queryIndex].success = true; // Mark as successful if user clicked
+    if (queryIndex !== -1 && this.history[queryIndex]) {
+      this.history[queryIndex]!.clickedResults += clickCount;
+      this.history[queryIndex]!.success = true; // Mark as successful if user clicked
       this.saveHistory();
     }
   }

@@ -470,11 +470,12 @@ const useFollow = (options: UseFollowOptions = {}): UseFollowReturn => {
           )
         `)
         .eq('follower_id', currentUserId)
-        .in('following_id', `(
-          SELECT following_id 
-          FROM user_follows 
-          WHERE follower_id = '${userId}'
-        )`);
+        .in('following_id', 
+          supabase
+            .from('user_follows')
+            .select('following_id')
+            .eq('follower_id', userId)
+        );
 
       if (error) throw error;
 

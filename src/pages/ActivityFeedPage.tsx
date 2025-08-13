@@ -89,14 +89,14 @@ const ActivityFeedPage: React.FC<ActivityFeedPageProps> = ({ className = '' }) =
   };
 
   // Get unread count for badges
-  const getUnreadCount = (feedType: 'following' | 'global' | 'personal') => {
+  const getUnreadCount = (feedType: 'following' | 'global' | 'personal'): number => {
     // This would typically come from a notification/read status system
     // For now, return a placeholder count
     switch (feedType) {
       case 'following':
-        return followingActivities.length > 10 ? followingActivities.length - 10 : 0;
+        return (followingActivities?.length || 0) > 10 ? (followingActivities?.length || 0) - 10 : 0;
       case 'personal':
-        return personalActivities.length > 5 ? personalActivities.length - 5 : 0;
+        return (personalActivities?.length || 0) > 5 ? (personalActivities?.length || 0) - 5 : 0;
       default:
         return 0;
     }
@@ -132,7 +132,7 @@ const ActivityFeedPage: React.FC<ActivityFeedPageProps> = ({ className = '' }) =
                 <IonIcon icon={peopleOutline} />
                 <IonLabel>Following</IonLabel>
                 {getUnreadCount('following') > 0 && (
-                  <IonBadge color="primary" size="small">
+                  <IonBadge color="primary">
                     {getUnreadCount('following')}
                   </IonBadge>
                 )}
@@ -144,7 +144,7 @@ const ActivityFeedPage: React.FC<ActivityFeedPageProps> = ({ className = '' }) =
                 <IonIcon icon={globeOutline} />
                 <IonLabel>Global</IonLabel>
                 {getUnreadCount('global') > 0 && (
-                  <IonBadge color="primary" size="small">
+                  <IonBadge color="primary">
                     {getUnreadCount('global')}
                   </IonBadge>
                 )}

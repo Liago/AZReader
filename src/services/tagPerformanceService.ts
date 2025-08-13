@@ -84,7 +84,7 @@ export class TagPerformanceService {
     try {
       // Use materialized view for fast statistics
       const { data: stats, error } = await supabase
-        .rpc('get_user_tag_statistics', {
+        .rpc('get_user_tag_statistics' as any, {
           user_id_param: userId,
           sort_by_param: sortBy,
           limit_count: limit
@@ -95,7 +95,7 @@ export class TagPerformanceService {
         throw error;
       }
 
-      const statsTyped = (stats || []) as TagStatistics[];
+      const statsTyped = Array.isArray(stats) ? stats as TagStatistics[] : [];
       
       // Cache the results
       tagCache.setTagStatistics(userId, statsTyped, { sortBy, limit });
@@ -144,7 +144,7 @@ export class TagPerformanceService {
     try {
       // Use optimized search function
       const { data: results, error } = await supabase
-        .rpc('search_tags', {
+        .rpc('search_tags' as any, {
           search_query: query,
           user_id_param: userId,
           limit_count: limit,
@@ -227,7 +227,7 @@ export class TagPerformanceService {
       // Execute filtering and counting in parallel for better performance
       const promises: Promise<any>[] = [
         // Get articles
-        supabase.rpc('filter_articles_by_tags', {
+        supabase.rpc('filter_articles_by_tags' as any, {
           user_id_param: userId,
           tag_ids: tagIds.length > 0 ? tagIds : null,
           tag_operator: tagOperator,
@@ -245,7 +245,7 @@ export class TagPerformanceService {
       // Add count query if requested or if we need accurate pagination
       if (includeCount || page === 1) {
         promises.push(
-          supabase.rpc('count_filtered_articles', {
+          supabase.rpc('count_filtered_articles' as any, {
             user_id_param: userId,
             tag_ids: tagIds.length > 0 ? tagIds : null,
             tag_operator: tagOperator,
@@ -383,7 +383,7 @@ export class TagPerformanceService {
           ...tagData,
           created_by: userId,
           updated_at: new Date().toISOString()
-        })
+        } as any)
         .select()
         .single();
 
@@ -634,11 +634,11 @@ export class TagPerformanceService {
     
     try {
       // Refresh materialized view
-      await supabase.rpc('refresh_tag_statistics');
+      await supabase.rpc('refresh_tag_statistics' as any);
       
       // Update tag usage counts
       const { data: updateResult, error: updateError } = await supabase
-        .rpc('batch_tag_operation', {
+        .rpc('batch_tag_operation' as any, {
           operation_type: 'update_counts',
           tag_ids: [],
           user_id_param: userId
@@ -657,7 +657,7 @@ export class TagPerformanceService {
 
       return {
         cleanedTags: 0, // TODO: Implement actual cleanup
-        updatedCounts: updateResult?.[0]?.affected_count || 0,
+        updatedCounts: (Array.isArray(updateResult) && updateResult[0] ? updateResult[0].affected_count : 0) || 0,
         refreshedCache: true
       };
     } catch (error) {

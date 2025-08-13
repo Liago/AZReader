@@ -236,7 +236,7 @@ export class FeedRankingService {
     if (error) throw error;
     if (!articles) return { articles: [], authorInfo: [], count: 0 };
 
-    let authorInfo = [];
+    let authorInfo: any[] = [];
     if (includeAuthorInfo) {
       // Get author information
       const userIds = [...new Set(articles.map(a => a.user_id))];

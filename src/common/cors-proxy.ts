@@ -14,7 +14,7 @@ export class CorsProxyService {
 	private proxyUrl: string;
 	private defaultConfig: CorsProxyConfig;
 
-	constructor(proxyUrl = endpoint.corsProxy) {
+	constructor(proxyUrl = 'https://cors-anywhere.herokuapp.com/') {
 		this.proxyUrl = proxyUrl;
 		this.defaultConfig = {
 			timeout: 15000,

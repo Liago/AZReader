@@ -113,8 +113,8 @@ export const useActivityPreferences = (): UseActivityPreferencesReturn => {
           throw supabaseError;
         }
 
-        if (data && data.activity_preferences) {
-          const prefs = data.activity_preferences;
+        if (data && (data as any).activity_preferences) {
+          const prefs = (data as any).activity_preferences;
           if (prefs.notifications) {
             setNotificationPrefs({ ...DEFAULT_NOTIFICATION_PREFS, ...prefs.notifications });
           }
