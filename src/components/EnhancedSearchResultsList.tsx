@@ -433,6 +433,7 @@ const EnhancedSearchResultsList: React.FC<EnhancedSearchResultsListProps> = ({
             <List
               ref={virtualListRef}
               height={window.innerHeight * 0.7}
+              width="100%"
               itemCount={sortedResults.length}
               itemSize={itemHeight}
               itemData={sortedResults}

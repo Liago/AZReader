@@ -73,12 +73,12 @@ const EnhancedHighlightedText: React.FC<EnhancedHighlightedTextProps> = ({
 
   // Generate CSS variables for multiple colors
   const cssVariables = useMemo(() => {
-    const variables: React.CSSProperties = {};
+    const variables: React.CSSProperties & { [key: string]: string } = {};
     
     if (enableMultipleColors) {
       Object.entries(HIGHLIGHT_COLORS).forEach(([key, color]) => {
-        variables[`--highlight-${key}-bg` as any] = color;
-        variables[`--highlight-${key}-color` as any] = HIGHLIGHT_TEXT_COLORS[key as keyof typeof HIGHLIGHT_TEXT_COLORS];
+        variables[`--highlight-${key}-bg`] = color;
+        variables[`--highlight-${key}-color`] = HIGHLIGHT_TEXT_COLORS[key as keyof typeof HIGHLIGHT_TEXT_COLORS];
       });
     }
     

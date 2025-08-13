@@ -43,7 +43,7 @@ import { PlatformHelper } from '@utility/platform-helper';
 
 interface ShareButtonProps {
   contentId: string;
-  contentType?: 'article' | 'user';
+  contentType?: 'article' | 'user_profile';
   title?: string;
   description?: string;
   imageUrl?: string;

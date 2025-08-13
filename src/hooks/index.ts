@@ -18,6 +18,12 @@ export { usePrivacy } from './usePrivacy';
 export { useActivityFeed } from './useActivityFeed';
 export { useActivityTracking } from './useActivityTracking';
 
+// Discovery and social platform hooks
+export { default as useFollow } from './useFollow';
+export { default as usePublicFeedRanking } from './usePublicFeedRanking';
+export { default as useDiscoverTab } from './useDiscoverTab';
+export { default as useUserProfile } from './useUserProfile';
+
 // Tag management hooks
 export { default as useTagManager } from './useTagManager';
 export { default as useArticleFilters } from './useArticleFilters';

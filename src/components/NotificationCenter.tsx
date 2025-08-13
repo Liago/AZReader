@@ -36,8 +36,7 @@ import {
   ellipsisVertical,
   refreshOutline,
 } from 'ionicons/icons';
-import {
-  useNotifications,
+import useNotifications, {
   NotificationEvent,
   NotificationType,
   UseNotificationsOptions,

@@ -183,9 +183,9 @@ const ActivityItemComponent: React.FC<ActivityItemComponentProps> = ({
 
   const getAvatarContent = () => {
     if (isAggregate && aggregate.actors && aggregate.actors.length > 0) {
-      return aggregate.actors[0].avatar_url || aggregate.actors[0].email[0].toUpperCase();
+      return aggregate.actors[0]?.avatar_url || aggregate.actors[0]?.email?.[0]?.toUpperCase() || 'U';
     } else if (!isAggregate && individual.actor) {
-      return individual.actor.avatar_url || individual.actor.email[0].toUpperCase();
+      return individual.actor.avatar_url || individual.actor.email?.[0]?.toUpperCase() || 'U';
     }
     return '?';
   };
@@ -254,7 +254,7 @@ const ActivityItemComponent: React.FC<ActivityItemComponentProps> = ({
                   <img src={actor.avatar_url} alt={actor.email} />
                 ) : (
                   <div className="flex items-center justify-center h-full w-full bg-gray-400 text-white text-xs">
-                    {actor.email[0].toUpperCase()}
+                    {actor.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
               </IonAvatar>

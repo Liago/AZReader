@@ -22,7 +22,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store/store';
 import { useHistory } from 'react-router-dom';
 import ThemeSettingsPage from './ui/ThemeSettingsPage';
-import { Calendar, Clock, Mail, Info, User, Palette, LogOut, BookOpen, Settings, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Mail, Info, User, Palette, LogOut, BookOpen, Settings, ChevronRight, Compass } from 'lucide-react';
 
 interface UserCredentials {
 	user?: {
@@ -222,6 +222,19 @@ const SideMenu: React.FC = () => {
 							<div className="text-sm font-medium uppercase text-black/60 mb-3 px-2">Menu</div>
 
 							<div className="bg-white rounded-xl overflow-hidden shadow-card divide-y divide-gray-100">
+								<IonMenuToggle>
+									<div
+										className="flex items-center p-4 cursor-pointer transition-colors hover:bg-gray-50"
+										onClick={() => handleMenuItemClick('/discover')}
+									>
+										<div className="mr-3 w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+											<Compass size={18} className="text-black" />
+										</div>
+										<div className="flex-grow text-black font-medium">Discover</div>
+										<ChevronRight size={18} className="text-black/40" />
+									</div>
+								</IonMenuToggle>
+
 								<IonMenuToggle>
 									<div
 										className="flex items-center p-4 cursor-pointer transition-colors hover:bg-gray-50"

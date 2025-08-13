@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useCallback, useState } from 'react';
-import { useNotifications, UseNotificationsOptions, NotificationEvent, NotificationStats } from '@hooks/useNotifications';
+import useNotifications, { UseNotificationsOptions, NotificationEvent, NotificationStats } from '@hooks/useNotifications';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store/reducers';
 
@@ -148,7 +148,7 @@ export const useGlobalNotifications = () => {
   }, [context]);
 
   // Helper to show notification center
-  const showNotificationCenter = useCallback(() => {
+  const openNotificationCenter = useCallback(() => {
     context.setShowNotificationCenter(true);
   }, [context]);
 
@@ -160,7 +160,7 @@ export const useGlobalNotifications = () => {
   return {
     ...context,
     toggleNotificationCenter,
-    showNotificationCenter: showNotificationCenter,
+    openNotificationCenter,
     hideNotificationCenter,
   };
 };

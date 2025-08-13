@@ -14,6 +14,7 @@ import { useScrollPositionCleanup } from "@hooks/useScrollPositionCleanup";
 
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 import VerifyEmail from "@pages/verifyEmail";
+import DiscoverPage from "@pages/DiscoverPage";
 import { supabase } from "@store/rest";
 
 import "@ionic/react/css/core.css";
@@ -268,6 +269,7 @@ const AppContent: React.FC = () => {
 			<IonRouterOutlet id="main">
 				<Route exact path="/home" component={Home} />
 				<Route path="/article/:id" component={ViewMessage} />
+				<Route exact path="/discover" component={DiscoverPage} />
 				<Route exact path="/auth/confirm" component={AuthConfirmPage} />
 				<Route exact path="/verify-email" component={VerifyEmail} />
 				<Route exact path="/test" component={ParserHeaderTest} />

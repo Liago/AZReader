@@ -373,7 +373,7 @@ const ActivityAggregator: React.FC<ActivityAggregatorProps> = ({
                           <img src={actor.avatar_url} alt={actor.email} />
                         ) : (
                           <div className="flex items-center justify-center h-full w-full bg-gray-400 text-white text-xs">
-                            {actor.email[0].toUpperCase()}
+                            {actor.email?.[0]?.toUpperCase() || 'U'}
                           </div>
                         )}
                       </IonAvatar>

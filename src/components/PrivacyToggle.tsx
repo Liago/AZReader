@@ -32,7 +32,7 @@ interface PrivacyToggleProps {
   contentId: string;
   contentType?: ContentType;
   userId?: string;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'default' | 'large';
   showLabel?: boolean;
   showDetails?: boolean;
   disabled?: boolean;
@@ -146,7 +146,7 @@ const PrivacyToggle: React.FC<PrivacyToggleProps> = ({
   contentId,
   contentType = 'article',
   userId,
-  size = 'medium',
+  size = 'default',
   showLabel = true,
   showDetails = false,
   disabled = false,
@@ -198,7 +198,7 @@ const PrivacyToggle: React.FC<PrivacyToggleProps> = ({
       icon: 'w-3 h-3',
       text: 'text-xs',
     },
-    medium: {
+    default: {
       button: 'text-sm px-3 py-2',
       icon: 'w-4 h-4',
       text: 'text-sm',
@@ -262,7 +262,7 @@ const PrivacyToggle: React.FC<PrivacyToggleProps> = ({
           
           <IonToggle
             checked={isPublic}
-            onIonToggle={handleToggle}
+            onIonChange={handleToggle}
             disabled={disabled || isLoading}
             slot="end"
           />

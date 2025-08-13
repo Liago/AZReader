@@ -137,7 +137,6 @@ const EnhancedSearchResultCard: React.FC<EnhancedSearchResultCardProps> = ({
       <IonChip 
         key={field} 
         color={fieldColors[field] || 'medium'} 
-        size="small"
         className="field-match-chip"
       >
         <IonIcon 
@@ -165,7 +164,6 @@ const EnhancedSearchResultCard: React.FC<EnhancedSearchResultCardProps> = ({
       <div className="search-context-info">
         <IonChip 
           color={contextColors[result.search_context.query_type]} 
-          size="small"
         >
           {result.search_context.query_type} search
         </IonChip>

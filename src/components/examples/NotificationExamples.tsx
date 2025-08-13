@@ -21,7 +21,7 @@ import { NotificationProvider, useGlobalNotifications } from '@context/Notificat
 import NotificationIntegration from '@components/NotificationIntegration';
 import NotificationBadge from '@components/NotificationBadge';
 import NotificationCenter from '@components/NotificationCenter';
-import { useNotifications } from '@hooks/useNotifications';
+import useNotifications from '@hooks/useNotifications';
 
 // Example 1: Simple notification button in header
 const HeaderWithNotifications: React.FC = () => {
@@ -75,7 +75,7 @@ const NotificationSettings: React.FC = () => {
           </IonLabel>
           <IonToggle
             checked={enableToasts}
-            onIonToggle={(e) => setEnableToasts(e.detail.checked)}
+            onIonChange={(e) => setEnableToasts(e.detail.checked)}
             slot="end"
           />
         </IonItem>
@@ -88,7 +88,7 @@ const NotificationSettings: React.FC = () => {
           </IonLabel>
           <IonToggle
             checked={enableBadges}
-            onIonToggle={(e) => setEnableBadges(e.detail.checked)}
+            onIonChange={(e) => setEnableBadges(e.detail.checked)}
             slot="end"
           />
         </IonItem>
