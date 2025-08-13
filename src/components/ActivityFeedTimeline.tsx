@@ -143,7 +143,7 @@ const ActivityFeedTimeline: React.FC<ActivityFeedTimelineProps> = ({
   const filteredItems = React.useMemo(() => {
     const items = filters.aggregated ? aggregates : activities;
     
-    let filtered = items.filter(item => {
+    let filtered = (items as any[]).filter((item: any) => {
       // Filter by action types
       if (filters.actionTypes.length > 0) {
         if (!filters.actionTypes.includes(item.action_type as ActivityActionType)) {

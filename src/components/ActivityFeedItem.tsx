@@ -57,8 +57,6 @@ const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
   const isAggregate = !!aggregate && !activity;
   const data = isAggregate ? aggregate : activity;
 
-  if (!data) return null;
-
   // Get activity display information
   const displayInfo: ActivityDisplayInfo = useMemo(() => {
     if (!data) return { icon: time, color: 'medium', text: '', timestamp: '' };
@@ -110,7 +108,7 @@ const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
         };
 
       case 'article_shared':
-        const shareMethod = data.metadata?.share_method || 'social media';
+        const shareMethod = (data as ActivityItem).metadata?.share_method || 'social media';
         return {
           icon: shareOutline,
           color: 'success',
@@ -168,6 +166,8 @@ const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
         };
     }
   }, [data, isAggregate]);
+
+  if (!data) return null;
 
   // Handle user click
   const handleUserClick = (e: React.MouseEvent) => {
@@ -256,7 +256,7 @@ const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
                 <IonIcon icon={displayInfo.icon} color={displayInfo.color} />
                 <span className="activity-text">{displayInfo.text}</span>
                 {isAggregate && (data as ActivityAggregate).count > 1 && (
-                  <IonBadge color={displayInfo.color} size="small">
+                  <IonBadge color={displayInfo.color}>
                     {(data as ActivityAggregate).count}
                   </IonBadge>
                 )}
@@ -356,7 +356,7 @@ const ActivityFeedItem: React.FC<ActivityFeedItemProps> = ({
             <IonIcon icon={displayInfo.icon} color={displayInfo.color} className="activity-icon" />
             <span className="activity-text">{displayInfo.text}</span>
             {isAggregate && (data as ActivityAggregate).count > 1 && (
-              <IonBadge color={displayInfo.color} size="small">
+              <IonBadge color={displayInfo.color}>
                 {(data as ActivityAggregate).count}
               </IonBadge>
             )}

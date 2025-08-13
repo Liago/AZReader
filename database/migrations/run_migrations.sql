@@ -379,3 +379,139 @@ CREATE POLICY "Users can view activity aggregates based on actor visibility" ON 
 CREATE POLICY "Users can manage their own activity aggregates" ON activity_aggregates
     FOR ALL
     USING (actor_id = auth.uid());
+
+-- =====================================================
+-- PERSONALIZED FEED FUNCTIONS
+-- =====================================================
+
+-- Function to get personalized feed with intelligent ranking for followed users
+CREATE OR REPLACE FUNCTION get_personalized_feed(
+    p_user_id UUID,
+    p_limit INTEGER DEFAULT 20,
+    p_offset INTEGER DEFAULT 0,
+    p_freshness_weight DECIMAL DEFAULT 0.4,
+    p_interaction_weight DECIMAL DEFAULT 0.3,
+    p_content_weight DECIMAL DEFAULT 0.2,
+    p_engagement_weight DECIMAL DEFAULT 0.1
+)
+RETURNS TABLE (
+    article_id UUID,
+    user_id UUID,
+    title TEXT,
+    content TEXT,
+    excerpt TEXT,
+    url TEXT,
+    image_url TEXT,
+    author TEXT,
+    domain TEXT,
+    tags TEXT[],
+    is_favorite BOOLEAN,
+    like_count INTEGER,
+    comment_count INTEGER,
+    estimated_read_time INTEGER,
+    is_public BOOLEAN,
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ,
+    author_name TEXT,
+    author_email TEXT,
+    author_avatar_url TEXT,
+    follow_date TIMESTAMPTZ,
+    recommendation_score DECIMAL,
+    freshness_score DECIMAL,
+    interaction_score DECIMAL,
+    content_score DECIMAL,
+    engagement_score DECIMAL,
+    is_read BOOLEAN
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    max_interactions INTEGER := 20;
+    max_engagement INTEGER := 100;
+BEGIN
+    RETURN QUERY
+    WITH followed_users AS (
+        SELECT 
+            uf.following_id,
+            uf.created_at as follow_date
+        FROM user_follows uf
+        WHERE uf.follower_id = p_user_id
+    ),
+    user_preferences AS (
+        SELECT 
+            unnest(a.tags) as tag,
+            count(*) as tag_count
+        FROM articles a
+        WHERE a.user_id = p_user_id
+        AND array_length(a.tags, 1) > 0
+        GROUP BY unnest(a.tags)
+    ),
+    personalized_articles AS (
+        SELECT 
+            a.*,
+            u.name as author_name,
+            u.email as author_email,
+            u.avatar_url as author_avatar_url,
+            fu.follow_date,
+            GREATEST(0, exp(-EXTRACT(days FROM (now() - a.created_at)) / 7.0)) as fresh_score,
+            0.5 as interact_score, -- Simplified for performance
+            0.3 as content_pref_score, -- Simplified for performance  
+            LEAST(1, (COALESCE(a.like_count, 0) + COALESCE(a.comment_count, 0))::DECIMAL / max_engagement) as engage_score,
+            CASE WHEN rl.article_id IS NOT NULL THEN true ELSE false END as is_read
+        FROM articles a
+        JOIN followed_users fu ON a.user_id = fu.following_id
+        JOIN users u ON a.user_id = u.id
+        LEFT JOIN reading_log rl ON rl.article_id = a.id AND rl.user_id = p_user_id
+        WHERE a.is_public = true
+        AND a.created_at >= now() - INTERVAL '90 days'
+    )
+    SELECT 
+        pa.id as article_id,
+        pa.user_id,
+        pa.title,
+        pa.content,
+        pa.excerpt,
+        pa.url,
+        pa.image_url,
+        pa.author,
+        pa.domain,
+        pa.tags,
+        pa.is_favorite,
+        pa.like_count,
+        pa.comment_count,
+        pa.estimated_read_time,
+        pa.is_public,
+        pa.created_at,
+        pa.updated_at,
+        pa.author_name,
+        pa.author_email,
+        pa.author_avatar_url,
+        pa.follow_date,
+        (
+            pa.fresh_score * p_freshness_weight +
+            pa.interact_score * p_interaction_weight +
+            pa.content_pref_score * p_content_weight +
+            pa.engage_score * p_engagement_weight
+        )::DECIMAL as recommendation_score,
+        pa.fresh_score * p_freshness_weight as freshness_score,
+        pa.interact_score * p_interaction_weight as interaction_score,
+        pa.content_pref_score * p_content_weight as content_score,
+        pa.engage_score * p_engagement_weight as engagement_score,
+        pa.is_read
+    FROM personalized_articles pa
+    ORDER BY 
+        (
+            pa.fresh_score * p_freshness_weight +
+            pa.interact_score * p_interaction_weight +
+            pa.content_pref_score * p_content_weight +
+            pa.engage_score * p_engagement_weight
+        ) DESC,
+        pa.created_at DESC
+    LIMIT p_limit
+    OFFSET p_offset;
+END;
+$$;
+
+-- Grant permissions
+GRANT EXECUTE ON FUNCTION get_personalized_feed(UUID, INTEGER, INTEGER, DECIMAL, DECIMAL, DECIMAL, DECIMAL) TO authenticated;

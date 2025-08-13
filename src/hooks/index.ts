@@ -25,6 +25,7 @@ export { default as useUserRecommendations } from './useUserRecommendations';
 export { default as useActivityFeed } from './useActivityFeed';
 export { useActivityTracking } from './useActivityTracking';
 export { default as useActivityPreferences } from './useActivityPreferences';
+export { default as usePersonalizedFeed } from './usePersonalizedFeed';
 
 // Tag management hooks
 export { default as useTagManager } from './useTagManager';
