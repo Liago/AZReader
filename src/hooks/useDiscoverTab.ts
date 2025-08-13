@@ -4,7 +4,15 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store/reducers';
 import { useCustomToast } from '@hooks/useIonToast';
 import usePublicFeedRanking from '@hooks/usePublicFeedRanking';
+
 import type { Post } from '@store/slices/postsSlice';
+// Ensure Discover articles always include fields required by EnhancedSearchResult
+export type DiscoverPost = Post & {
+  published_date: string | null;
+  like_count: number;
+  comment_count: number;
+  estimated_read_time: number | null;
+};
 
 export interface DiscoverFilters {
   timeWindow: 'day' | 'week' | 'month' | 'all';
@@ -15,7 +23,7 @@ export interface DiscoverFilters {
 export interface DiscoverSection {
   id: string;
   title: string;
-  articles: Post[];
+  articles: DiscoverPost[];
   isLoading: boolean;
   hasMore: boolean;
   error?: string;
@@ -117,8 +125,8 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
   const showToast = useCustomToast();
   
   const publicFeedRanking = usePublicFeedRanking({
-    enableCache: enableCache,
-    timeWindow: filters.timeWindow as any,
+		enableCache: enableCache,
+		timeWindow: filters.timeWindow as any,
   });
 
   // Cache helpers
@@ -169,22 +177,30 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
     setTrendingSection(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const articles = await publicFeedRanking.getTopRankedArticles({
+      await publicFeedRanking.loadFeed({
         limit: articlesPerPage,
         offset: page * articlesPerPage,
-        timeWindow: filters.timeWindow,
-        category: filters.category,
+        timeWindow: filters.timeWindow as any,
+        categoryTags: filters.category ? [filters.category] : undefined,
       });
+      
+      const normalizedArticles = (publicFeedRanking.articles || []).map((a: any) => ({
+        ...a,
+        published_date: a.published_date ?? null,
+        like_count: typeof a.like_count === 'number' ? a.like_count : 0,
+        comment_count: typeof a.comment_count === 'number' ? a.comment_count : 0,
+        estimated_read_time: a.estimated_read_time ?? null,
+      })) as DiscoverPost[];
 
       setTrendingSection(prev => ({
         ...prev,
-        articles: page === 0 ? articles : [...prev.articles, ...articles],
+        articles: page === 0 ? normalizedArticles : [...prev.articles, ...normalizedArticles],
         isLoading: false,
-        hasMore: articles.length === articlesPerPage,
+        hasMore: normalizedArticles.length === articlesPerPage,
       }));
 
       if (page === 0) {
-        setCache(cacheKey, { articles });
+        setCache(cacheKey, { articles: normalizedArticles });
       }
 
     } catch (err) {
@@ -220,22 +236,30 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
     setPopularSection(prev => ({ ...prev, isLoading: true, error: undefined }));
 
     try {
-      const articles = await publicFeedRanking.getTopRankedArticles({
+      await publicFeedRanking.loadFeed({
         limit: articlesPerPage,
         offset: page * articlesPerPage,
-        timeWindow: filters.timeWindow,
-        category: filters.category,
+        timeWindow: filters.timeWindow as any,
+        categoryTags: filters.category ? [filters.category] : undefined,
       });
+      
+      const normalizedArticles = (publicFeedRanking.articles || []).map((a: any) => ({
+        ...a,
+        published_date: a.published_date ?? null,
+        like_count: typeof a.like_count === 'number' ? a.like_count : 0,
+        comment_count: typeof a.comment_count === 'number' ? a.comment_count : 0,
+        estimated_read_time: a.estimated_read_time ?? null,
+      })) as DiscoverPost[];
 
       setPopularSection(prev => ({
         ...prev,
-        articles: page === 0 ? articles : [...prev.articles, ...articles],
+        articles: page === 0 ? normalizedArticles : [...prev.articles, ...normalizedArticles],
         isLoading: false,
-        hasMore: articles.length === articlesPerPage,
+        hasMore: normalizedArticles.length === articlesPerPage,
       }));
 
       if (page === 0) {
-        setCache(cacheKey, { articles });
+        setCache(cacheKey, { articles: normalizedArticles });
       }
 
     } catch (err) {
@@ -329,7 +353,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
 
       setRecentSection(prev => ({
         ...prev,
-        articles: page === 0 ? (formattedArticles as any) : [...prev.articles, ...(formattedArticles as any)],
+        articles: page === 0 ? (formattedArticles as DiscoverPost[]) : [...prev.articles, ...(formattedArticles as DiscoverPost[])],
         isLoading: false,
         hasMore: formattedArticles.length === articlesPerPage,
       }));
@@ -407,7 +431,7 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
         sections.push({
           id: `category_${category}`,
           title: category.charAt(0).toUpperCase() + category.slice(1),
-          articles: formattedArticles as any,
+          articles: formattedArticles as DiscoverPost[],
           isLoading: false,
           hasMore: formattedArticles.length === 10,
         });

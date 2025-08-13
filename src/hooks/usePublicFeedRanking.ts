@@ -57,6 +57,7 @@ export interface PublicFeedOptions {
   minScore?: number;
   weights?: Partial<RankingWeights>;
   excludeUserIds?: string[];
+  enableCache?: boolean; // Whether to use cached results
 }
 
 export interface UsePublicFeedRankingReturn {

@@ -16,20 +16,25 @@ export interface EnhancedSearchFilters {
   searchMode?: 'simple' | 'phrase' | 'advanced';
 }
 
-export interface EnhancedSearchResult extends Omit<Article, 'tags'> {
-  tags?: Array<{
-    id: string;
-    name: string;
-    color?: string;
-  }>;
-  relevance_score?: number;
-  snippet?: string;
-  matched_fields?: string[]; // New: shows which fields matched
-  search_context?: {
-    query_type: 'simple' | 'phrase' | 'complex';
-    normalized_query: string;
-    execution_time_ms: number;
-  };
+export interface EnhancedSearchResult extends Omit<Article, "tags"> {
+	tags?: Array<{
+		id: string;
+		name: string;
+		color?: string;
+	}>;
+	relevance_score?: number;
+	snippet?: string;
+	matched_fields?: string[]; // New: shows which fields matched
+	reading_time?: number;
+	published_date?: string;
+	like_count?: number;
+	comment_count?: number;
+	estimated_read_time?: number;
+	search_context?: {
+		query_type: "simple" | "phrase" | "complex";
+		normalized_query: string;
+		execution_time_ms: number;
+	};
 }
 
 export interface EnhancedPaginatedSearchResults {
