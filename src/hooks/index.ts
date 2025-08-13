@@ -23,6 +23,7 @@ export { default as useFollow } from './useFollow';
 export { default as usePublicFeedRanking } from './usePublicFeedRanking';
 export { default as useDiscoverTab } from './useDiscoverTab';
 export { default as useUserProfile } from './useUserProfile';
+export { default as useUserRecommendations } from './useUserRecommendations';
 
 // Tag management hooks
 export { default as useTagManager } from './useTagManager';

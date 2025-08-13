@@ -48,6 +48,7 @@ import {
 } from 'ionicons/icons';
 import TrendingCard, { TrendingCardSkeleton } from '@components/TrendingCard';
 import ArticleCard, { ArticleCardSkeleton } from '@components/ArticleCard';
+import UserRecommendations from '@components/UserRecommendations';
 import useDiscoverTab, { DiscoverFilters } from '@hooks/useDiscoverTab';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store/reducers';
@@ -304,6 +305,16 @@ const DiscoverTab: React.FC<DiscoverTabProps> = ({
     }
   };
 
+  const handleUserFollow = (userId: string) => {
+    // TODO: Navigate to user profile or show follow success
+    console.log('User followed:', userId);
+  };
+
+  const handleUserView = (userId: string) => {
+    // TODO: Navigate to user profile page
+    console.log('View user profile:', userId);
+  };
+
   // Filter articles by search query
   const filterArticlesBySearch = (articles: Post[]) => {
     if (!searchQuery) return articles;
@@ -483,6 +494,24 @@ const DiscoverTab: React.FC<DiscoverTabProps> = ({
               </div>
             </div>
           )}
+
+          {/* People You May Know Section */}
+          <div className="discover-section">
+            <SectionHeader
+              title="👥 People You May Know"
+              subtitle="Discover interesting users to follow"
+              icon={people}
+            />
+            
+            <UserRecommendations
+              showHeader={false}
+              showSettings={false}
+              limit={6}
+              variant="compact"
+              onUserFollow={handleUserFollow}
+              onUserView={handleUserView}
+            />
+          </div>
 
           {/* Recent Section */}
           <div className="discover-section">
