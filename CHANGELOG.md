@@ -1,3 +1,51 @@
+# [1.18.0](https://github.com/Liago/AZReader/compare/v1.17.0...v1.18.0) (2025-08-13)
+
+
+### Bug Fixes
+
+* centralize some features ([2c2d896](https://github.com/Liago/AZReader/commit/2c2d896ed3d2b334c59b2180fb5f6693aa0c724d))
+* centralize store ([7c9a1e1](https://github.com/Liago/AZReader/commit/7c9a1e194f81add463b83d42c466506050553636))
+* search issue ([761e9d6](https://github.com/Liago/AZReader/commit/761e9d6d611c85f62f51b6e99f81ad7c7956b491))
+* varios ([84d5f48](https://github.com/Liago/AZReader/commit/84d5f48cdfe96227422a6e4821231d4004b9067b))
+
+
+### Features
+
+* activity feed system implementation ([3bc1007](https://github.com/Liago/AZReader/commit/3bc10071359f2e48f88ef9839e3c6690300c0350))
+* Add ArticleReaderHeader component ([af10a40](https://github.com/Liago/AZReader/commit/af10a408c53bc736ef6a0fa2541b7413c98fd8e0))
+* Advanced filters and result sorting ([7183043](https://github.com/Liago/AZReader/commit/718304397ad7a85cf5dd76a68efa96922be38865))
+* Advanced Filters and Result Sorting ([6b13898](https://github.com/Liago/AZReader/commit/6b138984b0d41296aa2b0e611ceec2d4263cd917))
+* brightness controls ([85d4106](https://github.com/Liago/AZReader/commit/85d4106e80b059fd3d26cc98da3465e154a4acc1))
+* comprehensive article saving interface and preview system ([8e4e0f2](https://github.com/Liago/AZReader/commit/8e4e0f273b9b44c8309e1215a79878d76b9ff9de))
+* Comprehensive TagManager Component ([90a8c78](https://github.com/Liago/AZReader/commit/90a8c789b2fc7926e42223da8192f00823c4d372))
+* Create ArticleViewPage for article display and interaction ([e23a503](https://github.com/Liago/AZReader/commit/e23a50364d695b47b3d256e83843743262f44a4d))
+* dashboard tag with statistics ([8f274ef](https://github.com/Liago/AZReader/commit/8f274ef180c2277bf2b2d5791fb879c14c5b911d))
+* Database Performance Optimization and Indexes ([cd1ebfd](https://github.com/Liago/AZReader/commit/cd1ebfdc081af4d06f3b941c0d0d5c6f1bdd693e))
+* db schema prepare ([f3ff600](https://github.com/Liago/AZReader/commit/f3ff600ea97bad9f23c00dc25f9bbd6d917e9324))
+* Discover Tab with Trending Content ([b5f8835](https://github.com/Liago/AZReader/commit/b5f88352847fdd5e816fb0fa6f25c344da5bfc94))
+* discovery system and privacy ([294f739](https://github.com/Liago/AZReader/commit/294f73963534c5ae457cc9723fe89c072e18517e))
+* feat: Activity Feed & Social Tracking ([780c778](https://github.com/Liago/AZReader/commit/780c778717dc82087ee80dfb324b7a94f328cb51))
+* Implement core ArticleReader component ([6640435](https://github.com/Liago/AZReader/commit/6640435366681caa6a9d83f16ed22f6878d30687))
+* LikeButton Component ([f4c0805](https://github.com/Liago/AZReader/commit/f4c08053a214368e389fd4e043f5958a58372784))
+* Mercury Parser integration ([0bfa9b6](https://github.com/Liago/AZReader/commit/0bfa9b63b32f4684ceb2abeb68d91d9a8ef756d3))
+* migrations ([19c62b0](https://github.com/Liago/AZReader/commit/19c62b082d129bafb635fea777f90dfcb8f9d966))
+* moderation system mgr ([529c500](https://github.com/Liago/AZReader/commit/529c500a3bad87ddfd260a690196f811b532c8bf))
+* Multi-Tag Filters and Interactive Tag Cloud ([bc82a8a](https://github.com/Liago/AZReader/commit/bc82a8a5f5146168519769345df5f5e4754dca63))
+* new navigation interface and article list revamped ([ebc4af8](https://github.com/Liago/AZReader/commit/ebc4af8587ff40c26da6c5f9564a9e57feeeaad7))
+* Personalized Feed for Articles from Followed Users ([1debb1c](https://github.com/Liago/AZReader/commit/1debb1c5a4d70ff79ff956d3688cc293e80bb501))
+* reader settings feature ([ad39720](https://github.com/Liago/AZReader/commit/ad39720eacd9d7152b0ac622458a7b1abef7c645))
+* reading progress tracking ([d946bc6](https://github.com/Liago/AZReader/commit/d946bc65b8f3e60b5aea90841fccf1b11f220823))
+* reading users controls ([4811369](https://github.com/Liago/AZReader/commit/48113699d8951e1c897610fe8339d9223eb8bb2a))
+* Redux with Supabase Auth ([f4bd0be](https://github.com/Liago/AZReader/commit/f4bd0be30c109ba8d02fde1b288e67c454f0952b))
+* Scroll Position Persistence ([d1d4d83](https://github.com/Liago/AZReader/commit/d1d4d8326c850a44ba200bec314d77cd5b347494))
+* search chronology ([8b75aeb](https://github.com/Liago/AZReader/commit/8b75aeb0bf9d6742f8b83acbc0f0fd3e0d03e98d))
+* Search results highlighting system ([7644074](https://github.com/Liago/AZReader/commit/7644074dafc713cc20ed5316b84138d2d6c0c025))
+* Search Results Highlighting System ([41129d3](https://github.com/Liago/AZReader/commit/41129d3a8f389678e818ec78a566146c2b33e632))
+* tag db optimization ([d5b552d](https://github.com/Liago/AZReader/commit/d5b552d48207b58744a4a02c9ea28720c5f36ddb))
+* TagInput with Autocomplete ([957e2b3](https://github.com/Liago/AZReader/commit/957e2b30d8db645a1714dee8ceec8b1a422190a3))
+* theme switcher light/dark ([ec0b243](https://github.com/Liago/AZReader/commit/ec0b243bd32ebe7c350a4d318f5fb5a125daf1b9))
+* user recomandations system ([2eb524b](https://github.com/Liago/AZReader/commit/2eb524b1aae2784effe317589743fddc87afde92))
+
 # [1.17.0](https://github.com/Liago/AZReader/compare/v1.16.1...v1.17.0) (2025-03-24)
 
 
