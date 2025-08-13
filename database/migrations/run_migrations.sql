@@ -137,6 +137,45 @@ CREATE TABLE IF NOT EXISTS user_preferences (
     reading_width TEXT DEFAULT 'medium' CHECK (reading_width IN ('narrow', 'medium', 'wide')),
     auto_mark_read BOOLEAN DEFAULT true,
     notifications_enabled BOOLEAN DEFAULT true,
+    activity_preferences JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Activity Feed table - tracks individual user activities
+CREATE TABLE IF NOT EXISTS activity_feed (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    actor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action_type TEXT NOT NULL CHECK (action_type IN (
+        'article_created', 'article_liked', 'article_unliked', 'article_shared',
+        'comment_created', 'comment_liked', 'comment_unliked',
+        'user_followed', 'user_unfollowed', 'profile_updated'
+    )),
+    target_type TEXT NOT NULL CHECK (target_type IN ('article', 'comment', 'user')),
+    target_id UUID NOT NULL,
+    metadata JSONB DEFAULT '{}',
+    content_preview TEXT,
+    visibility TEXT DEFAULT 'public' CHECK (visibility IN ('public', 'followers', 'private')),
+    group_key TEXT, -- For grouping similar activities
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Activity Aggregates table - for grouped/summarized activities  
+CREATE TABLE IF NOT EXISTS activity_aggregates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_key TEXT NOT NULL UNIQUE,
+    actor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action_type TEXT NOT NULL,
+    target_type TEXT NOT NULL,
+    target_id UUID NOT NULL,
+    count INTEGER DEFAULT 1,
+    sample_actors UUID[] DEFAULT '{}', -- Array of user IDs for "X and Y others" display
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    thumbnail_url TEXT,
+    first_activity_at TIMESTAMPTZ NOT NULL,
+    last_activity_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -176,6 +215,20 @@ CREATE INDEX IF NOT EXISTS idx_tags_usage_count ON tags(usage_count DESC);
 CREATE INDEX IF NOT EXISTS idx_article_tags_article_id ON article_tags(article_id);
 CREATE INDEX IF NOT EXISTS idx_article_tags_tag_id ON article_tags(tag_id);
 
+-- Activity feed indexes
+CREATE INDEX IF NOT EXISTS idx_activity_feed_actor_id ON activity_feed(actor_id);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_created_at ON activity_feed(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_action_type ON activity_feed(action_type);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_target ON activity_feed(target_type, target_id);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_visibility ON activity_feed(visibility);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_group_key ON activity_feed(group_key);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_composite ON activity_feed(actor_id, created_at DESC, action_type);
+
+CREATE INDEX IF NOT EXISTS idx_activity_aggregates_actor_id ON activity_aggregates(actor_id);  
+CREATE INDEX IF NOT EXISTS idx_activity_aggregates_last_activity_at ON activity_aggregates(last_activity_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_aggregates_action_type ON activity_aggregates(action_type);
+CREATE INDEX IF NOT EXISTS idx_activity_aggregates_target ON activity_aggregates(target_type, target_id);
+
 -- =====================================================
 -- FUNCTIONS AND TRIGGERS
 -- =====================================================
@@ -202,6 +255,13 @@ CREATE TRIGGER update_comments_updated_at BEFORE UPDATE ON comments
 CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferences
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+-- Activity feed triggers
+CREATE TRIGGER update_activity_feed_updated_at BEFORE UPDATE ON activity_feed
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_activity_aggregates_updated_at BEFORE UPDATE ON activity_aggregates
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- =====================================================
 -- ROW LEVEL SECURITY
 -- =====================================================
@@ -216,6 +276,8 @@ ALTER TABLE user_follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE article_tags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_feed ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_aggregates ENABLE ROW LEVEL SECURITY;
 
 -- Users policies
 CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
@@ -281,3 +343,39 @@ CREATE POLICY "Users can view own preferences" ON user_preferences FOR SELECT US
 CREATE POLICY "Users can insert own preferences" ON user_preferences FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own preferences" ON user_preferences FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own preferences" ON user_preferences FOR DELETE USING (auth.uid() = user_id);
+
+-- Activity feed policies
+CREATE POLICY "Users can view activities based on visibility" ON activity_feed
+    FOR SELECT
+    USING (
+        visibility = 'public' 
+        OR (visibility = 'followers' AND actor_id IN (
+            SELECT following_id FROM user_follows WHERE follower_id = auth.uid()
+        ))
+        OR actor_id = auth.uid()
+    );
+
+CREATE POLICY "Users can create their own activities" ON activity_feed
+    FOR INSERT
+    WITH CHECK (actor_id = auth.uid());
+
+CREATE POLICY "Users can update their own activities" ON activity_feed
+    FOR UPDATE
+    USING (actor_id = auth.uid());
+
+-- Activity aggregates policies  
+CREATE POLICY "Users can view activity aggregates based on actor visibility" ON activity_aggregates
+    FOR SELECT
+    USING (
+        actor_id IN (
+            SELECT id FROM users WHERE is_public = true
+        ) 
+        OR actor_id IN (
+            SELECT following_id FROM user_follows WHERE follower_id = auth.uid()
+        )
+        OR actor_id = auth.uid()
+    );
+
+CREATE POLICY "Users can manage their own activity aggregates" ON activity_aggregates
+    FOR ALL
+    USING (actor_id = auth.uid());

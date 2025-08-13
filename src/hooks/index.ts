@@ -15,8 +15,6 @@ export { default as useLikes } from './useLikes';
 export { usePostCommentsWithPagination } from './usePostCommentsWithPagination';
 export { useModeration } from './useModeration';
 export { usePrivacy } from './usePrivacy';
-export { useActivityFeed } from './useActivityFeed';
-export { useActivityTracking } from './useActivityTracking';
 
 // Discovery and social platform hooks
 export { default as useFollow } from './useFollow';
@@ -24,6 +22,9 @@ export { default as usePublicFeedRanking } from './usePublicFeedRanking';
 export { default as useDiscoverTab } from './useDiscoverTab';
 export { default as useUserProfile } from './useUserProfile';
 export { default as useUserRecommendations } from './useUserRecommendations';
+export { default as useActivityFeed } from './useActivityFeed';
+export { useActivityTracking } from './useActivityTracking';
+export { default as useActivityPreferences } from './useActivityPreferences';
 
 // Tag management hooks
 export { default as useTagManager } from './useTagManager';
