@@ -165,14 +165,14 @@ export const usePostCommentsWithPagination = (
         .from("comments")
         .select(`
           id,
-          comment,
+          content,
           created_at,
           updated_at,
           user_id,
           parent_id,
-          post_id
+          article_id
         `)
-        .eq("post_id", postId)
+        .eq("article_id", postId)
         .is("deleted_at", null);
 
       // Apply sorting
@@ -213,6 +213,7 @@ export const usePostCommentsWithPagination = (
         // Attach profiles to comments
         const commentsWithProfiles: Comment[] = (data as any[]).map((comment: any) => ({
           ...comment,
+          comment: comment.content || '', // Map content field to comment field
           profiles: profilesMap[comment.user_id] || {
             username: null,
             avatar_url: null,
@@ -260,7 +261,7 @@ export const usePostCommentsWithPagination = (
       let countQuery = supabase
         .from("comments")
         .select("*", { count: "exact", head: true })
-        .eq("post_id", postId)
+        .eq("article_id", postId)
         .is("deleted_at", null);
 
       // Apply filter to count
@@ -315,7 +316,7 @@ export const usePostCommentsWithPagination = (
       const { error } = await supabase
         .from('comments')
         .insert({
-          post_id: postId,
+          article_id: postId,
           user_id: session.user.id,
           comment: comment.trim(),
           parent_id: parentId || null

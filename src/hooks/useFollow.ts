@@ -455,6 +455,18 @@ const useFollow = (options: UseFollowOptions = {}): UseFollowReturn => {
 
     try {
       // Get users that both current user and target user follow
+      // First get the user IDs that the target user follows
+      const { data: targetFollowsData } = await supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', userId);
+
+      if (!targetFollowsData || targetFollowsData.length === 0) {
+        return [];
+      }
+
+      const targetFollowingIds = targetFollowsData.map(f => f.following_id);
+
       const { data, error } = await supabase
         .from('user_follows')
         .select(`
@@ -470,12 +482,7 @@ const useFollow = (options: UseFollowOptions = {}): UseFollowReturn => {
           )
         `)
         .eq('follower_id', currentUserId)
-        .in('following_id', 
-          supabase
-            .from('user_follows')
-            .select('following_id')
-            .eq('follower_id', userId)
-        );
+        .in('following_id', targetFollowingIds);
 
       if (error) throw error;
 

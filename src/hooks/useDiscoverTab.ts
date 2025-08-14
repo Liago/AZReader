@@ -346,14 +346,24 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
 
       if (error) throw error;
 
-      const formattedArticles = articles?.map(article => ({
+      const formattedArticles = articles?.map((article: any) => ({
         ...article,
         users: Array.isArray(article.users) ? article.users[0] : article.users,
+        // Ensure required DiscoverPost fields are present with safe access
+        content: null, // Not available in this query
+        favicon_url: null, // Not available in this query
+        is_public: true, // Assume true since we filter by is_public
+        scraped_at: null, // Not available in this query
+        updated_at: null, // Not available in this query
+        published_date: article.published_date || null,
+        like_count: article.like_count || 0,
+        comment_count: article.comment_count || 0,
+        estimated_read_time: article.estimated_read_time || null,
       })) || [];
 
       setRecentSection(prev => ({
         ...prev,
-        articles: page === 0 ? (formattedArticles as DiscoverPost[]) : [...prev.articles, ...(formattedArticles as DiscoverPost[])],
+        articles: page === 0 ? (formattedArticles as any) : [...prev.articles, ...(formattedArticles as any)],
         isLoading: false,
         hasMore: formattedArticles.length === articlesPerPage,
       }));
@@ -423,15 +433,25 @@ const useDiscoverTab = (options: UseDiscoverTabOptions = {}): UseDiscoverTabRetu
           continue;
         }
 
-        const formattedArticles = articles?.map(article => ({
+        const formattedArticles = articles?.map((article: any) => ({
           ...article,
           users: Array.isArray(article.users) ? article.users[0] : article.users,
+          // Ensure required DiscoverPost fields are present with safe access
+          content: null, // Not available in this query
+          favicon_url: null, // Not available in this query
+          is_public: true, // Assume true since we filter by is_public
+          scraped_at: null, // Not available in this query
+          updated_at: null, // Not available in this query
+          published_date: article.published_date || null,
+          like_count: article.like_count || 0,
+          comment_count: article.comment_count || 0,
+          estimated_read_time: article.estimated_read_time || null,
         })) || [];
 
         sections.push({
           id: `category_${category}`,
           title: category.charAt(0).toUpperCase() + category.slice(1),
-          articles: formattedArticles as DiscoverPost[],
+          articles: formattedArticles as any,
           isLoading: false,
           hasMore: formattedArticles.length === 10,
         });

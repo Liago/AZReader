@@ -17,6 +17,7 @@ export interface EnhancedSearchFilters {
 }
 
 export interface EnhancedSearchResult extends Omit<Article, "tags"> {
+	published_date: string | null; // Override to match Article type exactly
 	tags?: Array<{
 		id: string;
 		name: string;
@@ -26,10 +27,9 @@ export interface EnhancedSearchResult extends Omit<Article, "tags"> {
 	snippet?: string;
 	matched_fields?: string[]; // New: shows which fields matched
 	reading_time?: number;
-	published_date?: string;
-	like_count?: number;
-	comment_count?: number;
-	estimated_read_time?: number;
+	like_count: number | null;
+	comment_count: number | null;
+	estimated_read_time: number | null;
 	search_context?: {
 		query_type: "simple" | "phrase" | "complex";
 		normalized_query: string;

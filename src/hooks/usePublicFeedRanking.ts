@@ -328,6 +328,7 @@ const usePublicFeedRanking = (
 
         return {
           ...article,
+          created_at: article.created_at || new Date().toISOString(),
           like_count: article.like_count || 0,
           comment_count: article.comment_count || 0,
           metrics,

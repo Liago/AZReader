@@ -305,8 +305,8 @@ export const usePersonalizedFeed = (options: PersonalizedFeedOptions = {}): UseP
           ...article,
           author_name: article.user?.name || undefined,
           author_email: article.user?.email,
-          author_avatar_url: article.user?.avatar_url,
-          follow_date: followDates[article.user_id],
+          author_avatar_url: article.user?.avatar_url || undefined,
+          follow_date: followDates[article.user_id] || undefined,
           recommendation_score: rankingScore,
           recommendation_reasons: {
             freshness_score: Math.exp(-Math.max(0, (Date.now() - new Date(article.created_at || new Date().toISOString()).getTime()) / (1000 * 60 * 60 * 24)) / 7) * weights.freshness,

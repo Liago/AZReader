@@ -144,7 +144,11 @@ const sampleArticles: EnhancedSearchResult[] = [
 		image_url: null,
 		favicon_url: null,
 		scraped_at: "2024-01-10T09:15:00Z",
+		published_date: "2024-01-10T09:15:00Z", // Added missing published_date
 		reading_time: 12,
+		like_count: 28,
+		comment_count: 3,
+		estimated_read_time: 7,
 		tags: [
 			{ id: "9", name: "Node.js", color: "#339933" },
 			{ id: "10", name: "Express", color: "#000000" },
