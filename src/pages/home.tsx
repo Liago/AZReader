@@ -6,7 +6,7 @@ import { ArticleParsed } from "@common/interfaces";
 import ArticleParserModal from "@components/ArticleParserModal";
 import { Auth } from "@components/form/authentication";
 import ArticleList from "@components/ArticleList";
-import useAuth from "@hooks/useAuth";
+import { useAuth } from "@context/auth/AuthContext";
 import useArticles from "@hooks/useArticles";
 import { supabase, pg_stat_clear_snapshot } from "@store/rest";
 
@@ -72,28 +72,20 @@ const Home: React.FC = () => {
 	};
 
 
-	const renderContent = (): JSX.Element => {
-		if (!session) {
-			return <Auth />;
-		}
-
+	// Se l'utente non è autenticato, mostra solo la pagina di login
+	if (!session) {
 		return (
-			<>
-				<ArticleList session={session as Session} />
-				<ArticleParserModal
-					isOpen={showModal}
-					onClose={() => setShowModal(false)}
-					onSave={handleSaveWithCacheClear}
-					onSubmitUrl={handleUrlSubmit}
-					article={articleParsed}
-					isLoading={isParsing}
-					session={session}
-					error={parseArticleError}
-				/>
-			</>
+			<IonPage id="auth-page" ref={pageRef}>
+				<IonContent className="ion-padding">
+					<div className="flex flex-col items-center justify-center min-h-full">
+						<Auth />
+					</div>
+				</IonContent>
+			</IonPage>
 		);
-	};
+	}
 
+	// Se l'utente è autenticato, mostra l'interfaccia completa
 	return (
 		<IonPage id="home-page" ref={pageRef}>
 			<IonHeader className="ion-no-border bg-white">
@@ -138,7 +130,17 @@ const Home: React.FC = () => {
 			</IonHeader>
 			
 			<IonContent>
-				{renderContent()}
+				<ArticleList session={session as Session} />
+				<ArticleParserModal
+					isOpen={showModal}
+					onClose={() => setShowModal(false)}
+					onSave={handleSaveWithCacheClear}
+					onSubmitUrl={handleUrlSubmit}
+					article={articleParsed}
+					isLoading={isParsing}
+					session={session}
+					error={parseArticleError}
+				/>
 			</IonContent>
 			
 			{/* Bottom Navigation */}

@@ -35,7 +35,7 @@ import { Session } from '@supabase/supabase-js';
 import ArticlePreviewModal from '@components/ArticlePreviewModal';
 import ArticleList from '@components/ArticleList';
 import { Auth } from '@components/form/authentication';
-import useAuth from '@hooks/useAuth';
+import { useAuth } from '@context/auth/AuthContext';
 import useArticleParser from '@hooks/useArticleParser';
 
 // Types
@@ -109,14 +109,68 @@ const HomePage: React.FC = () => {
 		setShowModal(true);
 	};
 
-	// Render content based on authentication state
-	const renderContent = (): JSX.Element => {
-		if (!session) {
-			return <Auth />;
-		}
 
+	// Se l'utente non è autenticato, mostra solo la pagina di login
+	if (!session) {
 		return (
-			<>
+			<IonPage id="auth-page" ref={pageRef}>
+				<IonContent className="ion-padding">
+					<div className="flex flex-col items-center justify-center min-h-full">
+						<Auth />
+					</div>
+				</IonContent>
+			</IonPage>
+		);
+	}
+
+	// Se l'utente è autenticato, mostra l'interfaccia completa
+	return (
+		<IonPage id="home-page" ref={pageRef}>
+			{/* Header */}
+			<IonHeader className="ion-no-border bg-white">
+				<IonToolbar className="bg-white">
+					<IonButtons slot="start">
+						<IonMenuButton autoHide={false} color="dark" />
+					</IonButtons>
+					
+					<div className="header-content">
+						<IonTitle className="text-xl font-bold text-black">
+							My Reading List
+						</IonTitle>
+						<p className="header-date">{getCurrentDate()}</p>
+					</div>
+					
+					<IonButtons slot="primary">
+						<IonButton color="dark">
+							<IonIcon slot="icon-only" icon={searchOutline} />
+						</IonButton>
+					</IonButtons>
+				</IonToolbar>
+				
+				{/* Tab Navigation */}
+				<div className="tab-navigation">
+					<IonSegment
+						value={activeTab}
+						onIonChange={(e) => setActiveTab(e.detail.value as TabType)}
+					>
+						<IonSegmentButton value="latest">
+							<IonLabel>Latest</IonLabel>
+						</IonSegmentButton>
+						<IonSegmentButton value="saved">
+							<IonLabel>Saved</IonLabel>
+						</IonSegmentButton>
+						<IonSegmentButton value="trending">
+							<IonLabel>Trending</IonLabel>
+						</IonSegmentButton>
+						<IonSegmentButton value="categories">
+							<IonLabel>Categories</IonLabel>
+						</IonSegmentButton>
+					</IonSegment>
+				</div>
+			</IonHeader>
+			
+			{/* Main content */}
+			<IonContent fullscreen>
 				{/* Pull to refresh */}
 				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 					<IonRefresherContent
@@ -181,60 +235,6 @@ const HomePage: React.FC = () => {
 					error={parseError}
 					session={session}
 				/>
-			</>
-		);
-	};
-
-	return (
-		<IonPage id="home-page" ref={pageRef}>
-			{/* Header */}
-			<IonHeader className="ion-no-border bg-white">
-				<IonToolbar className="bg-white">
-					<IonButtons slot="start">
-						<IonMenuButton autoHide={false} color="dark" />
-					</IonButtons>
-					
-					<div className="header-content">
-						<IonTitle className="text-xl font-bold text-black">
-							{session ? 'My Reading List' : 'AZReader'}
-						</IonTitle>
-						<p className="header-date">{getCurrentDate()}</p>
-					</div>
-					
-					<IonButtons slot="primary">
-						<IonButton color="dark">
-							<IonIcon slot="icon-only" icon={searchOutline} />
-						</IonButton>
-					</IonButtons>
-				</IonToolbar>
-				
-				{/* Tab Navigation */}
-				{session && (
-					<div className="tab-navigation">
-						<IonSegment
-							value={activeTab}
-							onIonChange={(e) => setActiveTab(e.detail.value as TabType)}
-						>
-							<IonSegmentButton value="latest">
-								<IonLabel>Latest</IonLabel>
-							</IonSegmentButton>
-							<IonSegmentButton value="saved">
-								<IonLabel>Saved</IonLabel>
-							</IonSegmentButton>
-							<IonSegmentButton value="trending">
-								<IonLabel>Trending</IonLabel>
-							</IonSegmentButton>
-							<IonSegmentButton value="categories">
-								<IonLabel>Categories</IonLabel>
-							</IonSegmentButton>
-						</IonSegment>
-					</div>
-				)}
-			</IonHeader>
-			
-			{/* Main content */}
-			<IonContent fullscreen>
-				{renderContent()}
 			</IonContent>
 			
 			{/* Bottom tab navigation */}

@@ -21,6 +21,8 @@ export interface AuthState {
   // Auth methods
   signUp: (email: string, password: string, userData?: { name?: string }) => Promise<{ error: AuthError | null }>
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
+  signInWithOtp: (email: string) => Promise<{ error: AuthError | null }>
+  verifyOtp: (email: string, token: string) => Promise<{ error: AuthError | null }>
   signInWithGoogle: () => Promise<{ error: AuthError | null }>
   signInWithApple: () => Promise<{ error: AuthError | null }>
   signInWithTwitter: () => Promise<{ error: AuthError | null }>
@@ -150,6 +152,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: null }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Sign in failed'
+      setError(errorMsg)
+      return { error: errorMsg as any }
+    } finally {
+      setLoading(false)
+    }
+  }, [syncUserProfile])
+
+  // Sign in with OTP (magic link / passwordless)
+  const signInWithOtp = useCallback(async (email: string) => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true, // Creates new user if doesn't exist
+          emailRedirectTo: window.location.origin,
+        },
+      })
+      
+      if (error) {
+        setError(error)
+        return { error }
+      }
+      
+      // Success - OTP/magic link sent
+      console.log("OTP/Magic link sent successfully")
+      return { error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'OTP sign in failed'
+      setError(errorMsg)
+      return { error: errorMsg as any }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Verify OTP code
+  const verifyOtp = useCallback(async (email: string, token: string) => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      })
+      
+      if (error) {
+        setError(error)
+        return { error }
+      }
+      
+      if (data.user && data.session) {
+        setUser(data.user)
+        setSession(data.session)
+        await syncUserProfile(data.user)
+        console.log("OTP verified successfully")
+      }
+      
+      return { error: null }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'OTP verification failed'
       setError(errorMsg)
       return { error: errorMsg as any }
     } finally {
@@ -561,6 +628,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Methods
     signUp,
     signIn,
+    signInWithOtp,
+    verifyOtp,
     signInWithGoogle,
     signInWithApple,
     signInWithTwitter,

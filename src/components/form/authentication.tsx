@@ -1,72 +1,52 @@
 import React, { useState } from "react";
-import { IonButton, IonInput, IonItem, IonLabel, IonText, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonSpinner, IonGrid, IonRow, IonCol, IonCheckbox } from "@ionic/react";
-import { mail, eye, eyeOff, logoGoogle, logoApple, logoTwitter, person, lockClosed } from "ionicons/icons";
+import { IonButton, IonInput, IonItem, IonLabel, IonText, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonSpinner, IonGrid, IonRow, IonCol } from "@ionic/react";
+import { mail, logoGoogle, logoApple, logoTwitter, keyOutline } from "ionicons/icons";
 
 import { useCustomToast } from "@hooks/useIonToast";
 import { useAuth } from "@context/auth/AuthContext";
 
 interface AuthProps {
-	initialMode?: 'login' | 'register';
+	initialMode?: 'email' | 'verify';
 }
 
-export const Auth: React.FC<AuthProps> = ({ initialMode = 'login' }) => {
+export const Auth: React.FC<AuthProps> = ({ initialMode = 'email' }) => {
 	const showToast = useCustomToast();
-	const { signUp, signIn, signInWithGoogle, signInWithApple, signInWithTwitter, resetPassword, loading, error, clearError } = useAuth();
+	const { signInWithOtp, verifyOtp, signInWithGoogle, signInWithApple, signInWithTwitter, loading, error, clearError } = useAuth();
 	
-	const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode);
+	const [mode, setMode] = useState<'email' | 'verify'>(initialMode);
 	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [confirmPassword, setConfirmPassword] = useState('');
-	const [name, setName] = useState('');
-	const [showPassword, setShowPassword] = useState(false);
-	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [acceptTerms, setAcceptTerms] = useState(false);
+	const [otpCode, setOtpCode] = useState('');
 	const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+	const [isEmailSent, setIsEmailSent] = useState(false);
 
 	// Clear auth errors when switching modes
-	const switchMode = (newMode: 'login' | 'register' | 'forgot') => {
+	const switchMode = (newMode: 'email' | 'verify') => {
 		setMode(newMode);
 		setValidationErrors({});
 		clearError();
-		setEmail('');
-		setPassword('');
-		setConfirmPassword('');
-		setName('');
-		setAcceptTerms(false);
+		if (newMode === 'email') {
+			setOtpCode('');
+			setIsEmailSent(false);
+		}
 	};
 
 	// Form validation
 	const validateForm = (): boolean => {
 		const errors: { [key: string]: string } = {};
 
-		// Email validation
-		if (!email) {
-			errors.email = 'Email is required';
-		} else if (!/\S+@\S+\.\S+/.test(email)) {
-			errors.email = 'Email address is invalid';
-		}
-
-		// Password validation for login and register
-		if (mode !== 'forgot') {
-			if (!password) {
-				errors.password = 'Password is required';
-			} else if (password.length < 6) {
-				errors.password = 'Password must be at least 6 characters';
+		if (mode === 'email') {
+			// Email validation
+			if (!email) {
+				errors.email = 'Email is required';
+			} else if (!/\S+@\S+\.\S+/.test(email)) {
+				errors.email = 'Email address is invalid';
 			}
-		}
-
-		// Additional validation for registration
-		if (mode === 'register') {
-			if (!name) {
-				errors.name = 'Name is required';
-			}
-			if (!confirmPassword) {
-				errors.confirmPassword = 'Please confirm your password';
-			} else if (password !== confirmPassword) {
-				errors.confirmPassword = 'Passwords do not match';
-			}
-			if (!acceptTerms) {
-				errors.terms = 'You must accept the terms and conditions';
+		} else if (mode === 'verify') {
+			// OTP validation
+			if (!otpCode) {
+				errors.otp = 'Verification code is required';
+			} else if (otpCode.length !== 6) {
+				errors.otp = 'Verification code must be 6 digits';
 			}
 		}
 
@@ -74,15 +54,38 @@ export const Auth: React.FC<AuthProps> = ({ initialMode = 'login' }) => {
 		return Object.keys(errors).length === 0;
 	};
 
-	// Handle login
-	const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+	// Handle email submission (send OTP/magic link)
+	const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		clearError();
 		
 		if (!validateForm()) return;
 
 		try {
-			const { error } = await signIn(email, password);
+			const { error } = await signInWithOtp(email);
+			if (!error) {
+				setIsEmailSent(true);
+				setMode('verify');
+				showToast({
+					message: 'Check your email for the verification code or magic link!',
+					color: 'success',
+					duration: 5000,
+				});
+			}
+		} catch (err) {
+			console.error('Email send error:', err);
+		}
+	};
+
+	// Handle OTP verification
+	const handleOtpVerify = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		clearError();
+		
+		if (!validateForm()) return;
+
+		try {
+			const { error } = await verifyOtp(email, otpCode);
 			if (!error) {
 				showToast({
 					message: 'Successfully logged in!',
@@ -90,50 +93,24 @@ export const Auth: React.FC<AuthProps> = ({ initialMode = 'login' }) => {
 				});
 			}
 		} catch (err) {
-			console.error('Login error:', err);
+			console.error('OTP verification error:', err);
 		}
 	};
 
-	// Handle registration
-	const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	// Resend OTP/Magic Link
+	const handleResendCode = async () => {
 		clearError();
 		
-		if (!validateForm()) return;
-
 		try {
-			const { error } = await signUp(email, password, { name });
+			const { error } = await signInWithOtp(email);
 			if (!error) {
 				showToast({
-					message: 'Registration successful! Please check your email to verify your account.',
+					message: 'New verification code sent!',
 					color: 'success',
 				});
-				// Switch to login mode after successful registration
-				switchMode('login');
 			}
 		} catch (err) {
-			console.error('Registration error:', err);
-		}
-	};
-
-	// Handle forgot password
-	const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		clearError();
-		
-		if (!validateForm()) return;
-
-		try {
-			const { error } = await resetPassword(email);
-			if (!error) {
-				showToast({
-					message: 'Password reset email sent! Please check your email.',
-					color: 'success',
-				});
-				switchMode('login');
-			}
-		} catch (err) {
-			console.error('Password reset error:', err);
+			console.error('Resend error:', err);
 		}
 	};
 
@@ -153,9 +130,11 @@ export const Auth: React.FC<AuthProps> = ({ initialMode = 'login' }) => {
 				case 'twitter':
 					result = await signInWithTwitter();
 					break;
+				default:
+					return;
 			}
-			
-			if (result && !result.error) {
+
+			if (!result.error) {
 				showToast({
 					message: `Successfully signed in with ${provider}!`,
 					color: 'success',
@@ -168,17 +147,15 @@ export const Auth: React.FC<AuthProps> = ({ initialMode = 'login' }) => {
 
 	const getTitle = () => {
 		switch (mode) {
-			case 'login': return 'Welcome back';
-			case 'register': return 'Create account';
-			case 'forgot': return 'Reset password';
+			case 'email': return 'Welcome back';
+			case 'verify': return 'Check your email';
 		}
 	};
 
 	const getSubtitle = () => {
 		switch (mode) {
-			case 'login': return 'Sign in to your account';
-			case 'register': return 'Create a new account to get started';
-			case 'forgot': return 'Enter your email to receive a password reset link';
+			case 'email': return 'Enter your email to get started';
+			case 'verify': return `We sent a verification code to ${email}`;
 		}
 	};
 
@@ -190,7 +167,7 @@ export const Auth: React.FC<AuthProps> = ({ initialMode = 'login' }) => {
 						<IonCardHeader className="ion-text-center">
 							<div className="ion-margin-bottom">
 								<IonIcon
-									icon={mode === 'register' ? person : mail}
+									icon={mode === 'verify' ? keyOutline : mail}
 									style={{ fontSize: '48px', color: 'var(--ion-color-primary)' }}
 								/>
 							</div>
@@ -208,218 +185,156 @@ export const Auth: React.FC<AuthProps> = ({ initialMode = 'login' }) => {
 								</IonText>
 							)}
 
-							{/* OAuth Buttons */}
-							{mode !== 'forgot' && (
-								<div className="ion-margin-bottom">
-									<IonButton
-										fill="outline"
-										expand="block"
-										className="ion-margin-bottom"
-										onClick={() => handleOAuthSignIn('google')}
-										disabled={loading}
-									>
-										<IonIcon icon={logoGoogle} slot="start" />
-										Continue with Google
-									</IonButton>
-									<IonButton
-										fill="outline"
-										expand="block"
-										className="ion-margin-bottom"
-										onClick={() => handleOAuthSignIn('apple')}
-										disabled={loading}
-									>
-										<IonIcon icon={logoApple} slot="start" />
-										Continue with Apple
-									</IonButton>
-									<IonButton
-										fill="outline"
-										expand="block"
-										className="ion-margin-bottom"
-										onClick={() => handleOAuthSignIn('twitter')}
-										disabled={loading}
-									>
-										<IonIcon icon={logoTwitter} slot="start" />
-										Continue with Twitter
-									</IonButton>
+							{mode === 'email' && (
+								<>
+									{/* OAuth Buttons */}
+									<div className="ion-margin-bottom">
+										<IonButton
+											fill="outline"
+											expand="block"
+											className="ion-margin-bottom"
+											onClick={() => handleOAuthSignIn('google')}
+											disabled={loading}
+										>
+											<IonIcon icon={logoGoogle} slot="start" />
+											Continue with Google
+										</IonButton>
+										<IonButton
+											fill="outline"
+											expand="block"
+											className="ion-margin-bottom"
+											onClick={() => handleOAuthSignIn('apple')}
+											disabled={loading}
+										>
+											<IonIcon icon={logoApple} slot="start" />
+											Continue with Apple
+										</IonButton>
+										<IonButton
+											fill="outline"
+											expand="block"
+											className="ion-margin-bottom"
+											onClick={() => handleOAuthSignIn('twitter')}
+											disabled={loading}
+										>
+											<IonIcon icon={logoTwitter} slot="start" />
+											Continue with Twitter
+										</IonButton>
 
-									{/* Divider */}
-									<div className="ion-text-center ion-margin">
-										<IonText color="medium">
-											<small>or continue with email</small>
-										</IonText>
+										{/* Divider */}
+										<div className="ion-text-center ion-margin">
+											<IonText color="medium">
+												<small>or continue with email</small>
+											</IonText>
+										</div>
 									</div>
-								</div>
-							)}
 
-							{/* Email/Password Form */}
-							<form onSubmit={mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handleForgotPassword}>
-								{/* Name Field (Register Only) */}
-								{mode === 'register' && (
-									<IonItem className="ion-margin-bottom">
-										<IonLabel position="stacked">Full Name</IonLabel>
-										<IonInput
-											type="text"
-											value={name}
-											onIonInput={(e) => setName(e.detail.value!)}
-											placeholder="Enter your full name"
-											required
-										/>
-									</IonItem>
-								)}
-								{validationErrors.name && (
-									<IonText color="danger">
-										<small>{validationErrors.name}</small>
-									</IonText>
-								)}
-
-								{/* Email Field */}
-								<IonItem className="ion-margin-bottom">
-									<IonLabel position="stacked">Email</IonLabel>
-									<IonInput
-										type="email"
-										value={email}
-										onIonInput={(e) => setEmail(e.detail.value!)}
-										placeholder="Enter your email"
-										required
-									/>
-									<IonIcon icon={mail} slot="end" color="medium" />
-								</IonItem>
-								{validationErrors.email && (
-									<IonText color="danger">
-										<small>{validationErrors.email}</small>
-									</IonText>
-								)}
-
-								{/* Password Fields */}
-								{mode !== 'forgot' && (
-									<>
+									{/* Email Form */}
+									<form onSubmit={handleEmailSubmit}>
 										<IonItem className="ion-margin-bottom">
-											<IonLabel position="stacked">Password</IonLabel>
+											<IonLabel position="stacked">Email</IonLabel>
 											<IonInput
-												type={showPassword ? 'text' : 'password'}
-												value={password}
-												onIonInput={(e) => setPassword(e.detail.value!)}
-												placeholder="Enter your password"
+												type="email"
+												value={email}
+												onIonInput={(e) => setEmail(e.detail.value!)}
+												placeholder="Enter your email address"
 												required
 											/>
-											<IonIcon
-												icon={showPassword ? eyeOff : eye}
-												slot="end"
-												color="medium"
-												onClick={() => setShowPassword(!showPassword)}
-												style={{ cursor: 'pointer' }}
-											/>
+											{validationErrors.email && (
+												<IonText color="danger" style={{ fontSize: '12px' }}>
+													{validationErrors.email}
+												</IonText>
+											)}
 										</IonItem>
-										{validationErrors.password && (
-											<IonText color="danger">
-												<small>{validationErrors.password}</small>
-											</IonText>
-										)}
 
-										{/* Confirm Password (Register Only) */}
-										{mode === 'register' && (
-											<>
-												<IonItem className="ion-margin-bottom">
-													<IonLabel position="stacked">Confirm Password</IonLabel>
-													<IonInput
-														type={showConfirmPassword ? 'text' : 'password'}
-														value={confirmPassword}
-														onIonInput={(e) => setConfirmPassword(e.detail.value!)}
-														placeholder="Confirm your password"
-														required
-													/>
-													<IonIcon
-														icon={showConfirmPassword ? eyeOff : eye}
-														slot="end"
-														color="medium"
-														onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-														style={{ cursor: 'pointer' }}
-													/>
-												</IonItem>
-												{validationErrors.confirmPassword && (
-													<IonText color="danger">
-														<small>{validationErrors.confirmPassword}</small>
-													</IonText>
-												)}
+										<IonButton
+											type="submit"
+											expand="block"
+											disabled={loading}
+											className="ion-margin-top"
+										>
+											{loading ? <IonSpinner name="crescent" /> : 'Continue'}
+										</IonButton>
+									</form>
+								</>
+							)}
 
-												{/* Terms Acceptance */}
-												<IonItem lines="none" className="ion-margin-bottom">
-													<IonCheckbox
-														checked={acceptTerms}
-														onIonChange={e => setAcceptTerms(e.detail.checked)}
-														slot="start"
-													/>
-													<IonLabel className="ion-text-wrap">
-														<small>I accept the Terms of Service and Privacy Policy</small>
-													</IonLabel>
-												</IonItem>
-												{validationErrors.terms && (
-													<IonText color="danger">
-														<small>{validationErrors.terms}</small>
-													</IonText>
-												)}
-											</>
-										)}
-									</>
-								)}
+							{mode === 'verify' && (
+								<>
+									{/* OTP Form */}
+									<form onSubmit={handleOtpVerify}>
+										<IonItem className="ion-margin-bottom">
+											<IonLabel position="stacked">Verification Code</IonLabel>
+											<IonInput
+												type="text"
+												value={otpCode}
+												onIonInput={(e) => setOtpCode(e.detail.value!)}
+												placeholder="Enter 6-digit code"
+												maxlength={6}
+												required
+											/>
+											{validationErrors.otp && (
+												<IonText color="danger" style={{ fontSize: '12px' }}>
+													{validationErrors.otp}
+												</IonText>
+											)}
+										</IonItem>
 
-								{/* Submit Button */}
-								<IonButton
-									type="submit"
-									expand="block"
-									className="ion-margin-top"
-									disabled={loading}
-								>
-									{loading ? (
-										<IonSpinner name="crescent" />
-									) : (
-										<>
-											<IonIcon icon={mode === 'register' ? person : mode === 'forgot' ? mail : lockClosed} slot="start" />
-											{mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Email'}
-										</>
-									)}
-								</IonButton>
-							</form>
+										<IonButton
+											type="submit"
+											expand="block"
+											disabled={loading}
+											className="ion-margin-top"
+										>
+											{loading ? <IonSpinner name="crescent" /> : 'Verify Code'}
+										</IonButton>
+									</form>
 
-							{/* Mode Switch Links */}
-							<div className="ion-text-center ion-margin-top">
-								{mode === 'login' && (
-									<>
+									{/* Resend and back options */}
+									<div className="ion-text-center ion-margin-top">
 										<IonText color="medium">
-											<small>Don't have an account? </small>
+											<p>
+												Didn't receive a code?{' '}
+												<button
+													type="button"
+													style={{ 
+														background: 'none', 
+														border: 'none', 
+														color: 'var(--ion-color-primary)', 
+														textDecoration: 'underline',
+														cursor: 'pointer'
+													}}
+													onClick={handleResendCode}
+													disabled={loading}
+												>
+													Resend
+												</button>
+											</p>
 										</IonText>
-										<IonText color="primary" onClick={() => switchMode('register')} style={{ cursor: 'pointer' }}>
-											<small><strong>Sign up</strong></small>
-										</IonText>
-										<br />
-										<IonText color="medium" onClick={() => switchMode('forgot')} style={{ cursor: 'pointer' }}>
-											<small>Forgot your password?</small>
-										</IonText>
-									</>
-								)}
+									</div>
 
-								{mode === 'register' && (
-									<>
-										<IonText color="medium">
-											<small>Already have an account? </small>
-										</IonText>
-										<IonText color="primary" onClick={() => switchMode('login')} style={{ cursor: 'pointer' }}>
-											<small><strong>Sign in</strong></small>
-										</IonText>
-									</>
-								)}
+									<div className="ion-text-center ion-margin-top">
+										<IonButton
+											fill="clear"
+											size="small"
+											onClick={() => switchMode('email')}
+											disabled={loading}
+										>
+											← Back to email
+										</IonButton>
+									</div>
+								</>
+							)}
 
-								{mode === 'forgot' && (
-									<>
-										<IonText color="medium">
-											<small>Remember your password? </small>
-										</IonText>
-										<IonText color="primary" onClick={() => switchMode('login')} style={{ cursor: 'pointer' }}>
-											<small><strong>Sign in</strong></small>
-										</IonText>
-									</>
-								)}
-							</div>
+							{/* Magic link info */}
+							{mode === 'verify' && (
+								<div className="ion-text-center ion-margin-top">
+									<IonText color="medium">
+										<small>
+											You can also click the magic link in your email to sign in instantly.
+										</small>
+									</IonText>
+								</div>
+							)}
 						</IonCardContent>
 					</IonCard>
 				</IonCol>

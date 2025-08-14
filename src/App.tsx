@@ -11,6 +11,7 @@ import Home from "@pages/home";
 import ThemeInitializer from "./components/ui/ThemeInitializer";
 import SideMenu from "./components/SideMenu";
 import { useScrollPositionCleanup } from "@hooks/useScrollPositionCleanup";
+import { AuthProvider } from "@context/auth/AuthContext";
 
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 import VerifyEmail from "@pages/verifyEmail";
@@ -308,7 +309,9 @@ const App: React.FC = () => {
 		<ErrorBoundary FallbackComponent={ErrorFallback} onError={(error) => console.error("Error caught by boundary:", error)}>
 			<Provider store={store}>
 				<PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-					<AppContent />
+					<AuthProvider>
+						<AppContent />
+					</AuthProvider>
 				</PersistGate>
 			</Provider>
 		</ErrorBoundary>
