@@ -1,3 +1,13 @@
+## [1.18.1](https://github.com/Liago/AZReader/compare/v1.18.0...v1.18.1) (2025-08-14)
+
+
+### Bug Fixes
+
+* initial Auth page with tabs and menus ([19ad121](https://github.com/Liago/AZReader/commit/19ad121183753daa668aadf95b14b10ccd3b418c))
+* resolve final TypeScript compilation errors across codebase ([95ba3e6](https://github.com/Liago/AZReader/commit/95ba3e60dfb3212a4523f2f742d3d9e21f3affe6))
+* types ([f297cf5](https://github.com/Liago/AZReader/commit/f297cf5f3ba89374a316591f054f1c3b86c174c7))
+* various ([313dddd](https://github.com/Liago/AZReader/commit/313dddd89347b39f26d2626fc8f7b680f5a59178))
+
 # [1.18.0](https://github.com/Liago/AZReader/compare/v1.17.0...v1.18.0) (2025-08-13)
 
 
