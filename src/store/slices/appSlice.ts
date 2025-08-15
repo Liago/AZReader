@@ -255,6 +255,10 @@ const appSlice = createSlice({
 			contentHeight: number;
 		}>) => {
 			const { articleId, scrollTop, scrollProgress, readingProgress, contentHeight } = action.payload;
+			// Ensure scrollPositions exists
+			if (!state.scrollPositions) {
+				state.scrollPositions = {};
+			}
 			state.scrollPositions[articleId] = {
 				scrollTop,
 				scrollProgress,
@@ -271,7 +275,10 @@ const appSlice = createSlice({
 
 		clearScrollPosition: (state, action: PayloadAction<string>) => {
 			const articleId = action.payload;
-			delete state.scrollPositions[articleId];
+			// Ensure scrollPositions exists before trying to delete
+			if (state.scrollPositions) {
+				delete state.scrollPositions[articleId];
+			}
 		},
 
 		clearOldScrollPositions: {
@@ -280,6 +287,12 @@ const appSlice = createSlice({
 				const daysToKeep = action.payload;
 				const cutoffDate = new Date();
 				cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+				
+				// Ensure scrollPositions exists before trying to access it
+				if (!state.scrollPositions) {
+					state.scrollPositions = {};
+					return;
+				}
 				
 				Object.keys(state.scrollPositions).forEach(articleId => {
 					const position = state.scrollPositions[articleId];

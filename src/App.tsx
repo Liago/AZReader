@@ -4,7 +4,7 @@ import { IonReactRouter } from "@ionic/react-router";
 import { Redirect, Route } from "react-router-dom";
 import { Provider, useDispatch } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { persistor, store } from "@store/store";
+import { persistor, store } from "@store/store-rtk";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { App as CapApp } from "@capacitor/app";
 import Home from "@pages/home";

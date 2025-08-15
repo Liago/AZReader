@@ -106,8 +106,29 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 			return (
 				<div className="empty-state">
 					<div className="empty-state-content">
+						<div className="empty-state-icon">📚</div>
 						<h3>No articles found</h3>
-						<p>Try adjusting your filters or add some articles to get started.</p>
+						<p>You haven't saved any articles yet, or they may have been filtered out.</p>
+						<div className="empty-state-actions">
+							<button 
+								className="add-article-btn"
+								onClick={() => {/* TODO: Add article functionality */}}
+							>
+								Add Your First Article
+							</button>
+							<button 
+								className="clear-filters-btn"
+								onClick={() => setFilterOptions({
+									showRead: true,
+									showUnread: true,
+									showFavorites: false,
+									domains: [],
+									tags: []
+								})}
+							>
+								Clear All Filters
+							</button>
+						</div>
 					</div>
 				</div>
 			);
@@ -234,25 +255,73 @@ const ArticleList: React.FC<ArticleListProps> = ({ session }) => {
 						display: flex;
 						justify-content: center;
 						align-items: center;
-						min-height: 300px;
+						min-height: 400px;
 						padding: 32px;
 					}
 
 					.empty-state-content {
 						text-align: center;
+						max-width: 400px;
 						color: var(--ion-color-medium);
 					}
 
+					.empty-state-icon {
+						font-size: 48px;
+						margin-bottom: 16px;
+						opacity: 0.7;
+					}
+
 					.empty-state-content h3 {
-						font-size: 20px;
+						font-size: 24px;
 						font-weight: 600;
-						margin-bottom: 8px;
+						margin-bottom: 12px;
 						color: var(--ion-color-dark);
 					}
 
 					.empty-state-content p {
-						font-size: 14px;
-						line-height: 1.5;
+						font-size: 16px;
+						line-height: 1.6;
+						margin-bottom: 24px;
+						color: var(--ion-color-medium);
+					}
+
+					.empty-state-actions {
+						display: flex;
+						flex-direction: column;
+						gap: 12px;
+						align-items: center;
+					}
+
+					.add-article-btn, .clear-filters-btn {
+						padding: 12px 24px;
+						border: none;
+						border-radius: 8px;
+						font-size: 16px;
+						font-weight: 500;
+						cursor: pointer;
+						transition: all 0.2s ease;
+						min-width: 200px;
+					}
+
+					.add-article-btn {
+						background: var(--ion-color-primary);
+						color: var(--ion-color-primary-contrast);
+					}
+
+					.add-article-btn:hover {
+						background: var(--ion-color-primary-shade);
+						transform: translateY(-1px);
+					}
+
+					.clear-filters-btn {
+						background: var(--ion-color-light);
+						color: var(--ion-color-dark);
+						border: 1px solid var(--ion-color-medium-tint);
+					}
+
+					.clear-filters-btn:hover {
+						background: var(--ion-color-light-shade);
+						transform: translateY(-1px);
 					}
 
 					@media (max-width: 768px) {

@@ -116,9 +116,11 @@ export const fetchPosts = createAsyncThunk(
 	} = {}) => {
 		const { page = 1, limit = 20, userId, tags, searchQuery } = params;
 		
+		console.log('fetchPosts called with params:', { page, limit, userId, tags, searchQuery });
+		
 		let query = supabase
 			.from('articles')
-			.select('*')
+			.select('*', { count: 'exact' })
 			.order('created_at', { ascending: false })
 			.range((page - 1) * limit, page * limit - 1);
 
@@ -134,16 +136,22 @@ export const fetchPosts = createAsyncThunk(
 			query = query.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`);
 		}
 
+		console.log('About to execute Supabase query...');
 		const { data, error, count } = await query;
+
+		console.log('Supabase query result:', { data, error, count, dataLength: data?.length });
 
 		if (error) throw error;
 
-		return {
+		const result = {
 			posts: data || [],
 			totalItems: count || 0,
 			page,
 			limit,
 		};
+		
+		console.log('fetchPosts returning:', result);
+		return result;
 	}
 );
 
@@ -354,12 +362,18 @@ const postsSlice = createSlice({
 				state.loading.fetchPosts = false;
 				const { posts, totalItems, page, limit } = action.payload;
 				
+				console.log('fetchPosts.fulfilled - Redux reducer called with:', { posts, totalItems, page, limit, postsLength: posts?.length });
+				
 				if (page === 1) {
+					console.log('Setting state.items to:', posts);
 					state.items = posts as Post[];
 				} else {
 					// Append for pagination
+					console.log('Appending to existing items. Current length:', state.items.length, 'New posts:', posts?.length);
 					state.items = [...state.items, ...posts as Post[]];
 				}
+				
+				console.log('Final state.items length:', state.items.length);
 				
 				state.pagination = {
 					...state.pagination,
@@ -368,6 +382,8 @@ const postsSlice = createSlice({
 					hasNextPage: posts.length === limit,
 					hasPreviousPage: page > 1,
 				};
+				
+				console.log('Updated pagination:', state.pagination);
 			})
 			.addCase(fetchPosts.rejected, (state, action) => {
 				state.loading.fetchPosts = false;

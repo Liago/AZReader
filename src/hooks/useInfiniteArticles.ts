@@ -72,7 +72,13 @@ const useInfiniteArticles = ({
 	const dispatch = useAppDispatch();
 	
 	// Redux state
-	const articles = useAppSelector(selectPosts) || [];
+	const articlesFromRedux = useAppSelector(selectPosts);
+	const articles = articlesFromRedux || [];
+	
+	// Debug logging (keep for troubleshooting)
+	if (process.env.NODE_ENV === 'development') {
+		console.log('useInfiniteArticles - articles from Redux:', articles?.length, 'articles');
+	}
 	const postsLoading = useAppSelector(selectPostsLoading) || {};
 	const { fetchPosts: isFetchingPosts } = postsLoading;
 	const postsErrors = useAppSelector(selectPostsErrors) || {};
@@ -126,20 +132,25 @@ const useInfiniteArticles = ({
 
 	// Filter function
 	const filterArticles = useCallback((articles: Post[], options: FilterOptions): Post[] => {
-		return articles.filter(article => {
-			// Reading status filter
-			if (!options.showRead && article.reading_status === 'completed') return false;
-			if (!options.showUnread && article.reading_status !== 'completed') return false;
+		if (process.env.NODE_ENV === 'development') {
+			console.log('filterArticles called with:', articles?.length, 'articles and options:', options);
+		}
+		
+		const filtered = articles.filter(article => {
+			// Reading status filter - consider null/undefined reading_status as unread
+			const isRead = article.reading_status === 'completed';
+			const isUnread = !isRead; // null, undefined, or any other status is considered unread
 			
-			// Favorites filter
+			if (!options.showRead && isRead) return false;
+			if (!options.showUnread && isUnread) return false;
+			
+			// Favorites filter - only filter if showFavorites is true AND article is not favorite
 			if (options.showFavorites && !article.is_favorite) return false;
 			
 			// Domain filter
-			if (options.domains.length > 0 && !options.domains.includes(article.domain || '')) {
-				return false;
-			}
+			if (options.domains.length > 0 && !options.domains.includes(article.domain || '')) return false;
 			
-			// Tags filter (assuming tags are stored in a tags field or similar)
+			// Tags filter
 			if (options.tags.length > 0) {
 				const articleTags = article.tags || [];
 				const hasMatchingTag = options.tags.some(tag => 
@@ -152,6 +163,12 @@ const useInfiniteArticles = ({
 			
 			return true;
 		});
+		
+		if (process.env.NODE_ENV === 'development') {
+			console.log('filterArticles result:', filtered?.length, 'articles after filtering');
+		}
+		
+		return filtered;
 	}, []);
 
 	// Get available domains and tags for filters
@@ -176,7 +193,8 @@ const useInfiniteArticles = ({
 	// Apply sorting and filtering
 	const filteredArticles = useMemo(() => {
 		const filtered = filterArticles(articles, filterOptions);
-		return sortArticles(filtered, sortOptions);
+		const sorted = sortArticles(filtered, sortOptions);
+		return sorted;
 	}, [articles, sortOptions, filterOptions, sortArticles, filterArticles]);
 
 	// Calculate pagination info
@@ -186,14 +204,23 @@ const useInfiniteArticles = ({
 
 	// Load initial articles
 	const loadArticles = useCallback(async (page: number = 1, append: boolean = false) => {
-		if (!session?.user) return;
+		if (!session?.user) {
+			console.log('loadArticles: No session or user, skipping');
+			return;
+		}
+
+		console.log('loadArticles called with:', { page, append, userId: session.user.id, pageSize });
 
 		try {
+			console.log('loadArticles: About to dispatch fetchPosts...');
 			const response = await dispatch(fetchPosts({
 				userId: session.user.id,
 				page,
 				limit: pageSize
 			})).unwrap();
+			
+			console.log('loadArticles: fetchPosts response SUCCESS:', response);
+			console.log('loadArticles: Posts received:', response.posts?.length, 'posts');
 
 			// Update pagination state
 			const hasMoreItems = response.posts.length === pageSize;
@@ -204,7 +231,7 @@ const useInfiniteArticles = ({
 				setCurrentPage(1);
 			}
 		} catch (error) {
-			console.error('Error loading articles:', error);
+			console.error('loadArticles: fetchPosts ERROR:', error);
 			dispatch(showError('Failed to load articles'));
 		}
 	}, [session, dispatch, pageSize]);
@@ -314,8 +341,15 @@ const useInfiniteArticles = ({
 
 	// Load initial data
 	useEffect(() => {
+		console.log('useInfiniteArticles - useEffect triggered:', { 
+			hasSession: !!session?.user, 
+			userId: session?.user?.id 
+		});
 		if (session?.user) {
+			console.log('useInfiniteArticles - calling loadArticles...');
 			loadArticles();
+		} else {
+			console.log('useInfiniteArticles - no session, skipping loadArticles');
 		}
 	}, [session, loadArticles]);
 

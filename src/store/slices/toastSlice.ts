@@ -84,6 +84,22 @@ const toastSlice = createSlice({
 	reducers: {
 		// Add a new toast
 		addToast: (state, action: PayloadAction<ToastOptions>) => {
+			// Handle completely null state
+			if (!state) {
+				return initialState;
+			}
+			
+			// Ensure state properties are properly initialized
+			if (!state.toasts) {
+				state.toasts = [];
+			}
+			if (!state.queuedToasts) {
+				state.queuedToasts = [];
+			}
+			if (!state.maxToasts) {
+				state.maxToasts = initialState.maxToasts;
+			}
+			
 			const toast = createToast(action.payload);
 			
 			// If we're at max capacity, queue the toast
@@ -159,6 +175,22 @@ const toastSlice = createSlice({
 
 		// Convenience actions for different toast types
 		showSuccess: (state, action: PayloadAction<string | Omit<ToastOptions, 'type'>>) => {
+			// Handle completely null state
+			if (!state) {
+				return initialState;
+			}
+			
+			// Ensure state properties are properly initialized
+			if (!state.toasts) {
+				state.toasts = [];
+			}
+			if (!state.queuedToasts) {
+				state.queuedToasts = [];
+			}
+			if (!state.maxToasts) {
+				state.maxToasts = initialState.maxToasts;
+			}
+			
 			const options = typeof action.payload === 'string' 
 				? { message: action.payload, type: 'success' as const }
 				: { ...action.payload, type: 'success' as const };
@@ -173,6 +205,22 @@ const toastSlice = createSlice({
 		},
 
 		showError: (state, action: PayloadAction<string | Omit<ToastOptions, 'type'>>) => {
+			// Handle completely null state
+			if (!state) {
+				return initialState;
+			}
+			
+			// Ensure state properties are properly initialized
+			if (!state.toasts) {
+				state.toasts = [];
+			}
+			if (!state.queuedToasts) {
+				state.queuedToasts = [];
+			}
+			if (!state.maxToasts) {
+				state.maxToasts = initialState.maxToasts;
+			}
+			
 			const options = typeof action.payload === 'string' 
 				? { message: action.payload, type: 'error' as const }
 				: { ...action.payload, type: 'error' as const };

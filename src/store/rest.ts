@@ -280,8 +280,13 @@ export async function getPostComments(postId: string) {
 		// Creiamo un dizionario per una rapida ricerca dei profili
 		const profilesMap: ProfileMap = {};
 		if (profiles) {
-			profiles.forEach((profile: Profile) => {
-				profilesMap[profile.id] = profile;
+			profiles.forEach((profile: any) => {
+				profilesMap[profile.id] = {
+					id: profile.id,
+					username: profile.name,
+					avatar_url: profile.avatar_url,
+					email: profile.email
+				};
 			});
 		}
 

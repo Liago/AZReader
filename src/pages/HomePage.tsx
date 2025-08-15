@@ -11,13 +11,12 @@ import {
 	IonMenuButton,
 	IonTabBar,
 	IonTabButton,
-	IonFab,
-	IonFabButton,
 	IonRefresher,
 	IonRefresherContent,
 	RefresherEventDetail,
-	IonSegment,
-	IonSegmentButton,
+	IonCard,
+	IonCardContent,
+	IonChip,
 	IonLabel
 } from '@ionic/react';
 import {
@@ -26,49 +25,41 @@ import {
 	notificationsOutline,
 	personOutline,
 	homeOutline,
-	addOutline,
-	refreshOutline,
-	trendingUpOutline,
-	gridOutline
+	menuOutline,
+	cameraOutline,
+	ellipseOutline
 } from 'ionicons/icons';
 import { Session } from '@supabase/supabase-js';
-import ArticlePreviewModal from '@components/ArticlePreviewModal';
-import ArticleList from '@components/ArticleList';
 import { Auth } from '@components/form/authentication';
 import { useAuth } from '@context/auth/AuthContext';
-import useArticleParser from '@hooks/useArticleParser';
+import useInfiniteArticles from '@hooks/useInfiniteArticles';
 
 // Types
-type TabType = 'latest' | 'saved' | 'trending' | 'categories';
+type TabType = 'latest' | 'world' | 'politics' | 'climate';
 
 const HomePage: React.FC = () => {
-	const { session, signOut } = useAuth();
+	const { session } = useAuth();
 	const {
-		parseUrl,
-		parsedArticle,
-		isParsingUrl,
-		parseError,
-		saveArticle,
-		isSavingArticle,
-		articles,
-		loadArticles,
-		isLoadingArticles,
-		resetParser
-	} = useArticleParser(session as Session | null);
+		filteredArticles,
+		isLoading,
+		refresh
+	} = useInfiniteArticles({ 
+		session: session as Session | null 
+	});
 
 	// Component state
 	const pageRef = useRef<HTMLElement>(null);
 	const [activeTab, setActiveTab] = useState<TabType>('latest');
-	const [showModal, setShowModal] = useState<boolean>(false);
+	const [showSearch, setShowSearch] = useState(false);
 
 	// Get current date for display
 	const getCurrentDate = (): string => {
 		const today = new Date();
 		const options: Intl.DateTimeFormatOptions = {
 			weekday: 'long',
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
+			month: 'short',
+			day: '2-digit',
+			year: 'numeric'
 		};
 		return today.toLocaleDateString('en-US', options);
 	};
@@ -76,42 +67,28 @@ const HomePage: React.FC = () => {
 	// Handle pull to refresh
 	const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
 		try {
-			await loadArticles();
+			await refresh();
 		} finally {
 			event.detail.complete();
 		}
 	};
 
-	// Handle URL parsing
-	const handleUrlParse = async (url: string) => {
-		await parseUrl(url);
-	};
+	// Debug logging for data flow
+	if (process.env.NODE_ENV === 'development') {
+		console.log('HomePage - Session:', session?.user?.id);
+		console.log('HomePage - filteredArticles:', filteredArticles?.length, 'articles');
+		console.log('HomePage - filteredArticles data:', filteredArticles);
+		console.log('HomePage - isLoading:', isLoading);
+	}
 
-	// Handle article save
-	const handleArticleSave = async (
-		article: any,
-		tags: string[],
-		notes?: string
-	) => {
-		await saveArticle(article, tags, notes);
-		setShowModal(false);
-	};
-
-	// Handle modal close
-	const handleModalClose = () => {
-		resetParser();
-		setShowModal(false);
-	};
-
-	// Handle add article button
-	const handleAddArticle = () => {
-		resetParser();
-		setShowModal(true);
-	};
+	// Get featured article (first article)
+	const featuredArticle = filteredArticles?.[0];
+	const trendingArticles = filteredArticles?.slice(1, 4) || [];
 
 
 	// Se l'utente non è autenticato, mostra solo la pagina di login
-	if (!session) {
+	if (!session || !session.user) {
+		console.log('HomePage: No valid session, showing Auth', { session, user: session?.user });
 		return (
 			<IonPage id="auth-page" ref={pageRef}>
 				<IonContent className="ion-padding">
@@ -127,196 +104,460 @@ const HomePage: React.FC = () => {
 	return (
 		<IonPage id="home-page" ref={pageRef}>
 			{/* Header */}
-			<IonHeader className="ion-no-border bg-white">
-				<IonToolbar className="bg-white">
+			<IonHeader className="ion-no-border">
+				<IonToolbar className="news-header">
 					<IonButtons slot="start">
-						<IonMenuButton autoHide={false} color="dark" />
+						<IonMenuButton color="dark" />
 					</IonButtons>
 					
 					<div className="header-content">
-						<IonTitle className="text-xl font-bold text-black">
-							My Reading List
-						</IonTitle>
-						<p className="header-date">{getCurrentDate()}</p>
+						<IonTitle className="news-title">Today's News</IonTitle>
+						<p className="news-date">{getCurrentDate()}</p>
 					</div>
 					
 					<IonButtons slot="primary">
-						<IonButton color="dark">
+						<IonButton fill="clear" color="dark" onClick={() => setShowSearch(!showSearch)}>
 							<IonIcon slot="icon-only" icon={searchOutline} />
 						</IonButton>
 					</IonButtons>
 				</IonToolbar>
 				
-				{/* Tab Navigation */}
-				<div className="tab-navigation">
-					<IonSegment
-						value={activeTab}
-						onIonChange={(e) => setActiveTab(e.detail.value as TabType)}
-					>
-						<IonSegmentButton value="latest">
-							<IonLabel>Latest</IonLabel>
-						</IonSegmentButton>
-						<IonSegmentButton value="saved">
-							<IonLabel>Saved</IonLabel>
-						</IonSegmentButton>
-						<IonSegmentButton value="trending">
-							<IonLabel>Trending</IonLabel>
-						</IonSegmentButton>
-						<IonSegmentButton value="categories">
-							<IonLabel>Categories</IonLabel>
-						</IonSegmentButton>
-					</IonSegment>
+				{/* Search Bar */}
+				{showSearch && (
+					<div className="search-bar">
+						<input 
+							type="text" 
+							placeholder="Search articles..." 
+							className="search-input"
+							autoFocus
+						/>
+					</div>
+				)}
+
+				{/* Category Navigation */}
+				<div className="category-tabs">
+					<div className="category-tab-container">
+						<div 
+							className={`category-tab ${activeTab === 'latest' ? 'active' : ''}`}
+							onClick={() => setActiveTab('latest')}
+						>
+							Latest
+							{activeTab === 'latest' && <div className="tab-indicator" />}
+						</div>
+						<div 
+							className={`category-tab ${activeTab === 'world' ? 'active' : ''}`}
+							onClick={() => setActiveTab('world')}
+						>
+							World
+							{activeTab === 'world' && <div className="tab-indicator" />}
+						</div>
+						<div 
+							className={`category-tab ${activeTab === 'politics' ? 'active' : ''}`}
+							onClick={() => setActiveTab('politics')}
+						>
+							Politics
+							{activeTab === 'politics' && <div className="tab-indicator" />}
+						</div>
+						<div 
+							className={`category-tab ${activeTab === 'climate' ? 'active' : ''}`}
+							onClick={() => setActiveTab('climate')}
+						>
+							Climate
+							{activeTab === 'climate' && <div className="tab-indicator" />}
+						</div>
+					</div>
 				</div>
 			</IonHeader>
 			
 			{/* Main content */}
-			<IonContent fullscreen>
+			<IonContent fullscreen className="news-content">
 				{/* Pull to refresh */}
 				<IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
 					<IonRefresherContent
-						pullingIcon={refreshOutline}
 						refreshingSpinner="circles"
 						refreshingText="Refreshing articles..."
 					/>
 				</IonRefresher>
 
-				{/* Tab content */}
-				<div className="tab-content">
-					{activeTab === 'latest' && (
-						<ArticleList
-							session={session as Session}
-						/>
-					)}
+				{/* Featured Article */}
+				{featuredArticle && (
+					<div className="featured-section">
+						<IonCard className="featured-card">
+							<div className="featured-image">
+								<img 
+									src={featuredArticle.image_url || '/api/placeholder/400/240'} 
+									alt={featuredArticle.title}
+									onError={(e) => {
+										const target = e.target as HTMLImageElement;
+										target.src = '/api/placeholder/400/240';
+									}}
+								/>
+							</div>
+							<IonCardContent className="featured-content">
+								<h2 className="featured-title">{featuredArticle.title}</h2>
+								<p className="featured-author">By {featuredArticle.author || 'Unknown'}</p>
+								<p className="featured-excerpt">{featuredArticle.excerpt}</p>
+								<div className="featured-actions">
+									<span className="read-more">Read More</span>
+								</div>
+							</IonCardContent>
+						</IonCard>
+						
+						{/* Page indicators */}
+						<div className="page-indicators">
+							<div className="indicator active"></div>
+							<div className="indicator"></div>
+							<div className="indicator"></div>
+							<div className="indicator"></div>
+						</div>
+					</div>
+				)}
+
+				{/* Trending Section */}
+				<div className="trending-section">
+					<div className="section-header">
+						<h3>Trending</h3>
+						<span className="see-all">See All</span>
+					</div>
 					
-					{activeTab === 'saved' && (
-						<ArticleList
-							session={session as Session}
-						/>
-					)}
-
-					{activeTab === 'trending' && (
-						<div className="coming-soon">
-							<IonIcon
-								icon={trendingUpOutline}
-								size="large"
-								color="medium"
-							/>
-							<p>Trending articles coming soon!</p>
-						</div>
-					)}
-
-					{activeTab === 'categories' && (
-						<div className="coming-soon">
-							<IonIcon
-								icon={gridOutline}
-								size="large"
-								color="medium"
-							/>
-							<p>Categories coming soon!</p>
-						</div>
-					)}
+					<div className="trending-articles">
+						{trendingArticles.map((article, index) => (
+							<div key={article.id} className="trending-article">
+								<div className="trending-image">
+									<img 
+										src={article.image_url || '/api/placeholder/80/80'} 
+										alt={article.title}
+										onError={(e) => {
+											const target = e.target as HTMLImageElement;
+											target.src = '/api/placeholder/80/80';
+										}}
+									/>
+								</div>
+								<div className="trending-content">
+									<div className="trending-meta">
+										<span className="source">BBC</span>
+										<span className="category">• World</span>
+									</div>
+									<h4 className="trending-title">{article.title}</h4>
+									<p className="trending-author">By {article.author || 'Unknown'}</p>
+								</div>
+								<IonButton fill="clear" size="small" className="bookmark-btn">
+									<IonIcon icon={bookmarkOutline} />
+								</IonButton>
+							</div>
+						))}
+					</div>
 				</div>
-
-				{/* Floating action button */}
-				<IonFab vertical="bottom" horizontal="end" slot="fixed">
-					<IonFabButton onClick={handleAddArticle} color="primary">
-						<IonIcon icon={addOutline} />
-					</IonFabButton>
-				</IonFab>
-
-				{/* Article preview modal */}
-				<ArticlePreviewModal
-					isOpen={showModal}
-					onClose={handleModalClose}
-					onSave={handleArticleSave}
-					onParseUrl={handleUrlParse}
-					article={parsedArticle}
-					isLoading={isParsingUrl}
-					error={parseError}
-					session={session}
-				/>
 			</IonContent>
 			
-			{/* Bottom tab navigation */}
-			<IonTabBar slot="bottom" className="bottom-tabs">
-				<IonTabButton tab="home" href="/home">
+			{/* Bottom Navigation */}
+			<IonTabBar slot="bottom" className="news-bottom-tabs">
+				<IonTabButton tab="home" href="/home" className="tab-selected">
 					<IonIcon icon={homeOutline} />
-					<IonLabel>Home</IonLabel>
 				</IonTabButton>
 				
-				<IonTabButton tab="saved" href="/saved">
-					<IonIcon icon={bookmarkOutline} />
-					<IonLabel>Saved</IonLabel>
+				<IonTabButton tab="discover" href="/discover">
+					<IonIcon icon={cameraOutline} />
 				</IonTabButton>
 				
-				<IonTabButton tab="notifications" href="/notifications">
+				<IonTabButton tab="activity" href="/activity">
 					<IonIcon icon={notificationsOutline} />
-					<IonLabel>Notifications</IonLabel>
 				</IonTabButton>
 				
 				<IonTabButton tab="profile" href="/profile">
 					<IonIcon icon={personOutline} />
-					<IonLabel>Profile</IonLabel>
 				</IonTabButton>
 			</IonTabBar>
 
 			{/* Styles */}
 			<style>{`
+				/* Header Styles */
+				.news-header {
+					--background: #f8f9fa;
+					--border-color: #e9ecef;
+					border-bottom: 1px solid var(--border-color);
+				}
+
 				.header-content {
 					display: flex;
 					flex-direction: column;
 					align-items: center;
 				}
 
-				.header-date {
-					font-size: 12px;
-					color: var(--ion-color-medium);
+				.news-title {
+					font-size: 20px;
+					font-weight: 700;
+					color: #000;
 					margin: 0;
 				}
 
-				.tab-navigation {
+				.news-date {
+					font-size: 13px;
+					color: #6c757d;
+					margin: 2px 0 0 0;
+				}
+
+				/* Category Tabs */
+				.category-tabs {
+					background: #000;
+					padding: 0;
+				}
+
+				.category-tab-container {
+					display: flex;
+					justify-content: space-around;
+					background: #000;
+					padding: 12px 0;
+				}
+
+				.category-tab {
+					color: #fff;
+					font-size: 14px;
+					font-weight: 500;
 					padding: 8px 16px;
+					position: relative;
+					cursor: pointer;
+					transition: all 0.2s ease;
 				}
 
-				.tab-content {
-					min-height: 100%;
+				.category-tab.active {
+					color: #fff;
 				}
 
-				.coming-soon {
+				.tab-indicator {
+					position: absolute;
+					bottom: -4px;
+					left: 50%;
+					transform: translateX(-50%);
+					width: 4px;
+					height: 4px;
+					background: #fff;
+					border-radius: 50%;
+				}
+
+				/* Content */
+				.news-content {
+					--background: #f8f9fa;
+				}
+
+				/* Featured Section */
+				.featured-section {
+					padding: 16px;
+					margin-bottom: 8px;
+				}
+
+				.featured-card {
+					margin: 0;
+					border-radius: 12px;
+					box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+					overflow: hidden;
+				}
+
+				.featured-image {
+					height: 180px;
+					overflow: hidden;
+				}
+
+				.featured-image img {
+					width: 100%;
+					height: 100%;
+					object-fit: cover;
+				}
+
+				.featured-content {
+					padding: 16px;
+				}
+
+				.featured-title {
+					font-size: 18px;
+					font-weight: 600;
+					color: #000;
+					margin: 0 0 8px 0;
+					line-height: 1.4;
+				}
+
+				.featured-author {
+					font-size: 13px;
+					color: #6c757d;
+					margin: 0 0 8px 0;
+				}
+
+				.featured-excerpt {
+					font-size: 14px;
+					color: #495057;
+					line-height: 1.5;
+					margin: 0 0 12px 0;
+				}
+
+				.featured-actions {
+					display: flex;
+					justify-content: flex-end;
+				}
+
+				.read-more {
+					color: #007bff;
+					font-size: 14px;
+					font-weight: 500;
+					cursor: pointer;
+				}
+
+				/* Page Indicators */
+				.page-indicators {
+					display: flex;
+					justify-content: center;
+					gap: 8px;
+					margin-top: 16px;
+				}
+
+				.indicator {
+					width: 8px;
+					height: 8px;
+					border-radius: 50%;
+					background: #dee2e6;
+					transition: all 0.2s ease;
+				}
+
+				.indicator.active {
+					background: #000;
+				}
+
+				/* Trending Section */
+				.trending-section {
+					background: #fff;
+					padding: 20px 16px;
+					margin-top: 8px;
+				}
+
+				.section-header {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					margin-bottom: 16px;
+				}
+
+				.section-header h3 {
+					font-size: 18px;
+					font-weight: 600;
+					color: #000;
+					margin: 0;
+				}
+
+				.see-all {
+					color: #007bff;
+					font-size: 14px;
+					font-weight: 500;
+					cursor: pointer;
+				}
+
+				.trending-articles {
 					display: flex;
 					flex-direction: column;
+					gap: 16px;
+				}
+
+				.trending-article {
+					display: flex;
 					align-items: center;
-					justify-content: center;
-					height: 50vh;
-					padding: 32px;
-					text-align: center;
-					color: var(--ion-color-medium);
+					gap: 12px;
 				}
 
-				.bottom-tabs {
-					border-top: 1px solid var(--ion-color-light);
+				.trending-image {
+					width: 60px;
+					height: 60px;
+					border-radius: 8px;
+					overflow: hidden;
+					flex-shrink: 0;
 				}
 
-				.bottom-tabs ion-tab-button {
-					color: var(--ion-color-medium);
+				.trending-image img {
+					width: 100%;
+					height: 100%;
+					object-fit: cover;
 				}
 
-				.bottom-tabs ion-tab-button.tab-selected {
-					color: var(--ion-color-primary);
+				.trending-content {
+					flex: 1;
 				}
 
+				.trending-meta {
+					font-size: 12px;
+					color: #6c757d;
+					margin-bottom: 4px;
+				}
+
+				.source {
+					font-weight: 500;
+				}
+
+				.trending-title {
+					font-size: 14px;
+					font-weight: 600;
+					color: #000;
+					margin: 0 0 4px 0;
+					line-height: 1.4;
+				}
+
+				.trending-author {
+					font-size: 12px;
+					color: #6c757d;
+					margin: 0;
+				}
+
+				.bookmark-btn {
+					--color: #6c757d;
+					margin: 0;
+				}
+
+				/* Bottom Navigation */
+				.news-bottom-tabs {
+					--background: #fff;
+					border-top: 1px solid #e9ecef;
+					height: 60px;
+				}
+
+				.news-bottom-tabs ion-tab-button {
+					--color: #6c757d;
+					--color-selected: #000;
+				}
+
+				.news-bottom-tabs ion-tab-button.tab-selected {
+					--color: #000;
+				}
+
+				/* Search Bar */
+				.search-bar {
+					padding: 8px 16px;
+					background: #f8f9fa;
+					border-bottom: 1px solid #e9ecef;
+				}
+
+				.search-input {
+					width: 100%;
+					padding: 8px 12px;
+					border: 1px solid #dee2e6;
+					border-radius: 20px;
+					background: white;
+					font-size: 14px;
+				}
+
+				.search-input:focus {
+					outline: none;
+					border-color: #007bff;
+				}
+
+				/* Responsive */
 				@media (max-width: 576px) {
-					.header-content ion-title {
-						font-size: 18px;
+					.featured-title {
+						font-size: 16px;
 					}
 					
-					.tab-navigation {
-						padding: 4px 8px;
+					.category-tab {
+						font-size: 13px;
+						padding: 6px 12px;
 					}
 					
-					.tab-navigation ion-segment-button {
-						--padding-start: 8px;
-						--padding-end: 8px;
+					.trending-section {
+						padding: 16px 12px;
 					}
 				}
 			`}</style>

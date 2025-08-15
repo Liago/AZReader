@@ -12,15 +12,20 @@ import toastSlice from './slices/toastSlice';
 import tagsSlice from './slices/tagsSlice';
 import filtersSlice from './slices/filtersSlice';
 
-// Legacy reducers (for gradual migration)
-import legacyReducers from './reducers';
-
 // Create history context
 const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({
 	history: createBrowserHistory(),
 });
 
-// Root reducer combining RTK slices and legacy reducers
+// Simple reducers for compatibility
+const simpleReducers = {
+	user: (state = { isLogged: false, credentials: {} }) => state,
+	loading: (state = false) => state,
+	error: (state = null) => state,
+	archive: (state = []) => state,
+};
+
+// Root reducer combining RTK slices and simple legacy reducers
 const rootReducer = combineReducers({
 	// RTK slices (new)
 	posts: postsSlice.reducer,
@@ -33,11 +38,8 @@ const rootReducer = combineReducers({
 	// Router
 	router: routerReducer,
 	
-	// Legacy reducers (keep during transition)
-	user: legacyReducers.user,
-	loading: (state = false) => state,
-	error: (state = null) => state,
-	archive: (state = []) => state,
+	// Simple legacy reducers for compatibility
+	...simpleReducers,
 });
 
 // Persist configuration

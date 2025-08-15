@@ -185,7 +185,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 					.from("articles")
 					.select("*", { count: "exact" })
 					.eq("user_id", session?.user?.id)
-					.order("savedOn", { ascending: false, nullsFirst: false })
+					.order("created_at", { ascending: false, nullsFirst: false })
 					.range(from, to);
 
 				if (!isMounted.current) return;
