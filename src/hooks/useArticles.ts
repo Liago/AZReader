@@ -173,7 +173,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 
 	const fetchPostsFromDb = useCallback(
 		async (isInitialFetch = false): Promise<void> => {
-			if (isLoading || !isMounted.current) return;
+			if (isLoading || !isMounted.current || !session?.user?.id) return;
 			setIsLoading(true);
 
 			try {
@@ -182,8 +182,9 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 				const to = from + itemsPerPage - 1;
 
 				const { data, count } = await supabase
-					.from("posts")
+					.from("articles")
 					.select("*", { count: "exact" })
+					.eq("user_id", session?.user?.id)
 					.order("savedOn", { ascending: false, nullsFirst: false })
 					.range(from, to);
 

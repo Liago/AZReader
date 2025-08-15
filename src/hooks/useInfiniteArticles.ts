@@ -72,9 +72,11 @@ const useInfiniteArticles = ({
 	const dispatch = useAppDispatch();
 	
 	// Redux state
-	const articles = useAppSelector(selectPosts);
-	const { fetchPosts: isFetchingPosts } = useAppSelector(selectPostsLoading);
-	const { fetch: fetchError } = useAppSelector(selectPostsErrors);
+	const articles = useAppSelector(selectPosts) || [];
+	const postsLoading = useAppSelector(selectPostsLoading) || {};
+	const { fetchPosts: isFetchingPosts } = postsLoading;
+	const postsErrors = useAppSelector(selectPostsErrors) || {};
+	const { fetch: fetchError } = postsErrors;
 	
 	// Local state
 	const [currentPage, setCurrentPage] = useState(1);

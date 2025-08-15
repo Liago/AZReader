@@ -295,7 +295,7 @@ export const dbHelpers = {
   }) => {
     const { data, error } = await supabase
       .from('users')
-      .upsert(userData, { onConflict: 'id' })
+      .upsert(userData)
       .select()
       .single()
     

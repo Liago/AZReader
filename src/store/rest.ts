@@ -133,7 +133,7 @@ export async function insertPost(postData: PostData) {
 		}, {} as PostData);
 
 		const { data, error } = await supabase
-			.from("posts")
+			.from("articles")
 			.insert(cleanedData)
 			.select();
 
@@ -155,7 +155,7 @@ export async function insertPost(postData: PostData) {
 }
 
 export async function deletePost(postId: string) {
-	const { data, error } = await supabase.from("posts").delete().match({ id: postId });
+	const { data, error } = await supabase.from("articles").delete().match({ id: postId });
 
 	if (error) {
 		console.error("Errore durante la cancellazione del post:", error);
@@ -173,7 +173,7 @@ export async function getPostLikesCount(postId: string) {
 }
 
 export async function checkUserLike(postId: string, userId: string) {
-	const { data, error } = await supabase.from("posts_likes").select("id").eq("post_id", postId).eq("user_id", userId).single();
+	const { data, error } = await supabase.from("likes").select("id").eq("article_id", postId).eq("user_id", userId).single();
 
 	if (error && error.code !== "PGRST116") throw error;
 	return !!data;
@@ -181,9 +181,9 @@ export async function checkUserLike(postId: string, userId: string) {
 
 export async function addLike(postId: string, userId: string) {
 	const { data, error } = await supabase
-		.from("posts_likes")
+		.from("likes")
 		.insert({
-			post_id: postId,
+			article_id: postId,
 			user_id: userId,
 		})
 		.select();
@@ -193,7 +193,7 @@ export async function addLike(postId: string, userId: string) {
 }
 
 export async function removeLike(postId: string, userId: string) {
-	const { data, error } = await supabase.from("posts_likes").delete().eq("post_id", postId).eq("user_id", userId);
+	const { data, error } = await supabase.from("likes").delete().eq("article_id", postId).eq("user_id", userId);
 
 	if (error) throw error;
 	return data;
@@ -202,9 +202,9 @@ export async function removeLike(postId: string, userId: string) {
 export async function getPostCommentsCount(postId: string) {
 	// Utilizzo di count() invece di rpc per maggiore compatibilità
 	const { count, error } = await supabase
-		.from("posts_comments")
+		.from("comments")
 		.select("*", { count: "exact", head: true })
-		.eq("post_id", postId)
+		.eq("article_id", postId)
 		.is("deleted_at", null);
 
 	if (error) throw error;
@@ -232,7 +232,7 @@ interface ProfileMap {
 export async function getPostComments(postId: string) {
 	// Modifichiamo la query per evitare l'uso della relazione implicita
 	const { data, error } = await supabase
-		.from("posts_comments")
+		.from("comments")
 		.select(
 			`
       id,
@@ -241,10 +241,10 @@ export async function getPostComments(postId: string) {
       updated_at,
       user_id,
       parent_id,
-      post_id
+      article_id
     `
 		)
-		.eq("post_id", postId)
+		.eq("article_id", postId)
 		.is("deleted_at", null)
 		.order("created_at", { ascending: true });
 
@@ -263,7 +263,7 @@ export async function getPostComments(postId: string) {
 		const userIds = Array.from(userIdSet);
 
 		// Recuperiamo i profili per questi utenti, includendo anche l'email
-		const { data: profiles, error: profilesError } = await supabase.from("profiles").select("id, username, avatar_url, email").in("id", userIds);
+		const { data: profiles, error: profilesError } = await supabase.from("users").select("id, name, avatar_url, email").in("id", userIds);
 
 		if (profilesError) {
 			console.error("Errore nel recupero dei profili:", profilesError);
@@ -327,13 +327,13 @@ export async function addComment(postId: string, userId: string, comment: string
 	console.log(`Aggiunta commento - postId: ${postId}, userId: ${userId}, parentId: ${parentId || "nessun parent"}`);
 
 	const commentData = {
-		post_id: postId,
+		article_id: postId,
 		user_id: userId,
 		comment,
 		parent_id: parentId || null, // Assicuriamoci che sia null se non specificato
 	};
 
-	const { data, error } = await supabase.from("posts_comments").insert(commentData).select().single();
+	const { data, error } = await supabase.from("comments").insert(commentData).select().single();
 
 	if (error) {
 		console.error("Errore durante l'aggiunta del commento:", error);
@@ -346,7 +346,7 @@ export async function addComment(postId: string, userId: string, comment: string
 
 export async function updateComment(commentId: string, userId: string, comment: string) {
 	const { data, error } = await supabase
-		.from("posts_comments")
+		.from("comments")
 		.update({
 			comment,
 			updated_at: new Date().toISOString(),
@@ -363,7 +363,7 @@ export async function updateComment(commentId: string, userId: string, comment: 
 export async function deleteComment(commentId: string, userId: string) {
 	// Utilizzando il soft delete (aggiornamento del campo deleted_at)
 	const { data, error } = await supabase
-		.from("posts_comments")
+		.from("comments")
 		.update({
 			deleted_at: new Date().toISOString(),
 		})
@@ -383,7 +383,7 @@ export async function deleteComment(commentId: string, userId: string) {
  */
 export async function getCommentReplies(commentId: string) {
 	const { data, error } = await supabase
-		.from("posts_comments")
+		.from("comments")
 		.select("*")
 		.eq("parent_id", commentId)
 		.is("deleted_at", null)

@@ -89,7 +89,7 @@ const ViewMessage: React.FC = () => {
 	const fetchArticle = async () => {
 		setIsLoading(true);
 		try {
-			const { data, error } = await supabase.from("posts").select("*").eq("id", id).single();
+			const { data, error } = await supabase.from("articles").select("*").eq("id", id).single();
 
 			if (error) throw error;
 

@@ -163,20 +163,21 @@ export const createPost = createAsyncThunk(
 		if (error) throw error;
 		
 		// Invalidate search cache when new content is added
-		if (data?.user_id) {
+		const article = data as Article;
+		if (article?.user_id) {
 			try {
 				const affectedTerms = [
-					data.title || '',
-					data.author || '',
-					data.domain || ''
+					article.title || '',
+					article.author || '',
+					article.domain || ''
 				].filter(Boolean);
-				searchCache.invalidateRelatedSearches(data.user_id, affectedTerms);
+				searchCache.invalidateRelatedSearches(article.user_id, affectedTerms);
 			} catch (cacheError) {
 				console.warn('Failed to invalidate search cache after post creation:', cacheError);
 			}
 		}
 		
-		return data as Post;
+		return article as Post;
 	}
 );
 
@@ -196,23 +197,24 @@ export const updatePost = createAsyncThunk(
 		if (error) throw error;
 		
 		// Invalidate search cache when content is updated
-		if (data?.user_id) {
+		const article = data as Article;
+		if (article?.user_id) {
 			try {
 				const affectedTerms = [
-					data.title || '',
-					data.author || '',
-					data.domain || '',
+					article.title || '',
+					article.author || '',
+					article.domain || '',
 					updates.title || '',
 					updates.author || '',
 					updates.domain || ''
 				].filter(Boolean);
-				searchCache.invalidateRelatedSearches(data.user_id, affectedTerms);
+				searchCache.invalidateRelatedSearches(article.user_id, affectedTerms);
 			} catch (cacheError) {
 				console.warn('Failed to invalidate search cache after post update:', cacheError);
 			}
 		}
 		
-		return data as Post;
+		return article as Post;
 	}
 );
 
@@ -254,7 +256,7 @@ export const toggleFavourite = createAsyncThunk(
 			.single();
 
 		if (error) throw error;
-		return data as Post;
+		return data as Article as Post;
 	}
 );
 
@@ -271,7 +273,7 @@ export const searchPosts = createAsyncThunk(
 			.limit(50);
 
 		if (error) throw error;
-		return (data || []) as Post[];
+		return (data || []) as Article[] as Post[];
 	}
 );
 
@@ -353,10 +355,10 @@ const postsSlice = createSlice({
 				const { posts, totalItems, page, limit } = action.payload;
 				
 				if (page === 1) {
-					state.items = posts;
+					state.items = posts as Post[];
 				} else {
 					// Append for pagination
-					state.items = [...state.items, ...posts];
+					state.items = [...state.items, ...posts as Post[]];
 				}
 				
 				state.pagination = {
