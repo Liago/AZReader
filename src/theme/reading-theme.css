@@ -96,9 +96,13 @@
   filter: brightness(var(--app-brightness));
   letter-spacing: calc(var(--app-spacing) * 0.05em);
   line-height: var(--app-spacing);
-  max-width: calc(var(--app-width) * 1ch);
+  max-width: min(calc(var(--app-width) * 1ch), 90vw);
+  min-width: 280px;
   margin: 0 auto;
   padding: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
   transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               filter 0.3s ease,
