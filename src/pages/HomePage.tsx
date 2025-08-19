@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useHistory } from 'react-router-dom';
 import {
 	IonContent,
 	IonPage,
@@ -35,6 +36,7 @@ type TabType = 'latest' | 'world' | 'politics' | 'climate';
 
 const HomePage: React.FC = () => {
 	const { session } = useAuth();
+	const history = useHistory();
 	const {
 		filteredArticles,
 		isLoading,
@@ -66,6 +68,40 @@ const HomePage: React.FC = () => {
 			await refresh();
 		} finally {
 			event.detail.complete();
+		}
+	};
+
+	// Navigate to article detail page
+	const handleArticleClick = (articleId: string) => {
+		history.push(`/article/${articleId}`);
+	};
+
+	// Handle "Read More" click
+	const handleReadMoreClick = (articleId: string) => {
+		history.push(`/article/${articleId}`);
+	};
+
+	// Handle "See All" click - navigate to full articles list
+	const handleSeeAllClick = () => {
+		// TODO: Create articles list page or navigate to existing one
+		console.log('See All clicked - will implement articles list page');
+	};
+
+	// Navigation handlers for tab menu
+	const handleTabNavigation = (tab: string) => {
+		switch (tab) {
+			case 'home':
+				history.push('/home');
+				break;
+			case 'discover':
+				history.push('/discover');
+				break;
+			case 'activity':
+				history.push('/activity');
+				break;
+			case 'profile':
+				history.push('/profile');
+				break;
 		}
 	};
 
@@ -178,7 +214,11 @@ const HomePage: React.FC = () => {
 				{/* Featured Article */}
 				{featuredArticle && (
 					<div className="featured-section">
-						<IonCard className="featured-card">
+						<IonCard 
+							className="featured-card" 
+							onClick={() => handleArticleClick(featuredArticle.id)}
+							style={{ cursor: 'pointer' }}
+						>
 							<div className="featured-image">
 								<img 
 									src={featuredArticle.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='} 
@@ -196,7 +236,16 @@ const HomePage: React.FC = () => {
 								<p className="featured-author">By {featuredArticle.author || 'Unknown'}</p>
 								<p className="featured-excerpt">{featuredArticle.excerpt}</p>
 								<div className="featured-actions">
-									<span className="read-more">Read More</span>
+									<span 
+										className="read-more"
+										onClick={(e) => {
+											e.stopPropagation();
+											handleReadMoreClick(featuredArticle.id);
+										}}
+										style={{ cursor: 'pointer', color: '#007bff' }}
+									>
+										Read More
+									</span>
 								</div>
 							</IonCardContent>
 						</IonCard>
@@ -215,12 +264,23 @@ const HomePage: React.FC = () => {
 				<div className="trending-section">
 					<div className="section-header">
 						<h3>Trending</h3>
-						<span className="see-all">See All</span>
+						<span 
+							className="see-all"
+							onClick={handleSeeAllClick}
+							style={{ cursor: 'pointer', color: '#007bff' }}
+						>
+							See All
+						</span>
 					</div>
 					
 					<div className="trending-articles">
 						{trendingArticles.map((article, index) => (
-							<div key={article.id} className="trending-article">
+							<div 
+								key={article.id} 
+								className="trending-article"
+								onClick={() => handleArticleClick(article.id)}
+								style={{ cursor: 'pointer' }}
+							>
 								<div className="trending-image">
 									<img 
 										src={article.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObzwvdGV4dD48L3N2Zz4='} 
@@ -252,19 +312,32 @@ const HomePage: React.FC = () => {
 			
 			{/* Bottom Navigation */}
 			<IonTabBar slot="bottom" className="news-bottom-tabs">
-				<IonTabButton tab="home" href="/home" className="tab-selected">
+				<IonTabButton 
+					tab="home" 
+					className="tab-selected"
+					onClick={() => handleTabNavigation('home')}
+				>
 					<IonIcon icon={homeOutline} />
 				</IonTabButton>
 				
-				<IonTabButton tab="discover" href="/discover">
+				<IonTabButton 
+					tab="discover"
+					onClick={() => handleTabNavigation('discover')}
+				>
 					<IonIcon icon={cameraOutline} />
 				</IonTabButton>
 				
-				<IonTabButton tab="activity" href="/activity">
+				<IonTabButton 
+					tab="activity"
+					onClick={() => handleTabNavigation('activity')}
+				>
 					<IonIcon icon={notificationsOutline} />
 				</IonTabButton>
 				
-				<IonTabButton tab="profile" href="/profile">
+				<IonTabButton 
+					tab="profile"
+					onClick={() => handleTabNavigation('profile')}
+				>
 					<IonIcon icon={personOutline} />
 				</IonTabButton>
 			</IonTabBar>
