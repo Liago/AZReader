@@ -18,6 +18,8 @@ import VerifyEmail from "@pages/verifyEmail";
 import DiscoverPage from "@pages/DiscoverPage";
 import ActivityFeedPage from "@pages/ActivityFeedPage";
 import PersonalizedFeedPage from "@pages/PersonalizedFeedPage";
+import ProfilePage from "@pages/ProfilePage";
+import InfoPage from "@pages/InfoPage";
 import { supabase } from "@store/rest";
 
 import "@ionic/react/css/core.css";
@@ -274,6 +276,8 @@ const AppContent: React.FC = () => {
 				<Route path="/article/:id" component={ViewMessage} />
 				<Route exact path="/discover" component={DiscoverPage} />
 				<Route exact path="/activity" component={ActivityFeedPage} />
+				<Route exact path="/profile" component={ProfilePage} />
+				<Route exact path="/info" component={InfoPage} />
 				<Route exact path="/following" component={PersonalizedFeedPage} />
 				<Route exact path="/auth/confirm" component={AuthConfirmPage} />
 				<Route exact path="/verify-email" component={VerifyEmail} />
