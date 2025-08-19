@@ -13,6 +13,7 @@ import {
   IonIcon,
   IonBadge,
   IonToast,
+  IonBackButton,
 } from '@ionic/react';
 import {
   globeOutline,
@@ -106,6 +107,9 @@ const ActivityFeedPage: React.FC<ActivityFeedPageProps> = ({ className = '' }) =
     <IonPage className={`activity-feed-page ${className}`}>
       <IonHeader>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/home" />
+          </IonButtons>
           <IonTitle>Activity Feed</IonTitle>
           <IonButtons slot="end">
             <IonButton fill="clear">

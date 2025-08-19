@@ -30,6 +30,7 @@ import {
   IonButtons,
   IonItem,
   IonList,
+  IonBackButton,
   RefresherEventDetail,
 } from '@ionic/react';
 import {
@@ -627,6 +628,9 @@ const DiscoverTab: React.FC<DiscoverTabProps> = ({
     <IonPage className={`discover-tab ${className}`}>
       <IonHeader>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/home" />
+          </IonButtons>
           <IonTitle>Discover</IonTitle>
           <IonButtons slot="end">
             <IonButton onClick={refreshAll} disabled={isLoading}>
