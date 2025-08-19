@@ -1,3 +1,18 @@
+# [1.19.0](https://github.com/Liago/AZReader/compare/v1.18.1...v1.19.0) (2025-08-19)
+
+
+### Bug Fixes
+
+* infiite loop ([130fba3](https://github.com/Liago/AZReader/commit/130fba3bd7cf4c44f0178708103fc810dacdbf79))
+* vari ([5c0a3e4](https://github.com/Liago/AZReader/commit/5c0a3e4b1d1419ca2cc0a49fc32d9d8e7acc7320))
+
+
+### Features
+
+* Add Profile and Info pages with basic routing ([f7d6a60](https://github.com/Liago/AZReader/commit/f7d6a6060349da58cd71d9051b104109b54fad46))
+* Enhance HomePage article and tab navigation ([3c3da52](https://github.com/Liago/AZReader/commit/3c3da52bbeb60a5a57d5658c5853886feabf8434))
+* Implement back button navigation on Discover and Activity Feed pages ([854bd1d](https://github.com/Liago/AZReader/commit/854bd1d20f7f904813bd596a795fc853997661d1))
+
 ## [1.18.1](https://github.com/Liago/AZReader/compare/v1.18.0...v1.18.1) (2025-08-14)
 
 
