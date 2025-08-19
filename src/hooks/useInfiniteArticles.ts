@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import {
@@ -202,28 +202,46 @@ const useInfiniteArticles = ({
 		return Math.ceil(filteredArticles.length / pageSize);
 	}, [filteredArticles.length, pageSize]);
 
-	// Load initial articles
+	// Use refs to avoid dependency issues
+	const sessionRef = useRef(session);
+	const dispatchRef = useRef(dispatch);
+	const pageSizeRef = useRef(pageSize);
+	const isLoadingRef = useRef(false); // Prevent multiple simultaneous requests
+
+	// Update refs when values change
+	useEffect(() => {
+		sessionRef.current = session;
+	}, [session]);
+
+	useEffect(() => {
+		dispatchRef.current = dispatch;
+	}, [dispatch]);
+
+	useEffect(() => {
+		pageSizeRef.current = pageSize;
+	}, [pageSize]);
+
+	// Load initial articles - stable callback using refs
 	const loadArticles = useCallback(async (page: number = 1, append: boolean = false) => {
-		if (!session?.user) {
-			console.log('loadArticles: No session or user, skipping');
+		const currentSession = sessionRef.current;
+		const currentDispatch = dispatchRef.current;
+		const currentPageSize = pageSizeRef.current;
+
+		if (!currentSession?.user || isLoadingRef.current) {
 			return;
 		}
 
-		console.log('loadArticles called with:', { page, append, userId: session.user.id, pageSize });
-
+		isLoadingRef.current = true;
+		
 		try {
-			console.log('loadArticles: About to dispatch fetchPosts...');
-			const response = await dispatch(fetchPosts({
-				userId: session.user.id,
+			const response = await currentDispatch(fetchPosts({
+				userId: currentSession.user.id,
 				page,
-				limit: pageSize
+				limit: currentPageSize
 			})).unwrap();
-			
-			console.log('loadArticles: fetchPosts response SUCCESS:', response);
-			console.log('loadArticles: Posts received:', response.posts?.length, 'posts');
 
 			// Update pagination state
-			const hasMoreItems = response.posts.length === pageSize;
+			const hasMoreItems = response.posts.length === currentPageSize;
 			setHasMore(hasMoreItems);
 			setTotalCount(response.totalItems || 0);
 
@@ -232,13 +250,16 @@ const useInfiniteArticles = ({
 			}
 		} catch (error) {
 			console.error('loadArticles: fetchPosts ERROR:', error);
-			dispatch(showError('Failed to load articles'));
+			currentDispatch(showError('Failed to load articles'));
+		} finally {
+			isLoadingRef.current = false;
 		}
-	}, [session, dispatch, pageSize]);
+	}, []); // No dependencies - uses refs for current values
 
 	// Load more articles (infinite scroll)
 	const loadMore = useCallback(async () => {
-		if (!hasMore || isLoadingMore || !session?.user) return;
+		const currentSession = sessionRef.current;
+		if (!hasMore || isLoadingMore || !currentSession?.user) return;
 
 		setIsLoadingMore(true);
 		try {
@@ -250,14 +271,14 @@ const useInfiniteArticles = ({
 		} finally {
 			setIsLoadingMore(false);
 		}
-	}, [hasMore, isLoadingMore, currentPage, loadArticles, session]);
+	}, [hasMore, isLoadingMore, currentPage]); // Removed loadArticles dependency
 
 	// Refresh articles
 	const refresh = useCallback(async () => {
 		setCurrentPage(1);
 		setHasMore(true);
 		await loadArticles(1, false);
-	}, [loadArticles]);
+	}, []); // No dependencies - loadArticles is stable
 
 	// Delete article
 	const deleteArticle = useCallback(async (articleId: string) => {
@@ -339,19 +360,20 @@ const useInfiniteArticles = ({
 		localStorage.setItem('articleViewMode', newMode);
 	}, []);
 
-	// Load initial data
+	// Load initial data - only when user ID changes
+	const userIdRef = useRef<string | undefined>(undefined);
+	
 	useEffect(() => {
-		console.log('useInfiniteArticles - useEffect triggered:', { 
-			hasSession: !!session?.user, 
-			userId: session?.user?.id 
-		});
-		if (session?.user) {
-			console.log('useInfiniteArticles - calling loadArticles...');
+		const currentUserId = session?.user?.id;
+		
+		// Only load if user ID actually changed (not just session object)
+		if (currentUserId && currentUserId !== userIdRef.current) {
+			userIdRef.current = currentUserId;
 			loadArticles();
-		} else {
-			console.log('useInfiniteArticles - no session, skipping loadArticles');
+		} else if (!currentUserId) {
+			userIdRef.current = undefined;
 		}
-	}, [session, loadArticles]);
+	}, [session?.user?.id]); // No loadArticles dependency since it's stable
 
 	// Load saved preferences on mount
 	useEffect(() => {

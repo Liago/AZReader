@@ -15,9 +15,7 @@ import {
 	IonRefresherContent,
 	RefresherEventDetail,
 	IonCard,
-	IonCardContent,
-	IonChip,
-	IonLabel
+	IonCardContent
 } from '@ionic/react';
 import {
 	searchOutline,
@@ -25,9 +23,7 @@ import {
 	notificationsOutline,
 	personOutline,
 	homeOutline,
-	menuOutline,
-	cameraOutline,
-	ellipseOutline
+	cameraOutline
 } from 'ionicons/icons';
 import { Session } from '@supabase/supabase-js';
 import { Auth } from '@components/form/authentication';
@@ -185,11 +181,13 @@ const HomePage: React.FC = () => {
 						<IonCard className="featured-card">
 							<div className="featured-image">
 								<img 
-									src={featuredArticle.image_url || '/api/placeholder/400/240'} 
+									src={featuredArticle.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='} 
 									alt={featuredArticle.title}
 									onError={(e) => {
 										const target = e.target as HTMLImageElement;
-										target.src = '/api/placeholder/400/240';
+										if (!target.src.startsWith('data:')) {
+											target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+										}
 									}}
 								/>
 							</div>
@@ -225,11 +223,13 @@ const HomePage: React.FC = () => {
 							<div key={article.id} className="trending-article">
 								<div className="trending-image">
 									<img 
-										src={article.image_url || '/api/placeholder/80/80'} 
+										src={article.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObzwvdGV4dD48L3N2Zz4='} 
 										alt={article.title}
 										onError={(e) => {
 											const target = e.target as HTMLImageElement;
-											target.src = '/api/placeholder/80/80';
+											if (!target.src.startsWith('data:')) {
+												target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObzwvdGV4dD48L3N2Zz4=';
+											}
 										}}
 									/>
 								</div>

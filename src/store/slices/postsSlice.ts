@@ -355,10 +355,21 @@ const postsSlice = createSlice({
 		// Fetch posts
 		builder
 			.addCase(fetchPosts.pending, (state) => {
+				// Ensure loading object exists
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.fetchPosts = true;
 				state.errors.fetch = null;
 			})
 			.addCase(fetchPosts.fulfilled, (state, action) => {
+				// Ensure loading object exists
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
 				state.loading.fetchPosts = false;
 				const { posts, totalItems, page, limit } = action.payload;
 				
@@ -375,6 +386,10 @@ const postsSlice = createSlice({
 				
 				console.log('Final state.items length:', state.items.length);
 				
+				// Ensure pagination object exists
+				if (!state.pagination) {
+					state.pagination = { ...initialState.pagination };
+				}
 				state.pagination = {
 					...state.pagination,
 					currentPage: page,
@@ -386,6 +401,13 @@ const postsSlice = createSlice({
 				console.log('Updated pagination:', state.pagination);
 			})
 			.addCase(fetchPosts.rejected, (state, action) => {
+				// Ensure loading and errors objects exist
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.fetchPosts = false;
 				state.errors.fetch = action.error.message || 'Failed to fetch posts';
 			})
@@ -393,14 +415,29 @@ const postsSlice = createSlice({
 		// Create post
 		builder
 			.addCase(createPost.pending, (state) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.createPost = true;
 				state.errors.create = null;
 			})
 			.addCase(createPost.fulfilled, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
 				state.loading.createPost = false;
 				state.items.unshift(action.payload);
 			})
 			.addCase(createPost.rejected, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.createPost = false;
 				state.errors.create = action.error.message || 'Failed to create post';
 			})
@@ -408,10 +445,19 @@ const postsSlice = createSlice({
 		// Update post
 		builder
 			.addCase(updatePost.pending, (state) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.updatePost = true;
 				state.errors.update = null;
 			})
 			.addCase(updatePost.fulfilled, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
 				state.loading.updatePost = false;
 				const updatedPost = action.payload;
 				const index = state.items.findIndex(post => post.id === updatedPost.id);
@@ -423,6 +469,12 @@ const postsSlice = createSlice({
 				}
 			})
 			.addCase(updatePost.rejected, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.updatePost = false;
 				state.errors.update = action.error.message || 'Failed to update post';
 			})
@@ -430,10 +482,19 @@ const postsSlice = createSlice({
 		// Delete post
 		builder
 			.addCase(deletePost.pending, (state) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.deletePost = true;
 				state.errors.delete = null;
 			})
 			.addCase(deletePost.fulfilled, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
 				state.loading.deletePost = false;
 				const deletedId = action.payload;
 				state.items = state.items.filter(post => post.id !== deletedId);
@@ -442,6 +503,12 @@ const postsSlice = createSlice({
 				}
 			})
 			.addCase(deletePost.rejected, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.deletePost = false;
 				state.errors.delete = action.error.message || 'Failed to delete post';
 			})
@@ -468,14 +535,29 @@ const postsSlice = createSlice({
 		// Search posts
 		builder
 			.addCase(searchPosts.pending, (state) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.searchPosts = true;
 				state.errors.search = null;
 			})
 			.addCase(searchPosts.fulfilled, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
 				state.loading.searchPosts = false;
 				// Store search results separately or replace items based on UI needs
 			})
 			.addCase(searchPosts.rejected, (state, action) => {
+				if (!state.loading) {
+					state.loading = { ...initialState.loading };
+				}
+				if (!state.errors) {
+					state.errors = { ...initialState.errors };
+				}
 				state.loading.searchPosts = false;
 				state.errors.search = action.error.message || 'Search failed';
 			});
