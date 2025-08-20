@@ -54,9 +54,6 @@ node_modules/
 *.sw?
 # OS specific
 
-# Task files
-tasks.json
-tasks/ 
 .claude
 .cursor
 .taskmaster
@@ -67,3 +64,7 @@ tasks/
 PERFORMANCE_OPTIMIZATION_SUMMARY.md.backup.1755024950554
 
 SESSION.md
+
+# Task files
+# tasks.json
+# tasks/ 

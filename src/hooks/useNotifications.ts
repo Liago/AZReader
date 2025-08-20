@@ -171,7 +171,7 @@ const useNotifications = (options: UseNotificationsOptions = {}): UseNotificatio
         data = { likeId: payload.new?.id };
         break;
       case 'comment':
-        const commentContent = payload.new?.comment || '';
+        const commentContent = payload.new?.content || '';
         const truncatedContent = commentContent.length > 50 
           ? commentContent.substring(0, 50) + '...' 
           : commentContent;
@@ -182,7 +182,7 @@ const useNotifications = (options: UseNotificationsOptions = {}): UseNotificatio
         };
         break;
       case 'reply':
-        const replyContent = payload.new?.comment || '';
+        const replyContent = payload.new?.content || '';
         const truncatedReply = replyContent.length > 50 
           ? replyContent.substring(0, 50) + '...' 
           : replyContent;

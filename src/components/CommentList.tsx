@@ -206,7 +206,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
         {/* Comment content */}
         <div className="text-gray-800 text-sm mb-3">
-          {comment.comment}
+          {comment.content}
         </div>
 
         {/* Comment actions */}

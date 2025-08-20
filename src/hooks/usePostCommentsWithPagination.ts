@@ -12,7 +12,7 @@ export interface CommentProfile {
 
 export interface Comment {
   id: string;
-  comment: string;
+  content: string;
   created_at: string;
   updated_at: string | null;
   user_id: string;
@@ -172,8 +172,7 @@ export const usePostCommentsWithPagination = (
           parent_id,
           article_id
         `)
-        .eq("article_id", postId)
-        .is("deleted_at", null);
+        .eq("article_id", postId);
 
       // Apply sorting
       query = query.order("created_at", { 
@@ -213,7 +212,7 @@ export const usePostCommentsWithPagination = (
         // Attach profiles to comments
         const commentsWithProfiles: Comment[] = (data as any[]).map((comment: any) => ({
           ...comment,
-          comment: comment.content || '', // Map content field to comment field
+          content: comment.content || '', // Ensure content field is mapped correctly
           profiles: profilesMap[comment.user_id] || {
             username: null,
             avatar_url: null,
@@ -261,8 +260,7 @@ export const usePostCommentsWithPagination = (
       let countQuery = supabase
         .from("comments")
         .select("*", { count: "exact", head: true })
-        .eq("article_id", postId)
-        .is("deleted_at", null);
+        .eq("article_id", postId);
 
       // Apply filter to count
       if (filter === 'root-only') {
@@ -351,7 +349,7 @@ export const usePostCommentsWithPagination = (
     try {
       const { error } = await supabase
         .from('comments')
-        .update({ deleted_at: new Date().toISOString() } as any)
+        .delete()
         .eq('id', commentId)
         .eq('user_id', session.user.id);
 

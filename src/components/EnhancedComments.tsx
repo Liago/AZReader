@@ -34,7 +34,7 @@ interface EnhancedCommentInputProps {
 interface EnhancedCommentItemProps {
   comment: {
     id: string;
-    comment: string;
+    content: string;
     user_id: string;
     created_at: string;
     profiles?: {
@@ -277,7 +277,7 @@ const EnhancedCommentItem: React.FC<EnhancedCommentItemProps> = ({
 
           {/* Comment content */}
           <div className="text-gray-800 text-sm mb-3">
-            {comment.comment}
+            {comment.content}
           </div>
 
           {/* Comment actions */}
@@ -331,7 +331,7 @@ const EnhancedCommentItem: React.FC<EnhancedCommentItemProps> = ({
         onClose={() => setShowReportModal(false)}
         contentType="comment"
         contentId={comment.id}
-        contentPreview={comment.comment}
+        contentPreview={comment.content}
         reportedUserEmail={userEmail}
       />
 

@@ -11,7 +11,7 @@ export interface CommentProfile {
 
 export interface Comment {
 	id: string;
-	comment: string;
+	content: string;
 	created_at: string;
 	updated_at: string | null;
 	user_id: string;
@@ -98,7 +98,7 @@ export const usePostComments = (postId: string, session: Session | null): UsePos
 			const typedComments: Comment[] = Array.isArray(fetchedComments)
 				? fetchedComments.map((comment: any) => ({
 						id: comment.id,
-						comment: comment.comment || "",
+						content: comment.content || "",
 						created_at: comment.created_at,
 						updated_at: comment.updated_at,
 						user_id: comment.user_id,

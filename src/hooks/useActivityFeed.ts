@@ -147,7 +147,7 @@ export const useActivityFeed = (options: ActivityFeedOptions = {}): UseActivityF
       let query;
       const currentOffset = isMore ? offset : 0;
 
-      if (aggregated) {
+      if (false && aggregated) { // TEMPORARY: Disable aggregated queries until activity_aggregates table is created
         // Load aggregated activities
         query = supabase
           .from('activity_aggregates' as any)

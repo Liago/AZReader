@@ -123,7 +123,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, startReply, handleDe
 				</div>
 
 				{/* Contenuto del commento */}
-				<div className="text-gray-800 text-sm mb-3">{comment.comment}</div>
+				<div className="text-gray-800 text-sm mb-3">{comment.content}</div>
 
 				{/* Reazioni e interazioni */}
 				<div className="flex items-center justify-between">

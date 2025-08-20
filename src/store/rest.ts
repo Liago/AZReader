@@ -173,10 +173,10 @@ export async function getPostLikesCount(postId: string) {
 }
 
 export async function checkUserLike(postId: string, userId: string) {
-	const { data, error } = await supabase.from("likes").select("id").eq("article_id", postId).eq("user_id", userId).single();
+	const { data, error } = await supabase.from("likes").select("id").eq("article_id", postId).eq("user_id", userId);
 
-	if (error && error.code !== "PGRST116") throw error;
-	return !!data;
+	if (error) throw error;
+	return data && data.length > 0;
 }
 
 export async function addLike(postId: string, userId: string) {
@@ -204,8 +204,7 @@ export async function getPostCommentsCount(postId: string) {
 	const { count, error } = await supabase
 		.from("comments")
 		.select("*", { count: "exact", head: true })
-		.eq("article_id", postId)
-		.is("deleted_at", null);
+		.eq("article_id", postId);
 
 	if (error) throw error;
 	return count || 0;
@@ -236,7 +235,7 @@ export async function getPostComments(postId: string) {
 		.select(
 			`
       id,
-      comment,
+      content,
       created_at,
       updated_at,
       user_id,
@@ -245,7 +244,6 @@ export async function getPostComments(postId: string) {
     `
 		)
 		.eq("article_id", postId)
-		.is("deleted_at", null)
 		.order("created_at", { ascending: true });
 
 	if (error) throw error;
@@ -366,12 +364,10 @@ export async function updateComment(commentId: string, userId: string, comment: 
 }
 
 export async function deleteComment(commentId: string, userId: string) {
-	// Utilizzando il soft delete (aggiornamento del campo deleted_at)
+	// Hard delete del commento (la tabella non ha deleted_at)
 	const { data, error } = await supabase
 		.from("comments")
-		.update({
-			deleted_at: new Date().toISOString(),
-		})
+		.delete()
 		.eq("id", commentId)
 		.eq("user_id", userId)
 		.select();
@@ -391,7 +387,6 @@ export async function getCommentReplies(commentId: string) {
 		.from("comments")
 		.select("*")
 		.eq("parent_id", commentId)
-		.is("deleted_at", null)
 		.order("created_at", { ascending: true });
 
 	if (error) throw error;
