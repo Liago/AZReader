@@ -96,7 +96,7 @@
   filter: brightness(var(--app-brightness));
   letter-spacing: calc(var(--app-spacing) * 0.05em);
   line-height: var(--app-spacing);
-  max-width: min(calc(var(--app-width) * 1ch), 90vw);
+  /* max-width: min(calc(var(--app-width) * 1ch), 90vw); */
   min-width: 280px;
   margin: 0 auto;
   padding: 1rem;

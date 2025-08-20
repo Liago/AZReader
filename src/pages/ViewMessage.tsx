@@ -333,10 +333,10 @@ const ViewMessage: React.FC = () => {
 					</div>
 
 					<div className="flex flex-col items-center justify-center">
-						<IonButton fill="clear" size="small">
+						<IonButton fill="clear" size="small" onClick={insertTagHandler}>
 							<IonIcon icon={bookmarkOutline} color="medium" size="small" />
 						</IonButton>
-						<div className="text-xs text-center text-gray-500">Salva</div>
+						<div className="text-xs text-center text-gray-500">Tags</div>
 					</div>
 				</div>
 			</IonFooter>
