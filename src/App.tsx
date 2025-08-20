@@ -20,6 +20,7 @@ import ActivityFeedPage from "@pages/ActivityFeedPage";
 import PersonalizedFeedPage from "@pages/PersonalizedFeedPage";
 import ProfilePage from "@pages/ProfilePage";
 import InfoPage from "@pages/InfoPage";
+import SearchPage from "@pages/SearchPage";
 import { supabase } from "@store/rest";
 
 import "@ionic/react/css/core.css";
@@ -274,6 +275,8 @@ const AppContent: React.FC = () => {
 			<IonRouterOutlet id="main">
 				<Route exact path="/home" component={Home} />
 				<Route path="/article/:id" component={ViewMessage} />
+				<Route exact path="/search" component={SearchPage} />
+				<Route exact path="/search/:query" component={SearchPage} />
 				<Route exact path="/discover" component={DiscoverPage} />
 				<Route exact path="/activity" component={ActivityFeedPage} />
 				<Route exact path="/profile" component={ProfilePage} />

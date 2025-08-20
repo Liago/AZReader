@@ -1,36 +1,36 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   IonPage,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButtons,
   IonButton,
   IonIcon,
-  IonText,
-  IonFab,
-  IonFabButton,
-  IonToast,
+  IonButtons,
   IonActionSheet,
-  IonAlert,
+  IonToast,
+  IonText,
   IonRefresher,
   IonRefresherContent,
+  IonFab,
+  IonFabButton,
   RefresherEventDetail,
   IonProgressBar,
+  IonModal,
 } from '@ionic/react';
+import { useLocation, useParams, useHistory } from 'react-router-dom';
 import {
   searchOutline,
   filterOutline,
-  refreshOutline,
   settingsOutline,
+  timeOutline,
   analyticsOutline,
   downloadOutline,
   shareOutline,
-  bookmarkOutline,
-  trendingUpOutline,
+  refreshOutline,
   trashOutline,
-  timeOutline,
+  closeOutline,
 } from 'ionicons/icons';
 
 // Components
@@ -40,19 +40,30 @@ import SearchFiltersModal from '@components/SearchFiltersModal';
 import SearchHistoryModal from '@components/SearchHistoryModal';
 
 // Hooks
+import { useAppSelector } from '@store/hooks';
 import { useSearchBar } from '@hooks/useSearchBar';
 import { useFullTextSearch } from '@hooks/useFullTextSearch';
 import { useSearchFilterPresets } from '@hooks/useSearchFilterPresets';
-import { useAppSelector } from '@store/hooks';
 
-// Services and Types
+// Services and types
 import { SearchFilters, SearchResult, searchService } from '@services/searchService';
 import { FilterPreset } from '@components/SearchFiltersModal';
+import { menuController } from '@ionic/core';
 
 const SearchPage: React.FC = () => {
-  // Get current user
-  const currentUser = useAppSelector(state => state.auth?.user);
+  console.log('🔥 SearchPage component is loading!');
+  
+  // Get current user and location
+  const currentUser = useAppSelector((state: any) => state.auth?.user);
   const userId = currentUser?.id;
+  const location = useLocation();
+  const params = useParams<{ query?: string }>();
+  const history = useHistory();
+  
+  console.log('🔥 SearchPage basic setup done');
+
+  // Get search query from route parameter
+  const searchQueryFromRoute = params.query ? decodeURIComponent(params.query) : null;
 
   // State
   const [showFiltersModal, setShowFiltersModal] = useState(false);
@@ -66,18 +77,14 @@ const SearchPage: React.FC = () => {
   const [availableTags, setAvailableTags] = useState<Array<{ id: string; name: string; color?: string; usage_count?: number }>>([]);
   const [availableDomains, setAvailableDomains] = useState<Array<{ domain: string; count: number }>>([]);
   const [currentSearchId, setCurrentSearchId] = useState<string>('');
+  const [searchInput, setSearchInput] = useState(searchQueryFromRoute || '');
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [shouldReapplySearch, setShouldReapplySearch] = useState(false);
 
-  // Hooks
-  const searchBar = useSearchBar({
-    onSearch: handleSearch,
-    onClear: handleClearSearch,
-    enableHistory: true,
-    enableSuggestions: true,
-    enableEnhancedSuggestions: true,
-    maxRecentSearches: 10,
-    userId,
-  });
+  // Debug modal state
+  console.log('SearchPage render - showFiltersModal:', showFiltersModal);
 
+  // Initialize hooks
   const fullTextSearch = useFullTextSearch({
     userId,
     enableHistory: true,
@@ -91,41 +98,50 @@ const SearchPage: React.FC = () => {
     maxPresets: 15,
   });
 
-  // Search handlers
-  function handleSearch(query: string) {
+  // Clear search handler
+  const handleClearSearch = useCallback(() => {
+    fullTextSearch.clearResults();
+  }, [fullTextSearch]);
+
+  // Search handler
+  const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
-      searchBar.performSearch(query);
-      
       // Track search with enhanced history and get performance metrics
       const startTime = performance.now();
+      
+      // Perform the search
       fullTextSearch.performSearch(query, fullTextSearch.currentFilters)
         .then(() => {
           const endTime = performance.now();
           const executionTime = endTime - startTime;
           const resultCount = fullTextSearch.searchResults?.totalCount || 0;
           
-          // Record enhanced search with metadata
-          const searchId = searchBar.recordSearchWithMetadata(
-            query, 
-            resultCount, 
-            executionTime
-          );
-          setCurrentSearchId(searchId);
+          // Set simple search ID for tracking
+          setCurrentSearchId(`search-${Date.now()}`);
         })
         .catch((error) => {
-          console.error('Search failed:', error);
-          // Still record the search attempt
+          console.error('SearchPage: Search failed with error:', error);
           const endTime = performance.now();
           const executionTime = endTime - startTime;
-          const searchId = searchBar.recordSearchWithMetadata(query, 0, executionTime);
-          setCurrentSearchId(searchId);
+          setCurrentSearchId(`search-error-${Date.now()}`);
         });
     }
-  }
+  }, [fullTextSearch, userId]);
 
-  function handleClearSearch() {
-    fullTextSearch.clearResults();
-  }
+  // Store handleSearch in ref to avoid useEffect dependency issues
+  const handleSearchRef = useRef(handleSearch);
+  handleSearchRef.current = handleSearch;
+
+  // Initialize searchBar hook
+  const searchBar = useSearchBar({
+    onSearch: handleSearch,
+    onClear: handleClearSearch,
+    enableHistory: true,
+    enableSuggestions: true,
+    enableEnhancedSuggestions: true,
+    maxRecentSearches: 10,
+    userId,
+  });
 
   // Load metadata on mount
   useEffect(() => {
@@ -134,6 +150,23 @@ const SearchPage: React.FC = () => {
       fullTextSearch.refreshStatistics();
     }
   }, [userId]);
+
+  // Handle route parameters separately to prevent loops
+  useEffect(() => {
+    if (userId && searchQueryFromRoute) {
+      setSearchInput(searchQueryFromRoute); // Update input field
+      handleSearchRef.current(searchQueryFromRoute);
+    }
+  }, [userId, searchQueryFromRoute]);
+
+  // Reapply search when filters change (triggered by shouldReapplySearch flag)
+  useEffect(() => {
+    if (shouldReapplySearch && searchInput.trim()) {
+      console.log('Reapplying search with updated filters:', fullTextSearch.currentFilters);
+      handleSearch(searchInput.trim());
+      setShouldReapplySearch(false);
+    }
+  }, [shouldReapplySearch, searchInput, fullTextSearch.currentFilters, handleSearch]);
 
   // Load search metadata (tags, domains, etc.)
   const loadSearchMetadata = useCallback(async () => {
@@ -183,13 +216,12 @@ const SearchPage: React.FC = () => {
     
     // Record result interaction for enhanced search history
     if (currentSearchId) {
-      searchBar.recordResultInteraction(currentSearchId, 1);
+      // searchBar.recordResultInteraction(currentSearchId, 1);
     }
     
-    // Navigate to article view
-    // This would typically use React Router or Ionic navigation
-    window.open(result.url, '_blank');
-  }, [currentSearchId, searchBar]);
+    // Navigate to article detail page
+    history.push(`/article/${result.id}`);
+  }, [currentSearchId, history]);
 
   // Handle bookmark toggle
   const handleToggleBookmark = useCallback(async (result: SearchResult) => {
@@ -309,6 +341,25 @@ const SearchPage: React.FC = () => {
     return count;
   };
 
+  // Force fix the aria-hidden issue that blocks all button clicks
+  useEffect(() => {
+    // Ensure the side menu is closed when this page loads
+    menuController.close('main-menu').catch(err => console.log('Menu already closed'));
+    
+    const interval = setInterval(() => {
+      // Remove aria-hidden from ALL elements that have it
+      const elementsWithAriaHidden = document.querySelectorAll('[aria-hidden="true"]');
+      if (elementsWithAriaHidden.length > 0) {
+        console.log('🔥 FIXING: Removing aria-hidden from', elementsWithAriaHidden.length, 'elements');
+        elementsWithAriaHidden.forEach(element => {
+          element.removeAttribute('aria-hidden');
+        });
+      }
+    }, 50); // More frequent checking
+
+    return () => clearInterval(interval);
+  }, []);
+
   if (!userId) {
     return (
       <IonPage>
@@ -333,21 +384,6 @@ const SearchPage: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle>Search Articles</IonTitle>
-          <IonButtons slot="end">
-            <IonButton 
-              fill="clear" 
-              onClick={() => setShowFiltersModal(true)}
-              disabled={!fullTextSearch.currentQuery && getActiveFilterCount() === 0}
-            >
-              <IonIcon icon={filterOutline} />
-              {getActiveFilterCount() > 0 && (
-                <span className="ml-1 text-xs">({getActiveFilterCount()})</span>
-              )}
-            </IonButton>
-            <IonButton fill="clear" onClick={() => setShowActionSheet(true)}>
-              <IonIcon icon={settingsOutline} />
-            </IonButton>
-          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
@@ -367,45 +403,145 @@ const SearchPage: React.FC = () => {
 
         {/* Search Bar */}
         <div className="p-4 pb-2">
-          <SearchBar
-            onSearch={searchBar.performSearch}
-            onClear={searchBar.clearSearch}
-            loading={fullTextSearch.isLoading}
-            suggestions={searchBar.suggestions}
-            enhancedSuggestions={searchBar.enhancedSuggestions}
-            recentSearches={searchBar.recentSearches}
-            onSuggestionSelect={searchBar.handleSuggestionSelect}
-            onEnhancedSuggestionSelect={searchBar.handleEnhancedSuggestionSelect}
-            showFilterButton={true}
-            onFilterClick={() => setShowFiltersModal(true)}
-          />
+          <div className="search-input-container">
+            <input 
+              type="text" 
+              placeholder="Search articles..." 
+              className="search-input w-full p-3 border rounded-lg"
+              value={searchInput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchInput(value);
+                
+                // Clear existing timeout
+                if (searchTimeoutRef.current) {
+                  clearTimeout(searchTimeoutRef.current);
+                }
+                
+                // Set new timeout for mobile UX
+                searchTimeoutRef.current = setTimeout(() => {
+                  if (value.trim()) {
+                    handleSearch(value.trim());
+                  } else {
+                    fullTextSearch.clearResults();
+                  }
+                }, 300);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  // Clear timeout and search immediately on Enter
+                  if (searchTimeoutRef.current) {
+                    clearTimeout(searchTimeoutRef.current);
+                  }
+                  const query = (e.target as HTMLInputElement).value;
+                  if (query.trim()) {
+                    handleSearch(query.trim());
+                  }
+                }
+              }}
+            />
+          </div>
+          
+          {/* Search Filters - Using IonButton instead of HTML buttons */}
+          <div className="flex gap-2 mt-3 overflow-x-auto">
+            <IonButton 
+              fill="solid"
+              size="small"
+              color="primary"
+              onClick={() => {
+                console.log('🔥 Filters button clicked!');
+                setShowFiltersModal(true);
+              }}
+            >
+              🔍 Filters
+            </IonButton>
+            <IonButton 
+              fill="outline"
+              size="small"
+              color="medium"
+              onClick={() => {
+                console.log('🔥 Sort filter clicked, current sortBy:', fullTextSearch.currentFilters.sortBy);
+                const newSort = fullTextSearch.currentFilters.sortBy === 'date' ? 'relevance' : 'date';
+                console.log('🔥 Changing sort to:', newSort);
+                
+                const newFilters = { ...fullTextSearch.currentFilters };
+                newFilters.sortBy = newSort;
+                fullTextSearch.updateFilters(newFilters);
+                
+                // Trigger reapply search after filters are updated
+                setShouldReapplySearch(true);
+              }}
+            >
+              📅 {fullTextSearch.currentFilters.sortBy === 'date' ? 'Latest' : 'Relevance'}
+            </IonButton>
+            <IonButton 
+              fill="outline"
+              size="small"
+              color="medium"
+              onClick={() => {
+                console.log('🔥 Read filter clicked, current includeRead:', fullTextSearch.currentFilters.includeRead);
+                const newIncludeRead = !fullTextSearch.currentFilters.includeRead;
+                console.log('🔥 Changing includeRead to:', newIncludeRead);
+                
+                const newFilters = { ...fullTextSearch.currentFilters };
+                newFilters.includeRead = newIncludeRead;
+                fullTextSearch.updateFilters(newFilters);
+                
+                // Trigger reapply search after filters are updated
+                setShouldReapplySearch(true);
+              }}
+            >
+              👁️ {fullTextSearch.currentFilters.includeRead ? 'All' : 'Unread only'}
+            </IonButton>
+          </div>
         </div>
 
-        {/* Search Results */}
-        <SearchResultsList
-          searchResults={fullTextSearch.searchResults}
-          searchTerms={fullTextSearch.currentQuery}
-          loading={fullTextSearch.isLoading}
-          loadingMore={fullTextSearch.isLoadingMore}
-          error={fullTextSearch.error}
-          onResultClick={handleResultClick}
-          onToggleBookmark={handleToggleBookmark}
-          onLoadMore={handleLoadMore}
-          onRefresh={async () => {
-            if (fullTextSearch.currentQuery) {
-              await fullTextSearch.performSearch(
-                fullTextSearch.currentQuery,
-                fullTextSearch.currentFilters
-              );
-            }
-          }}
-          onRetry={fullTextSearch.retry}
-          showMetadata={true}
-          showTags={true}
-          showSnippets={true}
-          showRelevanceScore={false}
-          enableVirtualScrolling={true}
-        />
+        {/* Search Results - Simple version */}
+        <div className="search-results p-4">
+          {fullTextSearch.isLoading && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Searching...</p>
+            </div>
+          )}
+          
+          {fullTextSearch.error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <p>Error: {fullTextSearch.error}</p>
+            </div>
+          )}
+          
+          {fullTextSearch.searchResults && (
+            <div>
+              <p className="text-gray-600 mb-4">
+                Found {fullTextSearch.searchResults.totalCount} results for "{fullTextSearch.currentQuery}"
+              </p>
+              
+              {fullTextSearch.searchResults.results.map((result, index) => (
+                <div key={result.id || index} className="border-b border-gray-200 py-4">
+                  <h3 
+                    className="text-lg font-semibold text-blue-600 hover:underline cursor-pointer"
+                    onClick={() => handleResultClick(result)}
+                    dangerouslySetInnerHTML={{ __html: result.title || 'Untitled' }}
+                  />
+                  <p className="text-gray-600 text-sm">{result.domain} • {result.author}</p>
+                  {result.snippet && (
+                    <p 
+                      className="text-gray-700 mt-2"
+                      dangerouslySetInnerHTML={{ __html: result.snippet }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {!fullTextSearch.isLoading && !fullTextSearch.searchResults && !fullTextSearch.error && (
+            <div className="text-center py-8 text-gray-600">
+              <p>Enter a search term above to find articles</p>
+            </div>
+          )}
+        </div>
 
         {/* Quick Stats */}
         {fullTextSearch.statistics && showSearchStats && (
@@ -438,111 +574,133 @@ const SearchPage: React.FC = () => {
       {/* Floating Action Button */}
       <IonFab vertical="bottom" horizontal="end" slot="fixed">
         <IonFabButton
-          onClick={() => setShowActionSheet(true)}
-          disabled={!fullTextSearch.searchResults}
+          onClick={() => {
+            console.log('🔥 FAB button clicked!');
+            setShowFiltersModal(true);
+          }}
         >
           <IonIcon icon={settingsOutline} />
         </IonFabButton>
       </IonFab>
 
-      {/* Search Filters Modal */}
-      <SearchFiltersModal
-        isOpen={showFiltersModal}
-        onClose={() => setShowFiltersModal(false)}
-        currentFilters={fullTextSearch.currentFilters}
-        onFiltersChange={handleFiltersChange}
-        onApplyFilters={handleApplyFilters}
-        availableTags={availableTags}
-        availableDomains={availableDomains}
-        filterPresets={filterPresets.presets}
-        onSavePreset={handleSavePreset}
-        onDeletePreset={handleDeletePreset}
-        onLoadPreset={handleLoadPreset}
-        showPresets={true}
-      />
+      {/* Search Filters Modal - Custom implementation to avoid Ionic overlay issues */}
+      {showFiltersModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => {
+            console.log('🔥 Backdrop clicked!');
+            setShowFiltersModal(false);
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Search Filters</h2>
+              <button 
+                className="text-white hover:text-gray-200 p-1"
+                onClick={() => {
+                  console.log('🔥 Modal close X clicked!');
+                  setShowFiltersModal(false);
+                }}
+              >
+                ✕
+              </button>
+            </div>
 
-      {/* Action Sheet */}
-      <IonActionSheet
-        isOpen={showActionSheet}
-        onDidDismiss={() => setShowActionSheet(false)}
-        header="Search Options"
-        buttons={[
-          {
-            text: 'Search History & Analytics',
-            icon: timeOutline,
-            handler: () => {
-              setShowHistoryModal(true);
-            }
-          },
-          {
-            text: 'View Statistics',
-            icon: analyticsOutline,
-            handler: () => {
-              setShowSearchStats(!showSearchStats);
-              fullTextSearch.refreshStatistics();
-            }
-          },
-          {
-            text: 'Export Results',
-            icon: downloadOutline,
-            handler: handleExportResults,
-            disabled: !fullTextSearch.searchResults
-          },
-          {
-            text: 'Share Search',
-            icon: shareOutline,
-            handler: () => {
-              if (navigator.share && fullTextSearch.searchResults) {
-                navigator.share({
-                  title: `Search: ${fullTextSearch.searchResults.query}`,
-                  text: `Found ${fullTextSearch.searchResults.totalCount} articles`,
-                  url: window.location.href
-                });
-              }
-            },
-            disabled: !fullTextSearch.searchResults
-          },
-          {
-            text: 'Refresh Search',
-            icon: refreshOutline,
-            handler: () => {
-              if (fullTextSearch.currentQuery) {
-                fullTextSearch.performSearch(
-                  fullTextSearch.currentQuery,
-                  fullTextSearch.currentFilters
-                );
-              }
-            }
-          },
-          {
-            text: 'Clear Search History',
-            role: 'destructive',
-            icon: trashOutline,
-            handler: () => {
-              fullTextSearch.clearSearchHistory();
-              searchBar.clearHistory();
-              setToastMessage('Search history cleared');
-              setToastColor('success');
-              setShowToast(true);
-            }
-          },
-          {
-            text: 'Cancel',
-            role: 'cancel'
-          }
-        ]}
-      />
+            {/* Content */}
+            <div className="p-4">
+              {/* Sort Options */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3">Sort by</h3>
+                <div className="space-y-2">
+                  {['relevance', 'date', 'title', 'author'].map(sortOption => (
+                    <label key={sortOption} className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sortBy"
+                        value={sortOption}
+                        checked={fullTextSearch.currentFilters.sortBy === sortOption}
+                        onChange={(e) => {
+                          console.log('🔥 Sort option changed:', e.target.value);
+                          const newFilters = { ...fullTextSearch.currentFilters };
+                          newFilters.sortBy = e.target.value as any;
+                          fullTextSearch.updateFilters(newFilters);
+                        }}
+                        className="mr-3"
+                      />
+                      <span className="capitalize">{sortOption}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
-      {/* Search History Modal */}
-      <SearchHistoryModal
-        isOpen={showHistoryModal}
-        onClose={() => setShowHistoryModal(false)}
-        onSearchSelect={(query) => {
-          handleSearch(query);
-          setShowHistoryModal(false);
-        }}
-        showAnalytics={true}
-      />
+              {/* Include Read */}
+              <div className="mb-6">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={fullTextSearch.currentFilters.includeRead ?? true}
+                    onChange={(e) => {
+                      console.log('🔥 Include read changed:', e.target.checked);
+                      const newFilters = { ...fullTextSearch.currentFilters };
+                      newFilters.includeRead = e.target.checked;
+                      fullTextSearch.updateFilters(newFilters);
+                    }}
+                    className="mr-3"
+                  />
+                  <span>Include already read articles</span>
+                </label>
+              </div>
+
+              {/* Domain Filter */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3">Filter by Domain</h3>
+                <input
+                  type="text"
+                  placeholder="e.g., medium.com, reddit.com"
+                  value={fullTextSearch.currentFilters.domainFilter || ''}
+                  onChange={(e) => {
+                    console.log('🔥 Domain filter changed:', e.target.value);
+                    const newFilters = { ...fullTextSearch.currentFilters };
+                    newFilters.domainFilter = e.target.value || undefined;
+                    fullTextSearch.updateFilters(newFilters);
+                  }}
+                  className="w-full p-3 border rounded-lg"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="space-y-2">
+                <button 
+                  className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => {
+                    console.log('🔥 Apply filters clicked!', fullTextSearch.currentFilters);
+                    setShowFiltersModal(false);
+                    setShouldReapplySearch(true);
+                  }}
+                >
+                  Apply Filters
+                </button>
+                
+                <button 
+                  className="w-full bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 transition-colors"
+                  onClick={() => {
+                    console.log('🔥 Clear filters clicked!');
+                    fullTextSearch.resetFilters();
+                    setShowFiltersModal(false);
+                    setTimeout(() => setShouldReapplySearch(true), 200);
+                  }}
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast Messages */}
       <IonToast

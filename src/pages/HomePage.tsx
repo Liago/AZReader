@@ -50,6 +50,7 @@ const HomePage: React.FC = () => {
 	const pageRef = useRef<HTMLElement>(null);
 	const [activeTab, setActiveTab] = useState<TabType>('latest');
 	const [showSearch, setShowSearch] = useState(false);
+	const [searchQuery, setSearchQuery] = useState('');
 
 	// Get current date for display
 	const getCurrentDate = (): string => {
@@ -86,6 +87,34 @@ const HomePage: React.FC = () => {
 	const handleSeeAllClick = () => {
 		// TODO: Create articles list page or navigate to existing one
 		console.log('See All clicked - will implement articles list page');
+	};
+
+	// Handle search input
+	const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value);
+	};
+
+	// Handle search submit
+	const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter' && searchQuery.trim()) {
+			// Navigate to search page with query as route parameter
+			const searchUrl = `/search/${encodeURIComponent(searchQuery.trim())}`;
+			history.push(searchUrl);
+			setShowSearch(false); // Close search bar after navigation
+		}
+	};
+
+	// Handle search button click
+	const handleSearchClick = () => {
+		if (searchQuery.trim()) {
+			const searchUrl = `/search/${encodeURIComponent(searchQuery.trim())}`;
+			history.push(searchUrl);
+			setShowSearch(false); // Close search bar after navigation
+		} else {
+			// Just navigate to search page
+			history.push('/search');
+			setShowSearch(false);
+		}
 	};
 
 	// Navigation handlers for tab menu
@@ -184,8 +213,21 @@ const HomePage: React.FC = () => {
 							type="text" 
 							placeholder="Search articles..." 
 							className="search-input"
+							value={searchQuery}
+							onChange={handleSearchInput}
+							onKeyDown={handleSearchSubmit}
 							autoFocus
 						/>
+						{searchQuery && (
+							<IonButton 
+								size="small" 
+								fill="clear" 
+								onClick={handleSearchClick}
+								className="search-submit-btn"
+							>
+								<IonIcon icon={searchOutline} />
+							</IonButton>
+						)}
 					</div>
 				)}
 
@@ -604,10 +646,13 @@ const HomePage: React.FC = () => {
 					padding: 8px 16px;
 					background: #f8f9fa;
 					border-bottom: 1px solid #e9ecef;
+					display: flex;
+					align-items: center;
+					gap: 8px;
 				}
 
 				.search-input {
-					width: 100%;
+					flex: 1;
 					padding: 8px 12px;
 					border: 1px solid #dee2e6;
 					border-radius: 20px;
@@ -618,6 +663,11 @@ const HomePage: React.FC = () => {
 				.search-input:focus {
 					outline: none;
 					border-color: #007bff;
+				}
+
+				.search-submit-btn {
+					--color: #007bff;
+					margin: 0;
 				}
 
 				/* Responsive */

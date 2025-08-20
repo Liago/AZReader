@@ -87,19 +87,55 @@ export class SearchService {
       const sanitizedQuery = this.sanitizeSearchQuery(filters.query);
       const tagIds = filters.tagIds && filters.tagIds.length > 0 ? filters.tagIds : null;
 
-      // Call the database search function
-      const { data: dbSearchResults, error } = await supabase.rpc('search_articles' as any, {
-        user_id_param: userId,
-        search_query: sanitizedQuery,
-        tag_ids: tagIds,
-        include_read: filters.includeRead ?? true,
-        date_from: filters.dateFrom?.toISOString() || null,
-        date_to: filters.dateTo?.toISOString() || null,
-        domain_filter: filters.domainFilter || null,
-        sort_by: filters.sortBy || 'relevance',
-        limit_count: limit,
-        offset_count: offset
-      });
+      // TEMPORARY: Use simple query until search_articles function is created
+      
+      let query = supabase
+        .from('articles')
+        .select(`
+          *,
+          tags:article_tags(
+            tag:tags(id, name, color)
+          )
+        `)
+        .eq('user_id', userId);
+
+      // Simple text search on title and content
+      if (sanitizedQuery) {
+        query = query.or(`title.ilike.%${sanitizedQuery}%,content.ilike.%${sanitizedQuery}%`);
+      }
+
+      // Apply filters
+      if (filters.domainFilter) {
+        query = query.eq('domain', filters.domainFilter);
+      }
+
+      if (filters.dateFrom) {
+        query = query.gte('created_at', filters.dateFrom.toISOString());
+      }
+
+      if (filters.dateTo) {
+        query = query.lte('created_at', filters.dateTo.toISOString());
+      }
+
+      // Sort
+      switch (filters.sortBy) {
+        case 'date':
+          query = query.order('created_at', { ascending: false });
+          break;
+        case 'title':
+          query = query.order('title');
+          break;
+        case 'author':
+          query = query.order('author');
+          break;
+        default:
+          query = query.order('created_at', { ascending: false }); // Default to date
+      }
+
+      // Pagination
+      query = query.range(offset, offset + limit - 1);
+
+      const { data: dbSearchResults, error } = await query;
 
       if (error) {
         console.error('Search error:', error);
@@ -113,8 +149,9 @@ export class SearchService {
       const processedResults = await Promise.all(
         resultsArray.map(async (result: any) => ({
           ...result,
-          tags: result.tags || [],
-          snippet: await this.generateSnippet(result.content, sanitizedQuery)
+          tags: result.tags?.map((tagRel: any) => tagRel.tag).filter(Boolean) || [],
+          snippet: await this.generateSnippet(result.content || result.title || '', sanitizedQuery),
+          relevance_score: 1.0 // Placeholder since we don't have real relevance scoring yet
         }))
       );
 
@@ -210,22 +247,78 @@ export class SearchService {
    */
   async getSearchStatistics(userId: string, daysBack: number = 30): Promise<SearchStatistics | null> {
     try {
-      const { data: stats, error } = await supabase.rpc('get_search_statistics' as any, {
-        user_id_param: userId,
-        days_back: daysBack
-      });
+      
+      // TEMPORARY: Simple statistics query until get_search_statistics function is created
+      const { data: articles, error } = await supabase
+        .from('articles')
+        .select(`
+          id,
+          domain,
+          author,
+          created_at,
+          tags:article_tags(
+            tag:tags(name)
+          )
+        `)
+        .eq('user_id', userId)
+        .gte('created_at', new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString());
 
       if (error) {
         console.error('Search statistics error:', error);
         return null;
       }
 
-      return (Array.isArray(stats) && stats[0]) ? stats[0] : null;
+      const articlesArray = articles || [];
+      
+      // Calculate basic statistics - filter out null/undefined values
+      const domains = articlesArray.map(a => a.domain).filter((domain): domain is string => Boolean(domain));
+      const authors = articlesArray.map(a => a.author).filter((author): author is string => Boolean(author));
+      const tags = articlesArray.flatMap(a => 
+        a.tags?.map((tagRel: any) => tagRel.tag?.name).filter((name): name is string => Boolean(name)) || []
+      );
+
+      // Count occurrences
+      const domainCounts = this.countOccurrences(domains);
+      const authorCounts = this.countOccurrences(authors);
+      const tagCounts = this.countOccurrences(tags);
+
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const articlesLastWeek = articlesArray.filter(a => a.created_at && new Date(a.created_at) >= weekAgo).length;
+
+      return {
+        total_articles: articlesArray.length,
+        total_tags: Object.keys(tagCounts).length,
+        total_authors: Object.keys(authorCounts).length,
+        total_domains: Object.keys(domainCounts).length,
+        articles_last_week: articlesLastWeek,
+        most_common_tags: Object.entries(tagCounts)
+          .map(([name, count]) => ({ name, count: count as number }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10),
+        most_common_authors: Object.entries(authorCounts)
+          .map(([author, count]) => ({ author, count: count as number }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10),
+        most_common_domains: Object.entries(domainCounts)
+          .map(([domain, count]) => ({ domain, count: count as number }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
+      };
 
     } catch (error) {
       console.error('Get search statistics error:', error);
       return null;
     }
+  }
+
+  /**
+   * Helper method to count occurrences of items in an array
+   */
+  private countOccurrences(array: string[]): Record<string, number> {
+    return array.reduce((acc, item) => {
+      acc[item] = (acc[item] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
   }
 
   /**
