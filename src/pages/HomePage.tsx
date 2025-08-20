@@ -30,6 +30,7 @@ import { Session } from '@supabase/supabase-js';
 import { Auth } from '@components/form/authentication';
 import { useAuth } from '@context/auth/AuthContext';
 import useInfiniteArticles from '@hooks/useInfiniteArticles';
+import SwipeableImageCarousel, { CarouselImage } from '@components/ui/SwipeableImageCarousel';
 
 // Types
 type TabType = 'latest' | 'world' | 'politics' | 'climate';
@@ -113,9 +114,31 @@ const HomePage: React.FC = () => {
 		console.log('HomePage - isLoading:', isLoading);
 	}
 
-	// Get featured article (first article)
-	const featuredArticle = filteredArticles?.[0];
-	const trendingArticles = filteredArticles?.slice(1, 4) || [];
+	// Get featured articles (first 4-5 articles for carousel)
+	const featuredArticles = filteredArticles?.slice(0, 4) || [];
+	const trendingArticles = filteredArticles?.slice(4, 7) || [];
+
+	// Convert featured articles to carousel images format
+	const featuredCarouselImages: CarouselImage[] = featuredArticles.map((article, index) => ({
+		id: article.id,
+		src: article.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWc8L3RleHQ+PC9zdmc+',
+		alt: article.title,
+		caption: article.title,
+		credits: `By ${article.author || 'Unknown'}`
+	}));
+
+	// Handle carousel image change
+	const handleFeaturedCarouselImageChange = (index: number, image: CarouselImage) => {
+		console.log(`Featured carousel changed to image ${index + 1}:`, image.caption);
+	};
+
+	// Handle carousel image click  
+	const handleFeaturedCarouselImageClick = (index: number, image: CarouselImage) => {
+		const article = featuredArticles[index];
+		if (article) {
+			handleArticleClick(article.id);
+		}
+	};
 
 
 	// Se l'utente non è autenticato, mostra solo la pagina di login
@@ -211,52 +234,23 @@ const HomePage: React.FC = () => {
 					/>
 				</IonRefresher>
 
-				{/* Featured Article */}
-				{featuredArticle && (
+				{/* Featured Articles Carousel */}
+				{featuredCarouselImages.length > 0 && (
 					<div className="featured-section">
-						<IonCard 
-							className="featured-card" 
-							onClick={() => handleArticleClick(featuredArticle.id)}
-							style={{ cursor: 'pointer' }}
-						>
-							<div className="featured-image">
-								<img 
-									src={featuredArticle.image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='} 
-									alt={featuredArticle.title}
-									onError={(e) => {
-										const target = e.target as HTMLImageElement;
-										if (!target.src.startsWith('data:')) {
-											target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
-										}
-									}}
-								/>
-							</div>
-							<IonCardContent className="featured-content">
-								<h2 className="featured-title">{featuredArticle.title}</h2>
-								<p className="featured-author">By {featuredArticle.author || 'Unknown'}</p>
-								<p className="featured-excerpt">{featuredArticle.excerpt}</p>
-								<div className="featured-actions">
-									<span 
-										className="read-more"
-										onClick={(e) => {
-											e.stopPropagation();
-											handleReadMoreClick(featuredArticle.id);
-										}}
-										style={{ cursor: 'pointer', color: '#007bff' }}
-									>
-										Read More
-									</span>
-								</div>
-							</IonCardContent>
-						</IonCard>
-						
-						{/* Page indicators */}
-						<div className="page-indicators">
-							<div className="indicator active"></div>
-							<div className="indicator"></div>
-							<div className="indicator"></div>
-							<div className="indicator"></div>
-						</div>
+						<SwipeableImageCarousel
+							images={featuredCarouselImages}
+							height="280px"
+							borderRadius="12px"
+							showOverlay={true}
+							autoplay={true}
+							autoplayInterval={5000}
+							enableHaptics={true}
+							onImageChange={handleFeaturedCarouselImageChange}
+							onImageClick={handleFeaturedCarouselImageClick}
+							className="featured-carousel"
+							showArrows={true}
+							showDots={true}
+						/>
 					</div>
 				)}
 
@@ -416,7 +410,14 @@ const HomePage: React.FC = () => {
 				/* Featured Section */
 				.featured-section {
 					padding: 16px;
+					margin-top: 100px;
 					margin-bottom: 8px;
+				}
+
+				.featured-carousel {
+					box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+					border-radius: 12px;
+					overflow: hidden;
 				}
 
 				.featured-card {
@@ -500,6 +501,7 @@ const HomePage: React.FC = () => {
 					padding: 20px 16px;
 					margin-top: 8px;
 				}
+
 
 				.section-header {
 					display: flex;
