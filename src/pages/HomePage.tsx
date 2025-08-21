@@ -85,8 +85,7 @@ const HomePage: React.FC = () => {
 
 	// Handle "See All" click - navigate to full articles list
 	const handleSeeAllClick = () => {
-		// TODO: Create articles list page or navigate to existing one
-		console.log('See All clicked - will implement articles list page');
+		history.push('/articles');
 	};
 
 	// Handle search input
