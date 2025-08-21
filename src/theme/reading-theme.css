@@ -91,8 +91,8 @@
 }
 
 .reading-content {
-  background-color: var(--app-bg-color);
-  color: var(--app-text-color);
+  background-color: var(--app-bg-color) !important;
+  color: var(--app-text-color) !important;
   filter: brightness(var(--app-brightness));
   letter-spacing: calc(var(--app-spacing) * 0.05em);
   line-height: var(--app-spacing);
@@ -110,7 +110,7 @@
 }
 
 .reading-content a {
-  color: var(--app-link-color);
+  color: var(--app-link-color) !important;
   transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -120,13 +120,27 @@
 }
 
 .reading-content blockquote {
-  border-left-color: var(--app-blockquote-color);
+  border-left-color: var(--app-blockquote-color) !important;
   transition: border-left-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .reading-content figcaption {
-  color: var(--app-caption-color);
+  color: var(--app-caption-color) !important;
   transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Forza i colori corretti per tutti gli elementi di testo */
+.reading-content p,
+.reading-content div,
+.reading-content span,
+.reading-content li,
+.reading-content h1,
+.reading-content h2,
+.reading-content h3,
+.reading-content h4,
+.reading-content h5,
+.reading-content h6 {
+  color: inherit !important;
 }
 
 /* Transizioni per elementi specifici del toggle tema */

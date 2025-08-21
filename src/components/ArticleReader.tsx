@@ -515,10 +515,21 @@ const ArticleReader: React.FC<ArticleReaderProps> = ({
 					font-family: var(--article-font-family, system-ui, -apple-system, sans-serif);
 					font-size: var(--article-font-size, 1rem);
 					line-height: var(--article-line-height, 1.7);
-					color: var(--article-text-color, #374151);
+					color: var(--app-text-color, #374151) !important;
+					background-color: var(--app-bg-color, #ffffff) !important;
 					word-spacing: 0.05em;
 					hyphens: auto;
 					overflow-wrap: break-word;
+				}
+
+				/* Forza tutti i testi ad usare i colori del tema */
+				.article-content p,
+				.article-content div,
+				.article-content span,
+				.article-content li,
+				.article-content td,
+				.article-content th {
+					color: inherit !important;
 				}
 
 				/* Content Typography */
@@ -536,7 +547,7 @@ const ArticleReader: React.FC<ArticleReaderProps> = ({
 					font-weight: 600;
 					line-height: 1.4;
 					margin: 2rem 0 1rem 0;
-					color: var(--article-heading-color, #1a1a1a);
+					color: var(--app-text-color, #1a1a1a) !important;
 				}
 
 				.article-content h1 { font-size: 1.875rem; }
@@ -547,11 +558,11 @@ const ArticleReader: React.FC<ArticleReaderProps> = ({
 				.article-content h6 { font-size: 0.875rem; }
 
 				.article-content blockquote {
-					border-left: 4px solid var(--article-accent-color, #3b82f6);
+					border-left: 4px solid var(--app-blockquote-color, #3b82f6);
 					padding-left: 1rem;
 					margin: 1.5rem 0;
 					font-style: italic;
-					color: var(--article-quote-color, #6b7280);
+					color: var(--app-text-color, #6b7280) !important;
 				}
 
 				.article-content ul,
@@ -565,13 +576,14 @@ const ArticleReader: React.FC<ArticleReaderProps> = ({
 				}
 
 				.article-content a {
-					color: var(--article-link-color, #3b82f6);
+					color: var(--app-link-color, #3b82f6) !important;
 					text-decoration: underline;
 					transition: color 0.2s ease;
 				}
 
 				.article-content a:hover {
-					color: var(--article-link-hover-color, #1d4ed8);
+					opacity: 0.8;
+					transition: opacity 0.2s ease;
 				}
 
 				/* Images */
@@ -599,7 +611,7 @@ const ArticleReader: React.FC<ArticleReaderProps> = ({
 
 				.article-content figcaption {
 					font-size: 0.875rem;
-					color: var(--article-caption-color, #6b7280);
+					color: var(--app-caption-color, #6b7280) !important;
 					margin-top: 0.5rem;
 					font-style: italic;
 				}

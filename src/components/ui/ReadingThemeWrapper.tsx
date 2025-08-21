@@ -66,21 +66,29 @@ const ReadingThemeWrapper: React.FC<ReadingThemeWrapperProps> = ({ children, cla
 
 	// Determina il tema da usare basato sulle preferenze
 	const getThemeToUse = () => {
-		// Per i temi di lettura ottimizzati
+		console.log('🎨 ReadingThemeWrapper - theme:', theme, 'themeMode:', themeMode, 'prefersDark:', prefersDark);
+		
+		// Se l'utente ha selezionato un tema specifico, usalo sempre
+		if (theme && ['white', 'sepia', 'paper', 'dawn', 'dark', 'amoled'].includes(theme)) {
+			console.log('🎨 Using specific theme:', theme);
+			return theme;
+		}
+		
+		// Altrimenti usa la logica automatica basata su themeMode
 		if (themeMode === 'light' || (themeMode === 'auto' && !prefersDark)) {
+			console.log('🎨 Using light mode theme: reading-light');
 			return 'reading-light';
 		}
 		
 		if (themeMode === 'dark' || (themeMode === 'auto' && prefersDark)) {
-			// Se l'utente ha selezionato un tema scuro specifico, usalo
-			if (theme === 'amoled') return 'amoled';
-			if (theme === 'dark') return 'dark';
-			// Altrimenti usa il tema di lettura scuro ottimizzato
+			console.log('🎨 Using dark mode theme: reading-dark');
 			return 'reading-dark';
 		}
 
-		// Per compatibilità, mantieni i temi esistenti per altri casi
-		return theme || 'reading-light';
+		// Fallback di default
+		const fallbackTheme = theme || 'reading-light';
+		console.log('🎨 Using fallback theme:', fallbackTheme);
+		return fallbackTheme;
 	};
 
 	const themeClass = `theme-${getThemeToUse()}`;
