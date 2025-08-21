@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@store/reducers';
+import { RootState } from '@store/store-rtk';
 import { setBrightness } from '@store/slices/appSlice';
 import '@theme/reading-theme.css';
 

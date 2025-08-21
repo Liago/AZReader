@@ -11,8 +11,8 @@ import {
 	setFontFamily,
 	setSpacing,
 	setWidth
-} from '@store/actions';
-import { RootState } from '@store/reducers';
+} from '@store/slices/appSlice';
+import { RootState } from '@store/store-rtk';
 
 interface Props {
 	className?: string;
@@ -76,31 +76,38 @@ const FontSizeControls: React.FC<Props> = ({ className }) => {
 	// Gestori per i cambiamenti
 	const handleIncreaseFontSize = (e: React.MouseEvent) => {
 		e.stopPropagation();
+		console.log('🔥 Increasing font size, current:', fontSize);
 		dispatch(increaseFontSize());
 	};
 
 	const handleDecreaseFontSize = (e: React.MouseEvent) => {
 		e.stopPropagation();
+		console.log('🔥 Decreasing font size, current:', fontSize);
 		dispatch(decreaseFontSize());
 	};
 
 	const handleThemeChange = (newTheme: string) => {
+		console.log('🔥 Changing theme to:', newTheme);
 		dispatch(setTheme(newTheme));
 	};
 
 	const handleBrightnessChange = (value: number) => {
+		console.log('🔥 Changing brightness to:', value);
 		dispatch(setBrightness(value));
 	};
 
 	const handleFontFamilyChange = (value: string) => {
+		console.log('🔥 Changing font family to:', value);
 		dispatch(setFontFamily(value));
 	};
 
 	const handleSpacingChange = (value: number) => {
+		console.log('🔥 Changing spacing to:', value);
 		dispatch(setSpacing(value));
 	};
 
 	const handleWidthChange = (value: number) => {
+		console.log('🔥 Changing width to:', value);
 		dispatch(setWidth(value));
 	};
 
@@ -521,13 +528,13 @@ const FontSizeControls: React.FC<Props> = ({ className }) => {
 									}}>
 										<span>Luminosità</span>
 										<span style={{ fontSize: '14px', color: '#718096' }}>
-											{Math.round(brightness * 100)}%
+											{Math.round(brightness)}%
 										</span>
 									</div>
 									<IonRange
-										min={0.5}
-										max={1}
-										step={0.05}
+										min={30}
+										max={100}
+										step={5}
 										value={brightness}
 										onIonChange={(e) => handleBrightnessChange(e.detail.value as number)}
 										style={{

@@ -16,7 +16,7 @@ import {
 	IonSegmentButton
 } from '@ionic/react';
 import { close, sunny, contrast, text, remove, add } from 'ionicons/icons';
-import { RootState } from '@store/reducers';
+import { RootState } from '@store/store-rtk';
 import {
 	setBrightness,
 	setFontFamily,
@@ -25,7 +25,7 @@ import {
 	setSpacing,
 	setTheme,
 	setWidth
-} from '@store/actions';
+} from '@store/slices/appSlice';
 
 interface ReadingSettingsModalProps {
 	isOpen: boolean;
@@ -104,8 +104,8 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 		const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl'];
 		const currentIndex = sizes.indexOf(localFontSize);
 		if (currentIndex < sizes.length - 1) {
-			const newSize = sizes[currentIndex + 1];
-			setLocalFontSize(newSize as string);
+			const newSize = sizes[currentIndex + 1] as 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
+			setLocalFontSize(newSize);
 			dispatch(increaseFontSize());
 		}
 	};
@@ -115,8 +115,8 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 		const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl'];
 		const currentIndex = sizes.indexOf(localFontSize);
 		if (currentIndex > 0) {
-			const newSize = sizes[currentIndex - 1];
-			setLocalFontSize(newSize as string);
+			const newSize = sizes[currentIndex - 1] as 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
+			setLocalFontSize(newSize);
 			dispatch(decreaseFontSize());
 		}
 	};

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '@store/reducers';
+import { RootState } from '@store/store-rtk';
 
 const ThemeInitializer: React.FC = () => {
 	const { themeMode } = useSelector((state: RootState) => state.app);

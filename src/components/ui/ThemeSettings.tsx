@@ -9,8 +9,8 @@ import {
 	IonSegmentButton,
 	IonToggle,
 } from '@ionic/react';
-import { RootState } from '@store/reducers';
-import { setThemeMode } from '@store/actions';
+import { RootState } from '@store/store-rtk';
+import { setThemeMode } from '@store/slices/appSlice';
 
 const ThemeSettings: React.FC = () => {
 	const dispatch = useDispatch();
@@ -60,8 +60,9 @@ const ThemeSettings: React.FC = () => {
 	}, [localThemeMode, prefersDark]);
 
 	const handleThemeModeChange = (value: string) => {
-		setLocalThemeMode(value);
-		dispatch(setThemeMode(value));
+		const validValue = value as 'auto' | 'light' | 'dark';
+		setLocalThemeMode(validValue);
+		dispatch(setThemeMode(validValue));
 	};
 
 	return (

@@ -6,7 +6,7 @@ import {
 	IonRange,
 } from '@ionic/react';
 import { close, sunny, contrast, text, remove, add } from 'ionicons/icons';
-import { RootState } from '@store/reducers';
+import { RootState } from '@store/store-rtk';
 import {
 	setBrightness,
 	setFontFamily,
@@ -15,7 +15,7 @@ import {
 	setSpacing,
 	setTheme,
 	setWidth
-} from '@store/actions';
+} from '@store/slices/appSlice';
 
 // Variabili per la dimensione del font
 const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl'];

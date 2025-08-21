@@ -10,8 +10,8 @@ import {
 	IonList,
 } from '@ionic/react';
 import { sunny, moon, syncOutline, informationCircleOutline } from 'ionicons/icons';
-import { RootState } from '@store/reducers';
-import { setThemeMode } from '@store/actions';
+import { RootState } from '@store/store-rtk';
+import { setThemeMode } from '@store/slices/appSlice';
 
 const ThemeSettingsPage: React.FC = () => {
 	const dispatch = useDispatch();
@@ -57,8 +57,9 @@ const ThemeSettingsPage: React.FC = () => {
 	}, [localThemeMode]);
 
 	const handleThemeModeChange = (value: string) => {
-		setLocalThemeMode(value);
-		dispatch(setThemeMode(value));
+		const validValue = value as 'auto' | 'light' | 'dark';
+		setLocalThemeMode(validValue);
+		dispatch(setThemeMode(validValue));
 	};
 
 	const handleSystemToggle = (e: any) => {
