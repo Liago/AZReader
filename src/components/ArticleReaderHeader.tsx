@@ -20,6 +20,7 @@ import {
 	bookmarkOutline,
 	shareOutline,
 	textOutline,
+	trashOutline,
 	sunny,
 	moon,
 	contrast,
@@ -36,6 +37,7 @@ export interface ArticleReaderHeaderProps {
 	readingProgress?: number; // 0-100
 	onShare?: () => void;
 	onToggleFavorite?: () => void;
+	onDelete?: () => void;
 	onMoreActions?: () => void;
 	className?: string;
 }
@@ -49,13 +51,22 @@ const ArticleReaderHeader: React.FC<ArticleReaderHeaderProps> = ({
 	readingProgress = 0,
 	onShare,
 	onToggleFavorite,
+	onDelete,
 	onMoreActions,
 	className = ''
 }) => {
 	const [showActionsPopover, setShowActionsPopover] = useState(false);
 	const [popoverEvent, setPopoverEvent] = useState<Event | undefined>(undefined);
 
+	// Debug log in useEffect to avoid render issues
+	React.useEffect(() => {
+		console.log('ArticleReaderHeader received props:', { title, session: !!session, onDelete: !!onDelete });
+		console.log('Header popover render - session:', !!session, 'onDelete:', !!onDelete);
+	}, [title, session, onDelete]);
+
 	const handleMoreActions = (e: React.MouseEvent) => {
+		console.log('ArticleReaderHeader - More actions clicked');
+		console.log('ArticleReaderHeader - onDelete prop available:', !!onDelete);
 		setPopoverEvent(e.nativeEvent);
 		setShowActionsPopover(true);
 		onMoreActions?.();
@@ -69,6 +80,13 @@ const ArticleReaderHeader: React.FC<ArticleReaderHeaderProps> = ({
 	const handleToggleFavorite = () => {
 		setShowActionsPopover(false);
 		onToggleFavorite?.();
+	};
+
+	const handleDelete = () => {
+		console.log('Header delete clicked');
+		console.log('onDelete prop:', onDelete);
+		setShowActionsPopover(false);
+		onDelete?.();
 	};
 
 	return (
@@ -178,6 +196,14 @@ const ArticleReaderHeader: React.FC<ArticleReaderHeaderProps> = ({
 							<IonIcon icon={textOutline} slot="start" />
 							<IonLabel>Impostazioni lettura</IonLabel>
 						</IonItem>
+
+						{/* Delete (only for authenticated users) */}
+						{session && onDelete && (
+							<IonItem button onClick={handleDelete}>
+								<IonIcon icon={trashOutline} slot="start" color="danger" />
+								<IonLabel color="danger">Elimina articolo</IonLabel>
+							</IonItem>
+						)}
 					</IonList>
 				</IonContent>
 			</IonPopover>

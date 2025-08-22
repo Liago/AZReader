@@ -9,6 +9,7 @@ import {
 	IonIcon,
 	IonToast,
 	IonSpinner,
+	IonActionSheet,
 	useIonViewWillEnter,
 } from '@ionic/react';
 import {
@@ -17,6 +18,7 @@ import {
 	chatbubbleOutline,
 	shareOutline,
 	bookmarkOutline,
+	trashOutline,
 } from 'ionicons/icons';
 import { useParams, useHistory } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
@@ -58,6 +60,7 @@ const ArticleViewPage: React.FC = () => {
 	const [readingProgress, setReadingProgress] = useState(0);
 	const [readingTime, setReadingTime] = useState(0);
 	const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false);
+	const [showDeleteActionSheet, setShowDeleteActionSheet] = useState(false);
 
 	// Redux selectors
 	const userCredentials = useSelector((state: RootState) => state.user.credentials);
@@ -258,6 +261,58 @@ const ArticleViewPage: React.FC = () => {
 		setReadingTime(timeSpent);
 	}, []);
 
+	// Handle article deletion
+	const handleDeleteArticle = useCallback(async () => {
+		if (!article || !supabaseSession) {
+			showToast({
+				message: 'Devi effettuare l\'accesso per eliminare articoli',
+				color: 'warning',
+			});
+			return;
+		}
+
+		// Only allow users to delete their own articles
+		if (article.user_id !== supabaseSession.user.id) {
+			showToast({
+				message: 'Puoi eliminare solo i tuoi articoli',
+				color: 'warning',
+			});
+			return;
+		}
+
+		try {
+			const { error } = await supabase
+				.from('articles')
+				.delete()
+				.eq('id', article.id);
+
+			if (error) throw error;
+
+			showToast({
+				message: 'Articolo eliminato con successo',
+				color: 'success',
+			});
+
+			// Navigate back to previous page
+			history.goBack();
+		} catch (error: any) {
+			console.error('Errore eliminazione articolo:', error);
+			showToast({
+				message: 'Errore durante l\'eliminazione dell\'articolo',
+				color: 'danger',
+			});
+		}
+	}, [article, supabaseSession, showToast, history]);
+
+	// Handle delete confirmation
+	const handleDeleteConfirmation = useCallback(() => {
+		console.log('Delete confirmation clicked');
+		console.log('Article:', article);
+		console.log('Session:', supabaseSession);
+		console.log('Is owner?', article && supabaseSession?.user && article.user_id === supabaseSession.user.id);
+		setShowDeleteActionSheet(true);
+	}, [article, supabaseSession]);
+
 	// Render loading state
 	if (isLoading) {
 		return (
@@ -310,6 +365,7 @@ const ArticleViewPage: React.FC = () => {
 				readingProgress={readingProgress}
 				onShare={handleShare}
 				onToggleFavorite={handleToggleFavorite}
+				onDelete={supabaseSession?.user && article.user_id === supabaseSession.user.id ? handleDeleteConfirmation : undefined}
 			/>
 
 			{/* Content */}
@@ -407,6 +463,29 @@ const ArticleViewPage: React.FC = () => {
 				duration={3000}
 				position="bottom"
 				color="medium"
+			/>
+
+			{/* Delete Confirmation Action Sheet */}
+			<IonActionSheet
+				isOpen={showDeleteActionSheet}
+				onDidDismiss={() => setShowDeleteActionSheet(false)}
+				cssClass="delete-confirmation-action-sheet"
+				header="Elimina articolo"
+				subHeader="Questa azione non può essere annullata"
+				buttons={[
+					{
+						text: 'Elimina definitivamente',
+						role: 'destructive',
+						icon: trashOutline,
+						handler: () => {
+							handleDeleteArticle();
+						}
+					},
+					{
+						text: 'Annulla',
+						role: 'cancel'
+					}
+				]}
 			/>
 
 			{/* Component Styles */}
