@@ -56,7 +56,7 @@ export const toArticleInsert = (
 		author: article.author || null,
 		published_date: article.date_published || article.published_date || null,
 		domain: article.domain,
-		tags: tags || null,
+		tags: tags || [],
 		is_favorite: false,
 		like_count: 0,
 		comment_count: 0,
