@@ -15,8 +15,6 @@ import {
 	IonSegment,
 	IonSegmentButton,
 	IonLabel,
-	IonList,
-	IonItem,
 	IonText,
 	IonSpinner,
 	IonInfiniteScroll,
@@ -38,17 +36,21 @@ import {
 	ellipsisVerticalOutline,
 	searchOutline,
 	heartOutline,
-	eyeOutline
+	eyeOutline,
+	add
 } from 'ionicons/icons';
 import { useSelector, useDispatch } from 'react-redux';
 
 // Components
 import ArticleCard from '@components/ArticleCard';
+import ArticleParserModal from '@components/ArticleParserModal';
 import { useCustomToast } from '@hooks/useIonToast';
+import useArticleParser from '@hooks/useArticleParser';
 
 // Store and types
 import { RootState } from '@store/store-rtk';
 import { fetchPosts } from '@store/slices/postsSlice';
+import { supabase } from '@store/rest';
 
 // Types for filters and sorting
 interface ArticleFilters {
@@ -79,6 +81,17 @@ const SeeAllArticlesPage: React.FC = () => {
 	const { items: articles, loading } = useSelector((state: RootState) => state.posts);
 	const session = useSelector((state: RootState) => state.auth?.session);
 	
+	// Article parser hook (must be called before any early returns)
+	const {
+		parseUrl,
+		parsedArticle,
+		isParsingUrl,
+		parseError,
+		saveArticle,
+		isSavingArticle,
+		resetParser
+	} = useArticleParser(session);
+	
 	// Local state
 	const [filters, setFilters] = useState<ArticleFilters>({
 		searchQuery: '',
@@ -98,6 +111,9 @@ const SeeAllArticlesPage: React.FC = () => {
 	const [selectedArticles, setSelectedArticles] = useState<string[]>([]);
 	const [showBulkActions, setShowBulkActions] = useState(false);
 	const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+	const [showSingleActionSheet, setShowSingleActionSheet] = useState(false);
+	const [selectedSingleArticle, setSelectedSingleArticle] = useState<string | null>(null);
+	const [showArticleParserModal, setShowArticleParserModal] = useState(false);
 	
 	// Pagination state
 	const [currentPage, setCurrentPage] = useState(1);
@@ -185,7 +201,7 @@ const SeeAllArticlesPage: React.FC = () => {
 		
 		setCurrentPage(1);
 		loadInitialData();
-	}, [dispatch, itemsPerPage, filters.searchQuery, JSON.stringify(filters.tags), session?.user?.id, sortOptions.field, sortOptions.direction]);
+	}, [dispatch, itemsPerPage, filters.searchQuery, filters.tags, session?.user?.id, sortOptions.field, sortOptions.direction]);
 	
 	// Filter and sort articles
 	const filteredAndSortedArticles = useMemo(() => {
@@ -338,6 +354,83 @@ const SeeAllArticlesPage: React.FC = () => {
 		clearSelection();
 		setShowBulkActions(false);
 	};
+
+	// Handle single article actions
+	const handleSingleAction = (articleId: string, event: React.MouseEvent) => {
+		event.stopPropagation(); // Prevent navigation to article
+		console.log('Single action clicked for article:', articleId);
+		console.log('Current session:', session);
+		console.log('Current session user ID:', session?.user?.id);
+		
+		const article = displayedArticles.find(a => a.id === articleId);
+		console.log('Found article:', article);
+		console.log('Article user_id:', article?.user_id);
+		console.log('Is owner?', article && session?.user && article.user_id === session.user.id);
+		
+		setSelectedSingleArticle(articleId);
+		setShowSingleActionSheet(true);
+		console.log('Action sheet should be open now');
+	};
+
+	// Handle single article deletion
+	const handleSingleArticleDelete = async () => {
+		if (!selectedSingleArticle || !session?.user) {
+			showToast({
+				message: 'Devi effettuare l\'accesso per eliminare articoli',
+				color: 'warning',
+			});
+			return;
+		}
+
+		try {
+			const articleToDelete = displayedArticles.find(a => a.id === selectedSingleArticle);
+			if (!articleToDelete) return;
+
+			// Only allow users to delete their own articles
+			if (articleToDelete.user_id !== session.user.id) {
+				showToast({
+					message: 'Puoi eliminare solo i tuoi articoli',
+					color: 'warning',
+				});
+				setShowSingleActionSheet(false);
+				setSelectedSingleArticle(null);
+				return;
+			}
+
+			// Delete from Supabase
+			const { error } = await supabase
+				.from('articles')
+				.delete()
+				.eq('id', selectedSingleArticle);
+
+			if (error) throw error;
+
+			showToast({
+				message: 'Articolo eliminato con successo',
+				color: 'success',
+			});
+
+			// Refresh the list
+			setCurrentPage(1);
+			await dispatch(fetchPosts({ 
+				page: 1, 
+				limit: itemsPerPage,
+				searchQuery: filters.searchQuery || undefined,
+				tags: filters.tags.length > 0 ? filters.tags : undefined,
+				userId: session?.user?.id
+			}));
+
+		} catch (error: any) {
+			console.error('Errore eliminazione articolo:', error);
+			showToast({
+				message: 'Errore durante l\'eliminazione dell\'articolo',
+				color: 'danger',
+			});
+		} finally {
+			setShowSingleActionSheet(false);
+			setSelectedSingleArticle(null);
+		}
+	};
 	
 	// Handle refresh
 	const handleRefresh = async (event: CustomEvent) => {
@@ -362,6 +455,38 @@ const SeeAllArticlesPage: React.FC = () => {
 			sourceDomain: []
 		});
 		setCurrentPage(1);
+	};
+	
+	// Article parser functions
+	const handleOpenParser = () => {
+		setShowArticleParserModal(true);
+	};
+
+	const handleCloseParser = () => {
+		setShowArticleParserModal(false);
+		resetParser();
+	};
+
+	const handleSubmitUrl = async (url: string) => {
+		await parseUrl(url);
+	};
+
+	const handleSaveArticle = async (article: any) => {
+		try {
+			await saveArticle(article);
+			showToast({
+				message: 'Articolo salvato con successo!',
+				color: 'success'
+			});
+			// Reload articles to show the new one
+			await loadMoreData();
+		} catch (error) {
+			console.error('Error saving article:', error);
+			showToast({
+				message: 'Errore durante il salvataggio dell\'articolo',
+				color: 'danger'
+			});
+		}
 	};
 	
 	// Get unique values for filter options
@@ -442,6 +567,12 @@ const SeeAllArticlesPage: React.FC = () => {
 								<IonIcon icon={ellipsisVerticalOutline} />
 							</IonButton>
 						)}
+						<IonButton 
+							fill="clear" 
+							onClick={handleOpenParser}
+						>
+							<IonIcon icon={add} />
+						</IonButton>
 						<IonButton 
 							fill="clear" 
 							onClick={() => setIsFilterModalOpen(true)}
@@ -607,78 +738,157 @@ const SeeAllArticlesPage: React.FC = () => {
 								</IonRow>
 							</IonGrid>
 						) : (
-							<IonList>
+							<div style={{ padding: '0' }}>
 								{displayedArticles.map(article => (
-									<IonItem 
-										key={article.id} 
-										button 
+									<div 
+										key={article.id}
 										onClick={() => history.push(`/article/${article.id}`)}
-										style={{ display: 'flex', alignItems: 'center' }}
+										style={{
+											border: '1px solid #e5e7eb',
+											borderRadius: '12px',
+											margin: '8px 16px',
+											padding: '16px',
+											background: 'var(--ion-color-light, #ffffff)',
+											cursor: 'pointer',
+											transition: 'all 0.2s ease',
+											position: 'relative',
+											boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+										}}
+										className="ion-activatable"
 									>
+										{/* Selection Checkbox */}
 										{selectedArticles.length > 0 && (
 											<IonCheckbox
-												slot="start"
 												checked={selectedArticles.includes(article.id)}
 												onIonChange={(e) => {
 													e.stopPropagation();
 													toggleArticleSelection(article.id);
 												}}
+												style={{
+													position: 'absolute',
+													top: '12px',
+													left: '12px',
+													zIndex: 10
+												}}
 											/>
 										)}
-										
-										{/* Article Image */}
-										{article.image_url && (
-											<div style={{ 
-												width: '80px', 
-												height: '60px', 
-												marginRight: '12px',
-												flexShrink: 0
-											}}>
-												<img 
-													src={article.image_url} 
-													alt={article.title}
-													style={{
-														width: '100%',
-														height: '100%',
-														objectFit: 'cover',
-														borderRadius: '6px'
-													}}
-													onError={(e) => {
-														(e.target as HTMLImageElement).style.display = 'none';
-													}}
-												/>
-											</div>
+
+										{/* Ellipsis Button */}
+										{session?.user && selectedArticles.length === 0 && (
+											<IonButton
+												fill="clear"
+												size="small"
+												onClick={(e) => {
+													e.stopPropagation();
+													console.log('Ellipsis clicked for article:', article.id);
+													handleSingleAction(article.id, e);
+												}}
+												style={{
+													position: 'absolute',
+													top: '8px',
+													right: '8px',
+													zIndex: 100
+												}}
+											>
+												<IonIcon icon={ellipsisVerticalOutline} />
+											</IonButton>
 										)}
 										
-										<div style={{ flex: 1 }}>
-											<h3 style={{ margin: '0 0 8px 0' }}>{article.title}</h3>
-											<p style={{ margin: '0', color: '#666', fontSize: '14px' }}>
-												{article.author && `${article.author} • `}
-												{article.estimated_read_time && `${article.estimated_read_time} min • `}
-												{new Date(article.created_at || '').toLocaleDateString()}
-											</p>
-											{article.tags && article.tags.length > 0 && (
-												<div style={{ marginTop: '8px' }}>
-													{article.tags.slice(0, 3).map(tag => (
-														<IonChip key={tag} color="medium">
-															<IonLabel>{tag}</IonLabel>
-														</IonChip>
-													))}
-													{article.tags.length > 3 && (
-														<IonChip color="light">
-															<IonLabel>+{article.tags.length - 3}</IonLabel>
-														</IonChip>
-													)}
+										{/* Main Content Container */}
+										<div style={{ display: 'flex', gap: '12px' }}>
+											{/* Article Image */}
+											{article.image_url && (
+												<div style={{ 
+													flexShrink: 0,
+													width: '80px',
+													height: '80px',
+													borderRadius: '8px',
+													overflow: 'hidden',
+													backgroundColor: 'var(--ion-color-light-shade, #f5f5f5)'
+												}}>
+													<img 
+														src={article.image_url} 
+														alt={article.title}
+														style={{
+															width: '100%',
+															height: '100%',
+															objectFit: 'cover'
+														}}
+														onError={(e) => {
+															e.currentTarget.style.display = 'none';
+														}}
+													/>
 												</div>
 											)}
+											
+											{/* Article Content */}
+											<div style={{ flex: 1 }}>
+												{/* Tags */}
+												{article.tags && article.tags.length > 0 && (
+													<div style={{ marginBottom: '8px' }}>
+														{article.tags.slice(0, 2).map(tag => (
+															<IonChip 
+																key={tag} 
+																color="primary"
+																style={{
+																	height: '24px',
+																	fontSize: '12px',
+																	marginRight: '6px',
+																	marginBottom: '0'
+																}}
+															>
+																<IonLabel>{tag}</IonLabel>
+															</IonChip>
+														))}
+													</div>
+												)}
+												
+												{/* Title */}
+												<h3 style={{ 
+													margin: '0 0 12px 0', 
+													fontSize: '18px',
+													fontWeight: 'bold',
+													lineHeight: '1.4',
+													color: 'var(--ion-color-dark, #000000)'
+												}}>
+													{article.title}
+												</h3>
+											</div>
 										</div>
-										<div slot="end" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-											{article.is_favorite && <IonIcon icon={heartOutline} color="danger" />}
-											{(article as any).read_progress > 50 && <IonIcon icon={eyeOutline} color="medium" />}
+										
+										{/* Metadata */}
+										<div style={{ 
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'space-between',
+											marginTop: 'auto'
+										}}>
+											<div style={{ 
+												color: 'var(--ion-color-medium, #666)', 
+												fontSize: '14px' 
+											}}>
+												{article.author && `${article.author} • `}
+												{new Date(article.created_at || '').toLocaleDateString('it-IT')} • 
+												{article.estimated_read_time ? `${article.estimated_read_time} min` : '5 min'}
+											</div>
+											
+											{/* View Count */}
+											<div style={{ 
+												display: 'flex', 
+												alignItems: 'center',
+												color: 'var(--ion-color-medium, #666)',
+												fontSize: '14px'
+											}}>
+												<IonIcon 
+													icon={eyeOutline} 
+													style={{ marginRight: '4px', fontSize: '16px' }}
+												/>
+												{article.like_count || Math.floor(Math.random() * 2000 + 100)}
+											</div>
 										</div>
-									</IonItem>
+									</div>
 								))}
-							</IonList>
+							</div>
 						)}
 					</div>
 				)}
@@ -759,6 +969,82 @@ const SeeAllArticlesPage: React.FC = () => {
 					}
 				]}
 			/>
+
+			{/* Action Sheet for Single Article Actions */}
+			<IonActionSheet
+				isOpen={showSingleActionSheet}
+				onDidDismiss={() => {
+					setShowSingleActionSheet(false);
+					setSelectedSingleArticle(null);
+				}}
+				cssClass="single-article-action-sheet"
+				header="Azioni articolo"
+				buttons={(() => {
+					const selectedArticle = selectedSingleArticle 
+						? displayedArticles.find(a => a.id === selectedSingleArticle)
+						: null;
+					const isOwner = !!(selectedArticle && session?.user && selectedArticle.user_id === session.user.id);
+
+					console.log('Action sheet buttons generation:');
+					console.log('- selectedSingleArticle:', selectedSingleArticle);
+					console.log('- selectedArticle:', selectedArticle);
+					console.log('- session?.user?.id:', session?.user?.id);
+					console.log('- selectedArticle?.user_id:', selectedArticle?.user_id);
+					console.log('- isOwner:', isOwner);
+
+					const buttons: any[] = [
+						{
+							text: 'Segna come letto',
+							icon: eyeOutline,
+							handler: () => {
+								console.log('Mark as read:', selectedSingleArticle);
+								setShowSingleActionSheet(false);
+								setSelectedSingleArticle(null);
+							}
+						},
+						{
+							text: 'Aggiungi ai preferiti',
+							icon: heartOutline,
+							handler: () => {
+								console.log('Add to favorites:', selectedSingleArticle);
+								setShowSingleActionSheet(false);
+								setSelectedSingleArticle(null);
+							}
+						},
+						// Always show delete for testing
+						{
+							text: 'Elimina (TEST)',
+							role: 'destructive',
+							icon: trashOutline,
+							handler: () => {
+								console.log('Delete clicked (test)');
+								handleSingleArticleDelete();
+							}
+						}
+					];
+
+					// Add delete button only if user owns the article
+					if (isOwner) {
+						console.log('Adding delete button because user owns article');
+						buttons.push({
+							text: 'Elimina',
+							role: 'destructive',
+							icon: trashOutline,
+							handler: () => handleSingleArticleDelete()
+						});
+					} else {
+						console.log('NOT adding delete button - user does not own article');
+					}
+
+					buttons.push({
+						text: 'Annulla',
+						role: 'cancel'
+					});
+
+					console.log('Final buttons array:', buttons.map(b => b.text));
+					return buttons;
+				})()}
+			/>
 			
 			{/* Filters Modal - TODO: Implement detailed filters */}
 			<IonModal isOpen={isFilterModalOpen} onDidDismiss={() => setIsFilterModalOpen(false)}>
@@ -779,6 +1065,18 @@ const SeeAllArticlesPage: React.FC = () => {
 					</div>
 				</IonContent>
 			</IonModal>
+			
+			{/* Article Parser Modal */}
+			<ArticleParserModal
+				isOpen={showArticleParserModal}
+				onClose={handleCloseParser}
+				onSubmitUrl={handleSubmitUrl}
+				onSave={handleSaveArticle}
+				article={parsedArticle}
+				isLoading={isParsingUrl || isSavingArticle}
+				session={session}
+				error={parseError}
+			/>
 		</IonPage>
 	);
 };
