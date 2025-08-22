@@ -163,40 +163,31 @@ class MercuryParserService {
 	}
 
 	/**
-	 * Try Mercury Parser with retry logic and CORS proxy support
+	 * Try Mercury Parser using CORS proxy since the API doesn't allow localhost
 	 */
 	private async tryMercuryParser(url: string): Promise<ParserResult> {
 		return this.withRetry(async () => {
-			let response: AxiosResponse<MercuryResponse>;
+			// Since Mercury API doesn't allow CORS from localhost, we need to use the CORS proxy
+			const corsProxy = 'https://parser-373014.uc.r.appspot.com';
+			const preparedUrl = this.prepareUrl(url);
+			const mercuryApiUrl = `${endpoint.parser}/parser?url=${preparedUrl}`;
+			const proxiedUrl = `${corsProxy}/${mercuryApiUrl}`;
 			
-			// Try direct Mercury Parser first
-			const mercuryUrl = `${endpoint.parser}?url=${encodeURIComponent(url)}`;
+			console.log('Mercury Parser request for URL:', url, 'via proxy:', proxiedUrl);
 			
-			try {
-				response = await axios.get(mercuryUrl, {
-					timeout: 10000,
-					headers: {
-						'Accept': 'application/json',
-						'User-Agent': 'AZReader/1.17.0 (Mercury Parser)',
-						'Origin': 'ionic://localhost',
-						'X-Requested-With': 'XMLHttpRequest',
-					},
-				});
-			} catch (corsError) {
-				// If direct request fails (likely CORS), try with proxy
-				console.warn('Direct Mercury request failed, trying with CORS proxy');
-				
-				response = await proxiedRequest<MercuryResponse>(mercuryUrl, {
-					timeout: 12000,
-					headers: {
-						'Accept': 'application/json',
-						'User-Agent': 'AZReader/1.17.0 (Mercury Parser via Proxy)',
-					},
-				});
-			}
+			const response: AxiosResponse<MercuryResponse> = await axios.get(proxiedUrl, {
+				timeout: 15000,
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json',
+				},
+			});
+
+			console.log('Mercury Parser response:', response.status, response.data);
 
 			if (!response.data || !response.data.content) {
-				throw new Error('Invalid response from Mercury Parser');
+				console.error('Mercury Parser invalid response structure:', response.data);
+				throw new Error('Invalid response from Mercury Parser - missing content');
 			}
 
 			const processedData = this.processMercuryResponse(response.data, url);
@@ -207,6 +198,57 @@ class MercuryParserService {
 				source: 'mercury' as const,
 			};
 		}, 'mercury');
+	}
+
+	/**
+	 * Prepare URL like in rest.ts
+	 */
+	private prepareUrl(inputUrl: string): string {
+		try {
+			// Decodifica solo se l'URL contiene caratteri codificati
+			if (inputUrl.includes("%")) {
+				return encodeURIComponent(decodeURIComponent(inputUrl));
+			}
+			return encodeURIComponent(inputUrl);
+		} catch (e) {
+			console.warn("Error processing URL:", e);
+			return encodeURIComponent(inputUrl);
+		}
+	}
+
+	/**
+	 * Try Personal Scraper using domain-specific configuration
+	 */
+	private async tryPersonalScraper(url: string, config: ScraperConfig): Promise<ParserResult> {
+		return this.withRetry(async () => {
+			// Use the same CORS proxy as Mercury Parser
+			const corsProxy = 'https://parser-373014.uc.r.appspot.com';
+			const proxiedUrl = `${corsProxy}/${url}`;
+			
+			console.log('Personal Scraper request for URL:', url, 'via proxy:', proxiedUrl);
+			
+			const response: AxiosResponse<string> = await axios.get(proxiedUrl, {
+				timeout: 15000,
+				headers: {
+					'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+					'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
+				},
+			});
+
+			console.log('Personal Scraper response status:', response.status);
+
+			if (!response.data) {
+				throw new Error('No HTML content received from Personal Scraper');
+			}
+
+			const processedData = this.processPersonalScraperResponse(response.data, url, config);
+			
+			return {
+				success: true,
+				data: processedData,
+				source: 'personal' as const,
+			};
+		}, 'personal');
 	}
 
 	/**
