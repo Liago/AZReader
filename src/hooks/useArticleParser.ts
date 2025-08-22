@@ -50,6 +50,7 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 	const articles = useAppSelector(selectPosts);
 	const { createPost: isCreatingPost } = useAppSelector(selectPostsLoading);
 	const { create: createError } = useAppSelector(selectPostsErrors);
+	const preferredParser = useAppSelector((state) => state.auth.preferences?.preferredParser || 'mercury');
 	
 	// Local state for URL parsing
 	const [parsedArticle, setParsedArticle] = useState<ExtendedParsedArticle | null>(null);
@@ -108,8 +109,8 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 		setParsedArticle(null);
 
 		try {
-			// Use the Mercury parser we implemented in Task 4
-			const result = await parseArticleWithMercury(cleanUrl);
+			// Use the preferred parser from user settings
+			const result = await parseArticleWithMercury(cleanUrl, preferredParser);
 			
 			if (!result.success || !result.data) {
 				throw new Error(result.error?.message || 'No article content could be extracted from this URL');

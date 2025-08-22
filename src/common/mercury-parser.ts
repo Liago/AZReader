@@ -69,21 +69,19 @@ interface MercuryResponse {
 	dek?: string;
 }
 
-// RapidAPI response type
+// RapidAPI response type - direct response format
 interface RapidApiResponse {
-	status: string;
-	data?: {
-		title?: string;
-		author?: string;
-		content?: string;
-		excerpt?: string;
-		image?: string;
-		publish_date?: string;
-		url?: string;
-		domain?: string;
-		[key: string]: any;
-	};
-	message?: string;
+	url?: string;
+	title?: string;
+	author?: string;
+	html?: string;
+	text?: string;
+	content?: string;
+	excerpt?: string;
+	image?: string;
+	publish_date?: string;
+	domain?: string;
+	[key: string]: any;
 }
 
 class MercuryParserService {
@@ -96,7 +94,7 @@ class MercuryParserService {
 	/**
 	 * Main parsing function with fallback strategy
 	 */
-	async parseArticle(url: string): Promise<ParserResult> {
+	async parseArticle(url: string, preferredParser: 'mercury' | 'rapidapi' = 'mercury'): Promise<ParserResult> {
 		// Validate URL first
 		if (!this.isValidUrl(url)) {
 			return {
@@ -112,24 +110,28 @@ class MercuryParserService {
 
 		const cleanUrl = this.sanitizeUrl(url);
 
-		// Try Mercury Parser first
-		try {
-			const mercuryResult = await this.tryMercuryParser(cleanUrl);
-			if (mercuryResult.success) {
-				return mercuryResult;
-			}
-		} catch (error) {
-			console.warn('Mercury Parser failed:', error);
-		}
+		// Try preferred parser first, then fallback
+		const parsers = preferredParser === 'mercury' 
+			? [
+				{ name: 'Mercury Parser', fn: () => this.tryMercuryParser(cleanUrl) },
+				{ name: 'RapidAPI (fallback)', fn: () => this.tryRapidApiParser(cleanUrl) }
+			]
+			: [
+				{ name: 'RapidAPI', fn: () => this.tryRapidApiParser(cleanUrl) },
+				{ name: 'Mercury Parser (fallback)', fn: () => this.tryMercuryParser(cleanUrl) }
+			];
 
-		// Fallback to RapidAPI
-		try {
-			const rapidApiResult = await this.tryRapidApiParser(cleanUrl);
-			if (rapidApiResult.success) {
-				return rapidApiResult;
+		for (const parser of parsers) {
+			try {
+				console.log(`Attempting to parse with ${parser.name}:`, cleanUrl);
+				const result = await parser.fn();
+				console.log(`${parser.name} result:`, result);
+				if (result.success) {
+					return result;
+				}
+			} catch (error) {
+				console.warn(`${parser.name} failed:`, error);
 			}
-		} catch (error) {
-			console.warn('RapidAPI Parser failed:', error);
 		}
 
 		// If all parsers fail, return error
@@ -209,9 +211,11 @@ class MercuryParserService {
 			};
 
 			const response: AxiosResponse<RapidApiResponse> = await axios.request(options);
+			console.log('RapidAPI response:', response.status, response.data);
 
-			if (!response.data || response.data.status !== 'success' || !response.data.data) {
-				throw new Error('Invalid response from RapidAPI');
+			if (!response.data || (!response.data.html && !response.data.text && !response.data.content)) {
+				console.error('RapidAPI invalid response structure:', response.data);
+				throw new Error('Invalid response from RapidAPI - missing content');
 			}
 
 			const processedData = this.processRapidApiResponse(response.data, url);
@@ -278,10 +282,10 @@ class MercuryParserService {
 	/**
 	 * Process RapidAPI response
 	 */
-	private processRapidApiResponse(response: RapidApiResponse, originalUrl: string): ParsedArticle {
-		const data = response.data!;
+	private processRapidApiResponse(data: RapidApiResponse, originalUrl: string): ParsedArticle {
 		const domain = this.extractDomain(originalUrl);
-		const content = data.content || '';
+		// Use html or text content, preferring html
+		const content = data.html || data.text || data.content || '';
 		
 		return {
 			title: data.title || 'Untitled',
@@ -455,8 +459,8 @@ class MercuryParserService {
 const mercuryParser = new MercuryParserService();
 
 // Export the main parsing function
-export const parseArticleWithMercury = (url: string): Promise<ParserResult> => {
-	return mercuryParser.parseArticle(url);
+export const parseArticleWithMercury = (url: string, preferredParser: 'mercury' | 'rapidapi' = 'mercury'): Promise<ParserResult> => {
+	return mercuryParser.parseArticle(url, preferredParser);
 };
 
 // Export service class for advanced usage
