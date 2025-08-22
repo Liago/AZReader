@@ -43,6 +43,7 @@ export interface AuthState {
 		emailNotifications: boolean;
 		pushNotifications: boolean;
 		newsletter: boolean;
+		preferredParser: 'mercury' | 'rapidapi';
 	};
 	
 	// OAuth providers
@@ -85,6 +86,7 @@ const initialState: AuthState = {
 		emailNotifications: true,
 		pushNotifications: true,
 		newsletter: false,
+		preferredParser: 'mercury' as const,
 	},
 	
 	availableProviders: ['google', 'github', 'apple'],
