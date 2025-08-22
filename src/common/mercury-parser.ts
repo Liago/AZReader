@@ -108,7 +108,7 @@ class MercuryParserService {
 	}
 
 	/**
-	 * Main parsing function with fallback strategy
+	 * Main parsing function with enhanced fallback strategy including domain-specific parsing
 	 */
 	async parseArticle(url: string, preferredParser: 'mercury' | 'rapidapi' = 'mercury'): Promise<ParserResult> {
 		// Validate URL first
@@ -126,17 +126,48 @@ class MercuryParserService {
 
 		const cleanUrl = this.sanitizeUrl(url);
 
-		// Try preferred parser first, then fallback
-		const parsers = preferredParser === 'mercury' 
-			? [
-				{ name: 'Mercury Parser', fn: () => this.tryMercuryParser(cleanUrl) },
-				{ name: 'RapidAPI (fallback)', fn: () => this.tryRapidApiParser(cleanUrl) }
-			]
-			: [
-				{ name: 'RapidAPI', fn: () => this.tryRapidApiParser(cleanUrl) },
-				{ name: 'Mercury Parser (fallback)', fn: () => this.tryMercuryParser(cleanUrl) }
-			];
+		// Check if there's a domain-specific scraper configuration
+		const scraperConfig = getScraperParmas(cleanUrl) as ScraperConfig | null;
+		
+		// Build parser strategy based on domain config and user preference
+		let parsers: Array<{ name: string; fn: () => Promise<ParserResult> }> = [];
 
+		if (scraperConfig) {
+			// If domain has specific config, prioritize accordingly
+			if (scraperConfig.parser === 'personal') {
+				parsers = [
+					{ name: 'Personal Scraper', fn: () => this.tryPersonalScraper(cleanUrl, scraperConfig) },
+					{ name: 'Mercury Parser (fallback)', fn: () => this.tryMercuryParser(cleanUrl) },
+					{ name: 'RapidAPI (fallback)', fn: () => this.tryRapidApiParser(cleanUrl) }
+				];
+			} else if (scraperConfig.parser === 'rapidapi') {
+				parsers = [
+					{ name: 'RapidAPI (domain config)', fn: () => this.tryRapidApiParser(cleanUrl) },
+					{ name: 'Mercury Parser (fallback)', fn: () => this.tryMercuryParser(cleanUrl) }
+				];
+			} else {
+				// Mercury configured for this domain
+				parsers = [
+					{ name: 'Mercury Parser (domain config)', fn: () => this.tryMercuryParser(cleanUrl) },
+					{ name: 'RapidAPI (fallback)', fn: () => this.tryRapidApiParser(cleanUrl) }
+				];
+			}
+		} else {
+			// No domain config, use user preference
+			if (preferredParser === 'mercury') {
+				parsers = [
+					{ name: 'Mercury Parser', fn: () => this.tryMercuryParser(cleanUrl) },
+					{ name: 'RapidAPI (fallback)', fn: () => this.tryRapidApiParser(cleanUrl) }
+				];
+			} else {
+				parsers = [
+					{ name: 'RapidAPI', fn: () => this.tryRapidApiParser(cleanUrl) },
+					{ name: 'Mercury Parser (fallback)', fn: () => this.tryMercuryParser(cleanUrl) }
+				];
+			}
+		}
+
+		// Try each parser in order
 		for (const parser of parsers) {
 			try {
 				console.log(`Attempting to parse with ${parser.name}:`, cleanUrl);
