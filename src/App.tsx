@@ -12,6 +12,7 @@ import ThemeInitializer from "./components/ui/ThemeInitializer";
 import SideMenu from "./components/SideMenu";
 import { useScrollPositionCleanup } from "@hooks/useScrollPositionCleanup";
 import { AuthProvider } from "@context/auth/AuthContext";
+import { setSession, signOut } from "@store/slices/authSlice";
 
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 import VerifyEmail from "@pages/verifyEmail";
@@ -128,9 +129,9 @@ const AppContent: React.FC = () => {
 							expires_in: session.expires_in,
 							expires_at: expiresAt ? new Date(expiresAt * 1000) : "non definito",
 						});
-						dispatch({ type: "SET_SESSION", payload: session });
+						dispatch(setSession({ user: session.user, session }));
 					} else {
-						dispatch({ type: "CLEAR_SESSION" });
+						dispatch(signOut());
 					}
 				});
 
@@ -157,13 +158,13 @@ const AppContent: React.FC = () => {
 
 				if (error) {
 					console.error("Errore nel controllo della sessione:", error);
-					dispatch({ type: "CLEAR_SESSION" });
+					dispatch(signOut());
 					return;
 				}
 
 				if (!session) {
 					console.log("Nessuna sessione attiva");
-					dispatch({ type: "CLEAR_SESSION" });
+					dispatch(signOut());
 					return;
 				}
 
@@ -179,7 +180,7 @@ const AppContent: React.FC = () => {
 
 				if (!expiresAt || now >= expiresAt) {
 					console.log("Sessione scaduta, effettuo logout");
-					dispatch({ type: "CLEAR_SESSION" });
+					dispatch(signOut());
 					await supabase.auth.signOut();
 					return;
 				}
@@ -189,10 +190,10 @@ const AppContent: React.FC = () => {
 					expires_at: expiresAt ? new Date(expiresAt * 1000) : "non definito",
 				});
 
-				dispatch({ type: "SET_SESSION", payload: session });
+				dispatch(setSession({ user: session.user, session }));
 			} catch (err) {
 				console.error("Errore durante il controllo della sessione:", err);
-				dispatch({ type: "CLEAR_SESSION" });
+				dispatch(signOut());
 			}
 		};
 

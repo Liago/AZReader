@@ -19,18 +19,10 @@ import {
 } from 'ionicons/icons';
 import moment from "moment";
 import { useSelector } from 'react-redux';
-import { RootState } from '@store/store';
+import { RootState } from '@store/store-rtk';
 import { useHistory } from 'react-router-dom';
 import ThemeSettingsPage from './ui/ThemeSettingsPage';
 import { Calendar, Clock, Mail, Info, User, Palette, LogOut, BookOpen, Settings, ChevronRight, Compass, Activity, Heart } from 'lucide-react';
-
-interface UserCredentials {
-	user?: {
-		email?: string;
-		last_sign_in_at?: string;
-	};
-	expires_at?: number;
-}
 
 /**
  * Formatta un'email in modo che sia sempre visibile completamente
@@ -54,18 +46,18 @@ const formatEmail = (email: string): string => {
 const SideMenu: React.FC = () => {
 	const [activeView, setActiveView] = useState<'main' | 'theme-settings'>('main');
 	const history = useHistory();
-	const { user = {} } = useSelector((state: RootState) => state.user.credentials as UserCredentials);
-	const { credentials = {} } = useSelector((state: RootState) => state.user);
+	const user = useSelector((state: RootState) => state.auth.user);
+	const session = useSelector((state: RootState) => state.auth.session);
 
 	// Formatta l'ultimo accesso in modo compatto
 	const lastLogin = user?.last_sign_in_at
 		? moment(user.last_sign_in_at).format('DD/MM/YY HH:mm')
 		: 'n/a';
 
-	// Calcola se la sessione è attiva o scaduta
+	// Calcola se la sessione è attiva o scaduta  
 	const now = Date.now() / 1000;
-	const expiresAt = credentials.expires_at || 0;
-	const isSessionActive = expiresAt > now;
+	const expiresAt = session?.expires_at || 0;
+	const isSessionActive = session?.access_token && expiresAt > now;
 
 	// Calcola il tempo rimanente della sessione
 	let formattedTimeLeft = '';
@@ -83,8 +75,8 @@ const SideMenu: React.FC = () => {
 
 	// Componente che renderizza le informazioni dell'utente
 	const renderUserInfo = () => {
-		const expires_at = credentials.expires_at
-			? moment(credentials.expires_at * 1000).format('DD/MM/YY HH:mm')
+		const expires_at = session?.expires_at
+			? moment(session.expires_at * 1000).format('DD/MM/YY HH:mm')
 			: 'n/a';
 
 		const email = user?.email || '';
