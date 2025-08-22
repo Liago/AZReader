@@ -1,3 +1,30 @@
+# [1.20.0](https://github.com/Liago/AZReader/compare/v1.19.0...v1.20.0) (2025-08-22)
+
+
+### Bug Fixes
+
+* carousel on HomePage ([b0fa099](https://github.com/Liago/AZReader/commit/b0fa09970f59ee6db815e0dfb48853db6f4d76e7))
+* comments schema ([52c387b](https://github.com/Liago/AZReader/commit/52c387b5cfe08fa6cab768eeb3a835cb63487493))
+* correzione completa selezione e visualizzazione temi di lettura ([554c61e](https://github.com/Liago/AZReader/commit/554c61eaa50eb49720ef3891c2e02b9615e1a528)), closes [#17](https://github.com/Liago/AZReader/issues/17)
+* display article correctly ([2d281b1](https://github.com/Liago/AZReader/commit/2d281b1ff87db77900c50bba6d4f849513355922))
+* Initialize article tags as empty array ([925210c](https://github.com/Liago/AZReader/commit/925210c8b43ef339af9901df7998b20447b5b118))
+* migrazione Redux Toolkit per componenti UI ([2d127ea](https://github.com/Liago/AZReader/commit/2d127ea655d68e8cace5d305e48804e3b75f39d0))
+* search page details and management ([6769058](https://github.com/Liago/AZReader/commit/6769058b28d43dbbc5490fd7cf6ec192e423ae1d))
+
+
+### Features
+
+* **articles:** Refactor All Articles Page UI and Add Parser Modal ([3305012](https://github.com/Liago/AZReader/commit/3305012de5cabe8829b6cc6f54cec392c947d0db))
+* Implement Article Deletion on Article View Page ([f710a4e](https://github.com/Liago/AZReader/commit/f710a4e80a6380e3524ac8a1970ada2c2c51995a))
+* Implement personal web scraper for domain-specific parsing ([bd8fc4f](https://github.com/Liago/AZReader/commit/bd8fc4fa458f6f5d11da4df815293b2364d388ce))
+* Integrate personal scraper into main parsing strategy ([37e79f0](https://github.com/Liago/AZReader/commit/37e79f07e2ea8da823442283bd174ac1bbfb9743))
+* Introduce ScraperConfig interface and related utilities ([13c3f23](https://github.com/Liago/AZReader/commit/13c3f23cfa1869e7b18997d038367ca9ab138257))
+* Introduce Settings Page and Navigation ([69b6834](https://github.com/Liago/AZReader/commit/69b68346ee02eddde9901c20e14f5da85a167fce))
+* **parser:** Implement Flexible Article Parsing Strategy & RapidAPI Update ([da7e7bd](https://github.com/Liago/AZReader/commit/da7e7bdec94643de67baccc0fbf82a2ae545283d))
+* **security:** Enhance Article Access and Fetching Security ([06ccc6b](https://github.com/Liago/AZReader/commit/06ccc6bbde0ad984b04bbf65766a81a1c61d1e2b))
+* See All Articles fully functional ([73285eb](https://github.com/Liago/AZReader/commit/73285ebe18c9c0347729763ebc97d103c532e277))
+* **settings:** Add `preferredParser` to User Preferences ([722acc4](https://github.com/Liago/AZReader/commit/722acc46e3d3b679eec932bb909eb71dd9db1014))
+
 # [1.19.0](https://github.com/Liago/AZReader/compare/v1.18.1...v1.19.0) (2025-08-19)
 
 
