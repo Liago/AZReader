@@ -20,6 +20,7 @@ import DiscoverPage from "@pages/DiscoverPage";
 import ActivityFeedPage from "@pages/ActivityFeedPage";
 import PersonalizedFeedPage from "@pages/PersonalizedFeedPage";
 import ProfilePage from "@pages/ProfilePage";
+import SettingsPage from "@pages/SettingsPage";
 import InfoPage from "@pages/InfoPage";
 import SearchPage from "@pages/SearchPage";
 import SeeAllArticlesPage from "@pages/SeeAllArticlesPage";
@@ -283,6 +284,7 @@ const AppContent: React.FC = () => {
 				<Route exact path="/discover" component={DiscoverPage} />
 				<Route exact path="/activity" component={ActivityFeedPage} />
 				<Route exact path="/profile" component={ProfilePage} />
+				<Route exact path="/settings" component={SettingsPage} />
 				<Route exact path="/info" component={InfoPage} />
 				<Route exact path="/following" component={PersonalizedFeedPage} />
 				<Route exact path="/auth/confirm" component={AuthConfirmPage} />
@@ -290,11 +292,6 @@ const AppContent: React.FC = () => {
 				<Route exact path="/test" component={ParserHeaderTest} />
 				<Route exact path="/view-message" component={ViewMessage} />
 
-				<Route
-					exact
-					path="/profile"
-					render={() => <UnderConstructionPage title="Profilo" />}
-				/>
 				<Route
 					exact
 					path="/info"

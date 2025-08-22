@@ -72,8 +72,7 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleSettings = () => {
-    // TODO: Navigate to settings page
-    console.log('Settings clicked - will implement settings page');
+    history.push('/settings');
   };
 
   return (
