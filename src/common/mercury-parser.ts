@@ -2,8 +2,8 @@ import axios, { AxiosResponse, AxiosError } from 'axios';
 import * as cheerio from 'cheerio';
 import { CheerioAPI } from 'cheerio';
 import { endpoint } from '@config/environment';
-import { isValidUrl } from '../utility/utils';
-import { corsProxy, proxiedRequest } from './cors-proxy';
+import { isValidUrl, getScraperParmas, manipulateDateFromString } from '../utility/utils';
+import moment from 'moment';
 
 // Types for parser responses
 export interface ParsedArticle {
@@ -36,6 +36,22 @@ export interface ParserResult {
 	error?: ParserError;
 	source: 'mercury' | 'rapidapi' | 'personal' | 'none';
 	retryAttempts?: number;
+}
+
+// ScraperConfig interface for domain-specific parsing
+interface ScraperConfig {
+	url: string;
+	container?: string;
+	isHTML?: boolean;
+	parser: 'personal' | 'rapidapi' | 'mercury';
+	items?: {
+		title?: string;
+		author?: string;
+		content?: string;
+		data_published?: string;
+		excerpt?: string;
+		lead_image?: string;
+	};
 }
 
 // Configuration for retry logic
