@@ -338,6 +338,144 @@ class MercuryParserService {
 	}
 
 	/**
+	 * Process Personal Scraper response using domain-specific configuration
+	 */
+	private processPersonalScraperResponse(html: string, originalUrl: string, config: ScraperConfig): ParsedArticle {
+		const domain = this.extractDomain(originalUrl);
+		const $ = cheerio.load(html);
+		
+		// Extract content based on config selectors
+		const title = config.items?.title ? $(config.items.title).text().trim() : 'Untitled';
+		const author = config.items?.author ? $(config.items.author).text().trim() : '';
+		const excerpt = config.items?.excerpt ? $(config.items.excerpt).text().trim() : '';
+		
+		// Handle content extraction (HTML vs text)
+		let content = '';
+		if (config.items?.content) {
+			if (config.isHTML) {
+				content = $(config.items.content).html()?.replace(/iframe/g, '') || '';
+			} else {
+				content = $(config.items.content).text().replace(/\n/g, '<div class="py-1">') || '';
+			}
+		}
+		
+		// Handle domain-specific lead image and date extraction
+		let leadImageUrl: string | null = null;
+		let datePublished: string = new Date().toISOString();
+		
+		switch (domain) {
+			case 'www.lescienze.it':
+				if (config.items?.lead_image) {
+					leadImageUrl = $(config.items.lead_image).find('img').attr('data-src') || null;
+				}
+				if (config.items?.data_published) {
+					datePublished = $(config.items.data_published).attr('datetime') || new Date().toISOString();
+				}
+				break;
+			
+			case 'unaparolaalgiorno.it':
+				// Use og:image meta tag for lead image
+				leadImageUrl = $("meta[property='og:image']").attr("content") || null;
+				// Extract and format date
+				const dateText = $('.word-datapub').text().replace('Parola pubblicata il', '').trim();
+				if (dateText) {
+					try {
+						const formattedDate = manipulateDateFromString(dateText);
+						datePublished = moment(formattedDate, 'MM-DD-YYYY').toISOString();
+					} catch (e) {
+						console.warn('Error parsing date for unaparolaalgiorno.it:', e);
+					}
+				}
+				break;
+			
+			case 'www.macrumors.com':
+				// MacRumors-specific extraction
+				if (config.items?.lead_image) {
+					leadImageUrl = $(config.items.lead_image).find('img').attr('src') || null;
+				}
+				// Try to extract date from article meta or timestamp
+				const macRumorsDate = $('time').attr('datetime') || $('.timestamp').text().trim();
+				if (macRumorsDate) {
+					try {
+						datePublished = moment(macRumorsDate).toISOString();
+					} catch (e) {
+						console.warn('Error parsing date for MacRumors:', e);
+					}
+				}
+				break;
+			
+			case 'appleinsider.com':
+				// AppleInsider-specific extraction
+				if (config.items?.lead_image) {
+					leadImageUrl = $(config.items.lead_image).find('img').attr('src') || null;
+				}
+				// Try to extract date from article meta
+				const aiDate = $('.publish-date').text().trim() || $('time').attr('datetime');
+				if (aiDate) {
+					try {
+						datePublished = moment(aiDate).toISOString();
+					} catch (e) {
+						console.warn('Error parsing date for AppleInsider:', e);
+					}
+				}
+				break;
+			
+			case 'www.eurosport.it':
+				// Eurosport-specific extraction
+				if (config.items?.lead_image) {
+					leadImageUrl = $(config.items.lead_image).find('img').attr('src') || null;
+				}
+				// Try to extract date from article meta
+				const eurosportDate = $('.publish-date').text().trim() || $('time').attr('datetime');
+				if (eurosportDate) {
+					try {
+						datePublished = moment(eurosportDate).toISOString();
+					} catch (e) {
+						console.warn('Error parsing date for Eurosport:', e);
+					}
+				}
+				break;
+			
+			default:
+				// Default extraction logic
+				if (config.items?.lead_image) {
+					leadImageUrl = $(config.items.lead_image).find('img').attr('src') || null;
+				}
+				if (config.items?.data_published) {
+					datePublished = $(config.items.data_published).text() || new Date().toISOString();
+				}
+				break;
+		}
+		
+		// Process images in content (handle data-src attributes)
+		const contentCheerio = cheerio.load(content);
+		contentCheerio("img").each(function() {
+			const dataSrc = contentCheerio(this).attr('data-src');
+			if (dataSrc) {
+				contentCheerio(this).attr("src", dataSrc);
+			}
+		});
+		
+		const finalContent = this.sanitizeContent(contentCheerio.html() || content);
+		
+		return {
+			title,
+			author,
+			content: finalContent,
+			excerpt: excerpt || this.generateExcerpt(finalContent),
+			lead_image_url: this.sanitizeImageUrl(leadImageUrl || undefined),
+			url: originalUrl,
+			domain,
+			date_published: datePublished,
+			word_count: this.countWords(finalContent),
+			direction: 'ltr',
+			total_pages: 1,
+			rendered_pages: 1,
+			next_page_url: null,
+		};
+	}
+
+	/**
 	 * Process RapidAPI response
 	 */
 	private processRapidApiResponse(data: RapidApiResponse, originalUrl: string): ParsedArticle {
