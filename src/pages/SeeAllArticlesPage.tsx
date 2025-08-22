@@ -400,6 +400,31 @@ const SeeAllArticlesPage: React.FC = () => {
 		};
 	}, [articles]);
 	
+	// Security check: redirect if not authenticated
+	if (!session?.user?.id) {
+		return (
+			<IonPage>
+				<IonHeader>
+					<IonToolbar>
+						<IonButtons slot="start">
+							<IonBackButton defaultHref="/home" />
+						</IonButtons>
+						<IonTitle>Accesso Richiesto</IonTitle>
+					</IonToolbar>
+				</IonHeader>
+				<IonContent className="ion-padding">
+					<div className="flex flex-col items-center justify-center h-full text-center">
+						<h2>Accesso Richiesto</h2>
+						<p>Devi essere autenticato per visualizzare gli articoli.</p>
+						<IonButton routerLink="/home" fill="solid">
+							Torna alla Home
+						</IonButton>
+					</div>
+				</IonContent>
+			</IonPage>
+		);
+	}
+	
 	return (
 		<IonPage>
 			<IonHeader>

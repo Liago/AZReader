@@ -44,6 +44,12 @@ const ProfilePage: React.FC = () => {
 
   const user = session?.user;
 
+  // Security check: redirect if not authenticated
+  if (!session?.user) {
+    history.push('/home');
+    return null;
+  }
+
   const handleSignOut = async () => {
     setIsLoading(true);
     try {

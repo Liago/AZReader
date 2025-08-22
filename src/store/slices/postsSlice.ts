@@ -118,15 +118,17 @@ export const fetchPosts = createAsyncThunk(
 		
 		console.log('fetchPosts called with params:', { page, limit, userId, tags, searchQuery });
 		
+		// SECURITY: Require authentication - no userId means no access to articles
+		if (!userId) {
+			throw new Error('Authentication required: userId is required to fetch articles');
+		}
+		
 		let query = supabase
 			.from('articles')
 			.select('*', { count: 'exact' })
 			.order('created_at', { ascending: false })
-			.range((page - 1) * limit, page * limit - 1);
-
-		if (userId) {
-			query = query.eq('user_id', userId);
-		}
+			.range((page - 1) * limit, page * limit - 1)
+			.eq('user_id', userId); // Always filter by user ID for security
 
 		if (tags && tags.length > 0) {
 			query = query.contains('tags', tags);
