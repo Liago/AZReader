@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Redirect, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -8,14 +8,10 @@ import { App as CapApp } from '@capacitor/app';
 
 import { AuthProvider } from "@context/auth/authContext";
 
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@common/firestore";
-
 import { persistor, store } from "@store/store";
 
 import Home from "@pages/home";
 import ViewMessage from "@pages/viewMessage";
-import VerifyEmail from "@pages/verifyEmail";
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 
 /* Core CSS required for Ionic components to work properly */
@@ -41,14 +37,7 @@ import "./css/main.css";
 setupIonicReact();
 
 const App = () => {
-	const [currentUser, setCurrentUser] = useState(null);
 	const router = useIonRouter();
-
-	useEffect(() => {
-		onAuthStateChanged(auth, (user) => {
-			setCurrentUser(user)
-		})
-	}, [])
 
 	useEffect(() => {
 		CapApp.addListener('appUrlOpen', async ({ url }) => {
@@ -81,11 +70,10 @@ const App = () => {
 				<PersistGate loading={null} persistor={persistor}>
 					<IonReactRouter>
 						<IonRouterOutlet>
-							<AuthProvider value={{ currentUser }}>
+							<AuthProvider value={{}}>
 								<Route path="/" exact={true} component={Home} />
 								<Route path="/home" exact={true} component={Home} />
 								<Route path="/article/:id" component={ViewMessage} />
-								<Route exact path="/verify-email" component={VerifyEmail} />
 								<Route exact path="/auth/confirm" component={AuthConfirmPage}/>
 								<Route path="/" exact={true}>
 									<Redirect to="/home" />
