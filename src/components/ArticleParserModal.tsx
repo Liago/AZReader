@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Clipboard } from '@capacitor/clipboard';
 import { isValidUrl } from '@utility/utils';
-import Article from './Article';
+import Article from './article';
 import { rapidApiScraper } from '@common/scraper';
 
 // Interfaccia per props

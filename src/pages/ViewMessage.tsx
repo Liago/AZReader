@@ -29,13 +29,15 @@ import { RootState } from "@store/reducers";
 import { supabase } from "@store/rest";
 
 import { useTagsSaver } from "@store/rest";
-import ModalTags from "@components/ModalTags";
+
+import ModalTags from "@components/modalTags";
 import FontSizeControls from "@components/ui/FontSizeControls";
 import FontSizeWrapper from "@components/FontSizeWrapper";
 import Comments from "@components/Comments";
+import ReadingThemeWrapper from "@components/ui/ReadingThemeWrapper";
+
 import { Session } from "@supabase/supabase-js";
 import { ShareService } from "@utility/shareService";
-import ReadingThemeWrapper from "@components/ui/ReadingThemeWrapper";
 
 interface ParamTypes {
 	id: string;
