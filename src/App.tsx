@@ -4,7 +4,8 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import { App as CapApp } from '@capacitor/app';
+import { App as CapApp, URLOpenListenerEvent } from '@capacitor/app';
+import type { User } from "firebase/auth";
 
 import { AuthProvider } from "@context/auth/authContext";
 
@@ -40,30 +41,34 @@ import "./css/main.css";
 
 setupIonicReact();
 
-const App = () => {
-	const [currentUser, setCurrentUser] = useState(null);
+const App: React.FC = () => {
+	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const router = useIonRouter();
 
 	useEffect(() => {
-		onAuthStateChanged(auth, (user) => {
+		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			setCurrentUser(user)
 		})
+		return () => unsubscribe();
 	}, [])
 
 	useEffect(() => {
-		CapApp.addListener('appUrlOpen', async ({ url }) => {
-			console.log('Deep link opened:', url);  // Add this line
+		const handleAppUrlOpen = async (event: URLOpenListenerEvent) => {
+			const { url } = event;
+			console.log('Deep link opened:', url);
 
 			if (url.startsWith('azreader://auth/confirm')) {
-				console.log('Routing to /auth/confirm');  // Add this line
+				console.log('Routing to /auth/confirm');
 				router.push('/auth/confirm', 'root', 'replace');
 			} else {
-				console.log('Unhandled deep link:', url);  // Add this line
+				console.log('Unhandled deep link:', url);
 			}
-		});
+		};
+
+		const urlListener = CapApp.addListener('appUrlOpen', handleAppUrlOpen);
 
 		// Add this block to log when the app is ready
-		CapApp.addListener('appStateChange', ({ isActive }) => {
+		const stateListener = CapApp.addListener('appStateChange', ({ isActive }) => {
 			if (isActive) {
 				console.log('App has become active');
 			}
@@ -71,7 +76,8 @@ const App = () => {
 
 		return () => {
 			// Clean up listeners when component unmounts
-			CapApp.removeAllListeners();
+			urlListener.remove();
+			stateListener.remove();
 		};
 	}, [router]);
 
