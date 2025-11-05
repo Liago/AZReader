@@ -494,33 +494,6 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 						/>
 					</div>
 
-					{/* Pulsante salva */}
-					<div style={{
-						position: 'fixed',
-						bottom: '24px',
-						right: '24px',
-						zIndex: 2000
-					}}>
-						<button
-							onClick={handleSaveArticle}
-							style={{
-								backgroundColor: '#3880ff',
-								color: 'white',
-								border: 'none',
-								borderRadius: '28px',
-								padding: '12px 24px',
-								fontSize: '16px',
-								fontWeight: 'bold',
-								cursor: 'pointer',
-								boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-								display: 'flex',
-								alignItems: 'center',
-								gap: '8px'
-							}}
-						>
-							<span>💾</span> Salva Articolo
-						</button>
-					</div>
 
 					{/* Toast di successo */}
 					{showSuccess && (
@@ -686,7 +659,60 @@ const ArticleParserModal: React.FC<ArticleParserModalProps> = ({
 				</div>
 
 				{/* Body - contenuto dinamico in base allo stato */}
-				{renderContent()}
+				<div style={{ flex: 1, overflow: 'auto' }}>
+					{renderContent()}
+				</div>
+
+				{/* Footer con pulsanti - mostrato solo quando c'è un articolo da salvare */}
+				{(article || fallbackArticle) && (
+					<div style={{
+						borderTop: '1px solid #eee',
+						padding: '16px',
+						display: 'flex',
+						gap: '12px',
+						justifyContent: 'space-between'
+					}}>
+						<button
+							onClick={handleClose}
+							style={{
+								flex: 1,
+								backgroundColor: 'transparent',
+								color: '#6c757d',
+								border: '1px solid #dee2e6',
+								borderRadius: '4px',
+								padding: '12px 16px',
+								fontSize: '16px',
+								cursor: 'pointer',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								gap: '8px'
+							}}
+						>
+							✕ Annulla
+						</button>
+						<button
+							onClick={handleSaveArticle}
+							style={{
+								flex: 1,
+								backgroundColor: '#3880ff',
+								color: 'white',
+								border: 'none',
+								borderRadius: '4px',
+								padding: '12px 16px',
+								fontSize: '16px',
+								fontWeight: 'bold',
+								cursor: 'pointer',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								gap: '8px'
+							}}
+						>
+							💾 Salva Articolo
+						</button>
+					</div>
+				)}
 			</div>
 		</div>
 	);

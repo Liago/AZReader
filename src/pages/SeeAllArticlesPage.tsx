@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import {
 	IonContent,
@@ -26,7 +26,9 @@ import {
 	IonCol,
 	IonChip,
 	IonRefresher,
-	IonRefresherContent
+	IonRefresherContent,
+	IonSelect,
+	IonSelectOption
 } from '@ionic/react';
 import {
 	filterOutline,
@@ -37,7 +39,10 @@ import {
 	searchOutline,
 	heartOutline,
 	eyeOutline,
-	add
+	add,
+	swapVerticalOutline,
+	arrowUpOutline,
+	arrowDownOutline
 } from 'ionicons/icons';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -121,6 +126,9 @@ const SeeAllArticlesPage: React.FC = () => {
 	const [hasMorePages, setHasMorePages] = useState(true);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
 	
+	// Debounced search state
+	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(filters.searchQuery);
+	
 	// Load preferences from localStorage on mount
 	useEffect(() => {
 		const savedPreferences = localStorage.getItem('seeAllArticles_preferences');
@@ -146,6 +154,17 @@ const SeeAllArticlesPage: React.FC = () => {
 		localStorage.setItem('seeAllArticles_preferences', JSON.stringify(preferences));
 	}, [viewMode, itemsPerPage, sortOptions]);
 	
+	// Debounce search query to avoid excessive API calls
+	useEffect(() => {
+		const handler = setTimeout(() => {
+			setDebouncedSearchQuery(filters.searchQuery);
+		}, 300); // 300ms debounce delay
+
+		return () => {
+			clearTimeout(handler);
+		};
+	}, [filters.searchQuery]);
+	
 	
 	// Load more data for infinite scroll
 	const loadMoreData = async () => {
@@ -157,7 +176,7 @@ const SeeAllArticlesPage: React.FC = () => {
 			const result = await dispatch(fetchPosts({ 
 				page: nextPage, 
 				limit: itemsPerPage,
-				searchQuery: filters.searchQuery || undefined,
+				searchQuery: debouncedSearchQuery || undefined,
 				tags: filters.tags.length > 0 ? filters.tags : undefined,
 				userId: session?.user?.id
 			}));
@@ -184,7 +203,7 @@ const SeeAllArticlesPage: React.FC = () => {
 				const result = await dispatch(fetchPosts({ 
 					page: 1, 
 					limit: itemsPerPage,
-					searchQuery: filters.searchQuery || undefined,
+					searchQuery: debouncedSearchQuery || undefined,
 					tags: filters.tags.length > 0 ? filters.tags : undefined,
 					userId: session?.user?.id
 				}));
@@ -201,7 +220,7 @@ const SeeAllArticlesPage: React.FC = () => {
 		
 		setCurrentPage(1);
 		loadInitialData();
-	}, [dispatch, itemsPerPage, filters.searchQuery, filters.tags, session?.user?.id, sortOptions.field, sortOptions.direction]);
+	}, [dispatch, itemsPerPage, debouncedSearchQuery, filters.tags, session?.user?.id, sortOptions.field, sortOptions.direction]);
 	
 	// Filter and sort articles
 	const filteredAndSortedArticles = useMemo(() => {
@@ -344,15 +363,225 @@ const SeeAllArticlesPage: React.FC = () => {
 	};
 	
 	// Handle bulk actions
-	const handleBulkAction = (action: string) => {
-		// TODO: Implement bulk actions
-		console.log(`Bulk action: ${action} for articles:`, selectedArticles);
-		showToast({ 
-			message: `Azione "${action}" applicata a ${selectedArticles.length} articoli`,
-			color: 'success' 
-		});
-		clearSelection();
-		setShowBulkActions(false);
+	const handleBulkAction = async (action: string) => {
+		if (!session?.user?.id || selectedArticles.length === 0) {
+			showToast({
+				message: 'Devi effettuare l\'accesso per eseguire azioni bulk',
+				color: 'warning'
+			});
+			return;
+		}
+
+		try {
+			// Filter articles to only include those owned by the current user
+			const userOwnedArticles = selectedArticles.filter(articleId => {
+				const article = displayedArticles.find(a => a.id === articleId);
+				return article && article.user_id === session.user.id;
+			});
+
+			if (userOwnedArticles.length === 0) {
+				showToast({
+					message: 'Puoi modificare solo i tuoi articoli',
+					color: 'warning'
+				});
+				clearSelection();
+				setShowBulkActions(false);
+				return;
+			}
+
+			let updates: any = {};
+			let actionText = '';
+
+			switch (action) {
+				case 'mark-read':
+					updates = { reading_status: 'completed' };
+					actionText = 'segnati come letti';
+					break;
+				case 'mark-unread':
+					updates = { reading_status: 'unread' };
+					actionText = 'segnati come non letti';
+					break;
+				case 'add-favorites':
+					updates = { is_favorite: true };
+					actionText = 'aggiunti ai preferiti';
+					break;
+				case 'remove-favorites':
+					updates = { is_favorite: false };
+					actionText = 'rimossi dai preferiti';
+					break;
+				case 'delete':
+					// Handle deletion separately
+					const { error: deleteError } = await supabase
+						.from('articles')
+						.delete()
+						.in('id', userOwnedArticles);
+
+					if (deleteError) throw deleteError;
+
+					showToast({
+						message: `${userOwnedArticles.length} articoli eliminati`,
+						color: 'success'
+					});
+
+					// Refresh the list
+					setCurrentPage(1);
+					await dispatch(fetchPosts({ 
+						page: 1, 
+						limit: itemsPerPage,
+						searchQuery: debouncedSearchQuery || undefined,
+						tags: filters.tags.length > 0 ? filters.tags : undefined,
+						userId: session?.user?.id
+					}));
+
+					clearSelection();
+					setShowBulkActions(false);
+					return;
+				default:
+					console.log(`Unknown bulk action: ${action}`);
+					return;
+			}
+
+			// Execute the update for non-delete actions
+			const { error } = await supabase
+				.from('articles')
+				.update(updates)
+				.in('id', userOwnedArticles);
+
+			if (error) throw error;
+
+			showToast({
+				message: `${userOwnedArticles.length} articoli ${actionText}`,
+				color: 'success'
+			});
+
+			// Refresh the list
+			setCurrentPage(1);
+			await dispatch(fetchPosts({ 
+				page: 1, 
+				limit: itemsPerPage,
+				searchQuery: debouncedSearchQuery || undefined,
+				tags: filters.tags.length > 0 ? filters.tags : undefined,
+				userId: session?.user?.id
+			}));
+
+		} catch (error: any) {
+			console.error('Errore azione bulk:', error);
+			showToast({
+				message: 'Errore durante l\'esecuzione dell\'azione bulk',
+				color: 'danger'
+			});
+		} finally {
+			clearSelection();
+			setShowBulkActions(false);
+		}
+	};
+
+	// Handle single article toggle read status
+	const handleSingleMarkAsRead = async () => {
+		if (!selectedSingleArticle || !session?.user?.id) {
+			showToast({
+				message: 'Devi effettuare l\'accesso per modificare articoli',
+				color: 'warning'
+			});
+			return;
+		}
+
+		try {
+			const article = displayedArticles.find(a => a.id === selectedSingleArticle);
+			if (!article || article.user_id !== session.user.id) {
+				showToast({
+					message: 'Puoi modificare solo i tuoi articoli',
+					color: 'warning'
+				});
+				return;
+			}
+
+			const newReadStatus = article.reading_status === 'completed' ? 'unread' : 'completed';
+			const { error } = await supabase
+				.from('articles')
+				.update({ reading_status: newReadStatus })
+				.eq('id', selectedSingleArticle);
+
+			if (error) throw error;
+
+			showToast({
+				message: newReadStatus === 'completed' ? 'Articolo segnato come letto' : 'Articolo segnato come non letto',
+				color: 'success'
+			});
+
+			// Refresh the list
+			await dispatch(fetchPosts({ 
+				page: 1, 
+				limit: itemsPerPage,
+				searchQuery: debouncedSearchQuery || undefined,
+				tags: filters.tags.length > 0 ? filters.tags : undefined,
+				userId: session?.user?.id
+			}));
+
+		} catch (error: any) {
+			console.error('Errore toggle lettura:', error);
+			showToast({
+				message: 'Errore durante l\'aggiornamento',
+				color: 'danger'
+			});
+		} finally {
+			setShowSingleActionSheet(false);
+			setSelectedSingleArticle(null);
+		}
+	};
+
+	// Handle single article add to favorites
+	const handleSingleAddToFavorites = async () => {
+		if (!selectedSingleArticle || !session?.user?.id) {
+			showToast({
+				message: 'Devi effettuare l\'accesso per modificare articoli',
+				color: 'warning'
+			});
+			return;
+		}
+
+		try {
+			const article = displayedArticles.find(a => a.id === selectedSingleArticle);
+			if (!article || article.user_id !== session.user.id) {
+				showToast({
+					message: 'Puoi modificare solo i tuoi articoli',
+					color: 'warning'
+				});
+				return;
+			}
+
+			const newFavoriteStatus = !article.is_favorite;
+			const { error } = await supabase
+				.from('articles')
+				.update({ is_favorite: newFavoriteStatus })
+				.eq('id', selectedSingleArticle);
+
+			if (error) throw error;
+
+			showToast({
+				message: newFavoriteStatus ? 'Articolo aggiunto ai preferiti' : 'Articolo rimosso dai preferiti',
+				color: 'success'
+			});
+
+			// Refresh the list
+			await dispatch(fetchPosts({ 
+				page: 1, 
+				limit: itemsPerPage,
+				searchQuery: debouncedSearchQuery || undefined,
+				tags: filters.tags.length > 0 ? filters.tags : undefined,
+				userId: session?.user?.id
+			}));
+
+		} catch (error: any) {
+			console.error('Errore preferiti:', error);
+			showToast({
+				message: 'Errore durante l\'aggiornamento',
+				color: 'danger'
+			});
+		} finally {
+			setShowSingleActionSheet(false);
+			setSelectedSingleArticle(null);
+		}
 	};
 
 	// Handle single article actions
@@ -415,7 +644,7 @@ const SeeAllArticlesPage: React.FC = () => {
 			await dispatch(fetchPosts({ 
 				page: 1, 
 				limit: itemsPerPage,
-				searchQuery: filters.searchQuery || undefined,
+				searchQuery: debouncedSearchQuery || undefined,
 				tags: filters.tags.length > 0 ? filters.tags : undefined,
 				userId: session?.user?.id
 			}));
@@ -551,7 +780,18 @@ const SeeAllArticlesPage: React.FC = () => {
 	}
 	
 	return (
-		<IonPage>
+		<>
+			<style>{`
+				@keyframes pulse {
+					0%, 100% {
+						opacity: 1;
+					}
+					50% {
+						opacity: 0.5;
+					}
+				}
+			`}</style>
+			<IonPage>
 			<IonHeader>
 				<IonToolbar>
 					<IonButtons slot="start">
@@ -609,18 +849,51 @@ const SeeAllArticlesPage: React.FC = () => {
 							)}
 						</div>
 						
-						{/* View Mode Toggle */}
-						<IonSegment 
-							value={viewMode} 
-							onIonChange={e => setViewMode(e.detail.value as ViewMode)}
-						>
-							<IonSegmentButton value="grid">
-								<IonIcon icon={gridOutline} />
-							</IonSegmentButton>
-							<IonSegmentButton value="list">
-								<IonIcon icon={listOutline} />
-							</IonSegmentButton>
-						</IonSegment>
+						{/* View Mode and Sort Controls */}
+						<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+							{/* View Mode Toggle */}
+							<IonSegment 
+								value={viewMode} 
+								onIonChange={e => setViewMode(e.detail.value as ViewMode)}
+								style={{ minWidth: '120px' }}
+							>
+								<IonSegmentButton value="grid">
+									<IonIcon icon={gridOutline} />
+								</IonSegmentButton>
+								<IonSegmentButton value="list">
+									<IonIcon icon={listOutline} />
+								</IonSegmentButton>
+							</IonSegment>
+							
+							{/* Sort Controls */}
+							<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+								<IonSelect
+									value={sortOptions.field}
+									placeholder="Ordina per"
+									onIonChange={e => setSortOptions(prev => ({ ...prev, field: e.detail.value }))}
+									interface="popover"
+									style={{ maxWidth: '140px' }}
+								>
+									<IonSelectOption value="created_at">Data</IonSelectOption>
+									<IonSelectOption value="title">Titolo</IonSelectOption>
+									<IonSelectOption value="likes_count">Popolarità</IonSelectOption>
+									<IonSelectOption value="estimated_read_time">Lettura</IonSelectOption>
+									<IonSelectOption value="updated_at">Aggiornato</IonSelectOption>
+								</IonSelect>
+								
+								<IonButton
+									fill="clear"
+									onClick={() => setSortOptions(prev => ({ 
+										...prev, 
+										direction: prev.direction === 'asc' ? 'desc' : 'asc' 
+									}))}
+								>
+									<IonIcon 
+										icon={sortOptions.direction === 'asc' ? arrowUpOutline : arrowDownOutline} 
+									/>
+								</IonButton>
+							</div>
+						</div>
 					</div>
 					
 					{/* Search Bar */}
@@ -686,8 +959,119 @@ const SeeAllArticlesPage: React.FC = () => {
 				
 				{/* Articles Grid/List */}
 				{loading.fetchPosts ? (
-					<div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-						<IonSpinner name="circular" />
+					<div className={viewMode === 'grid' ? 'articles-grid' : 'articles-list'}>
+						{viewMode === 'grid' ? (
+							<IonGrid>
+								<IonRow>
+									{Array.from({ length: 12 }, (_, index) => (
+										<IonCol 
+											key={index} 
+											size="12" 
+											sizeSm="6" 
+											sizeMd="4" 
+											sizeLg="3"
+										>
+											<div style={{
+												border: '1px solid #e5e7eb',
+												borderRadius: '12px',
+												padding: '16px',
+												background: 'var(--ion-color-light, #ffffff)',
+												minHeight: '300px'
+											}}>
+												{/* Skeleton for image */}
+												<div style={{
+													width: '100%',
+													height: '160px',
+													backgroundColor: '#f0f0f0',
+													borderRadius: '8px',
+													marginBottom: '12px',
+													animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+												}} />
+												{/* Skeleton for title */}
+												<div style={{
+													width: '80%',
+													height: '16px',
+													backgroundColor: '#f0f0f0',
+													borderRadius: '4px',
+													marginBottom: '8px',
+													animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+												}} />
+												<div style={{
+													width: '60%',
+													height: '16px',
+													backgroundColor: '#f0f0f0',
+													borderRadius: '4px',
+													marginBottom: '12px',
+													animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+												}} />
+												{/* Skeleton for metadata */}
+												<div style={{
+													width: '100%',
+													height: '14px',
+													backgroundColor: '#f0f0f0',
+													borderRadius: '4px',
+													animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+												}} />
+											</div>
+										</IonCol>
+									))}
+								</IonRow>
+							</IonGrid>
+						) : (
+							<div style={{ padding: '0' }}>
+								{Array.from({ length: 8 }, (_, index) => (
+									<div 
+										key={index}
+										style={{
+											border: '1px solid #e5e7eb',
+											borderRadius: '12px',
+											margin: '8px 16px',
+											padding: '16px',
+											background: 'var(--ion-color-light, #ffffff)',
+											display: 'flex',
+											gap: '12px'
+										}}
+									>
+										{/* Skeleton for image */}
+										<div style={{
+											width: '80px',
+											height: '80px',
+											backgroundColor: '#f0f0f0',
+											borderRadius: '8px',
+											flexShrink: 0,
+											animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+										}} />
+										<div style={{ flex: 1 }}>
+											{/* Skeleton for title */}
+											<div style={{
+												width: '100%',
+												height: '18px',
+												backgroundColor: '#f0f0f0',
+												borderRadius: '4px',
+												marginBottom: '8px',
+												animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+											}} />
+											<div style={{
+												width: '70%',
+												height: '18px',
+												backgroundColor: '#f0f0f0',
+												borderRadius: '4px',
+												marginBottom: '12px',
+												animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+											}} />
+											{/* Skeleton for metadata */}
+											<div style={{
+												width: '50%',
+												height: '14px',
+												backgroundColor: '#f0f0f0',
+												borderRadius: '4px',
+												animation: 'pulse 1.5s ease-in-out 0.5s infinite'
+											}} />
+										</div>
+									</div>
+								))}
+							</div>
+						)}
 					</div>
 				) : displayedArticles.length === 0 ? (
 					<div style={{ textAlign: 'center', padding: '40px' }}>
@@ -994,33 +1378,15 @@ const SeeAllArticlesPage: React.FC = () => {
 
 					const buttons: any[] = [
 						{
-							text: 'Segna come letto',
+							text: selectedArticle?.reading_status === 'completed' ? 'Segna come non letto' : 'Segna come letto',
 							icon: eyeOutline,
-							handler: () => {
-								console.log('Mark as read:', selectedSingleArticle);
-								setShowSingleActionSheet(false);
-								setSelectedSingleArticle(null);
-							}
+							handler: () => handleSingleMarkAsRead()
 						},
 						{
-							text: 'Aggiungi ai preferiti',
+							text: selectedArticle?.is_favorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti',
 							icon: heartOutline,
-							handler: () => {
-								console.log('Add to favorites:', selectedSingleArticle);
-								setShowSingleActionSheet(false);
-								setSelectedSingleArticle(null);
-							}
+							handler: () => handleSingleAddToFavorites()
 						},
-						// Always show delete for testing
-						{
-							text: 'Elimina (TEST)',
-							role: 'destructive',
-							icon: trashOutline,
-							handler: () => {
-								console.log('Delete clicked (test)');
-								handleSingleArticleDelete();
-							}
-						}
 					];
 
 					// Add delete button only if user owns the article
@@ -1046,11 +1412,20 @@ const SeeAllArticlesPage: React.FC = () => {
 				})()}
 			/>
 			
-			{/* Filters Modal - TODO: Implement detailed filters */}
+			{/* Advanced Filters Modal */}
 			<IonModal isOpen={isFilterModalOpen} onDidDismiss={() => setIsFilterModalOpen(false)}>
 				<IonHeader>
 					<IonToolbar>
 						<IonTitle>Filtri Avanzati</IonTitle>
+						<IonButtons slot="start">
+							<IonButton 
+								fill="clear" 
+								onClick={clearAllFilters}
+								color="danger"
+							>
+								Reset
+							</IonButton>
+						</IonButtons>
 						<IonButtons slot="end">
 							<IonButton onClick={() => setIsFilterModalOpen(false)}>Chiudi</IonButton>
 						</IonButtons>
@@ -1058,10 +1433,183 @@ const SeeAllArticlesPage: React.FC = () => {
 				</IonHeader>
 				<IonContent>
 					<div style={{ padding: '16px' }}>
-						<IonText>
-							<h3>Filtri avanzati in arrivo...</h3>
-							<p>Questa funzionalità verrà implementata nella prossima iterazione.</p>
-						</IonText>
+						{/* Tags Filter */}
+						<div style={{ marginBottom: '24px' }}>
+							<IonText>
+								<h3>Tag</h3>
+							</IonText>
+							<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+								{getFilterOptions.tags.length > 0 ? (
+									getFilterOptions.tags.map(tag => (
+										<IonChip 
+											key={tag}
+											color={filters.tags.includes(tag) ? 'primary' : 'medium'}
+											onClick={() => {
+												setFilters(prev => ({
+													...prev,
+													tags: prev.tags.includes(tag) 
+														? prev.tags.filter(t => t !== tag)
+														: [...prev.tags, tag]
+												}));
+											}}
+										>
+											<IonLabel>{tag}</IonLabel>
+										</IonChip>
+									))
+								) : (
+									<IonText color="medium">
+										<p>Nessun tag disponibile</p>
+									</IonText>
+								)}
+							</div>
+						</div>
+
+						{/* Read Status Filter */}
+						<div style={{ marginBottom: '24px' }}>
+							<IonText>
+								<h3>Stato di Lettura</h3>
+							</IonText>
+							<IonSegment 
+								value={filters.readStatus} 
+								onIonChange={e => setFilters(prev => ({ ...prev, readStatus: e.detail.value as any }))}
+								style={{ marginTop: '8px' }}
+							>
+								<IonSegmentButton value="all">
+									<IonLabel>Tutti</IonLabel>
+								</IonSegmentButton>
+								<IonSegmentButton value="read">
+									<IonLabel>Letti</IonLabel>
+								</IonSegmentButton>
+								<IonSegmentButton value="unread">
+									<IonLabel>Non letti</IonLabel>
+								</IonSegmentButton>
+								<IonSegmentButton value="favorites">
+									<IonLabel>Preferiti</IonLabel>
+								</IonSegmentButton>
+							</IonSegment>
+						</div>
+
+						{/* Date Range Filter */}
+						<div style={{ marginBottom: '24px' }}>
+							<IonText>
+								<h3>Periodo</h3>
+							</IonText>
+							<div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+								<div style={{ flex: 1 }}>
+									<IonText>
+										<p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Data inizio</p>
+									</IonText>
+									<input
+										type="date"
+										value={filters.dateRange.start || ''}
+										onChange={(e) => setFilters(prev => ({
+											...prev,
+											dateRange: { ...prev.dateRange, start: e.target.value || null }
+										}))}
+										style={{
+											width: '100%',
+											padding: '8px',
+											border: '1px solid #ccc',
+											borderRadius: '4px'
+										}}
+									/>
+								</div>
+								<div style={{ flex: 1 }}>
+									<IonText>
+										<p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Data fine</p>
+									</IonText>
+									<input
+										type="date"
+										value={filters.dateRange.end || ''}
+										onChange={(e) => setFilters(prev => ({
+											...prev,
+											dateRange: { ...prev.dateRange, end: e.target.value || null }
+										}))}
+										style={{
+											width: '100%',
+											padding: '8px',
+											border: '1px solid #ccc',
+											borderRadius: '4px'
+										}}
+									/>
+								</div>
+							</div>
+						</div>
+
+						{/* Author Filter */}
+						<div style={{ marginBottom: '24px' }}>
+							<IonText>
+								<h3>Autori</h3>
+							</IonText>
+							<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+								{getFilterOptions.authors.length > 0 ? (
+									getFilterOptions.authors.map(author => (
+										<IonChip 
+											key={author}
+											color={filters.author.includes(author) ? 'primary' : 'medium'}
+											onClick={() => {
+												setFilters(prev => ({
+													...prev,
+													author: prev.author.includes(author) 
+														? prev.author.filter(a => a !== author)
+														: [...prev.author, author]
+												}));
+											}}
+										>
+											<IonLabel>{author}</IonLabel>
+										</IonChip>
+									))
+								) : (
+									<IonText color="medium">
+										<p>Nessun autore disponibile</p>
+									</IonText>
+								)}
+							</div>
+						</div>
+
+						{/* Source Domain Filter */}
+						<div style={{ marginBottom: '24px' }}>
+							<IonText>
+								<h3>Domini Sorgente</h3>
+							</IonText>
+							<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+								{getFilterOptions.domains.length > 0 ? (
+									getFilterOptions.domains.map(domain => (
+										<IonChip 
+											key={domain}
+											color={filters.sourceDomain.includes(domain) ? 'primary' : 'medium'}
+											onClick={() => {
+												setFilters(prev => ({
+													...prev,
+													sourceDomain: prev.sourceDomain.includes(domain) 
+														? prev.sourceDomain.filter(d => d !== domain)
+														: [...prev.sourceDomain, domain]
+												}));
+											}}
+										>
+											<IonLabel>{domain}</IonLabel>
+										</IonChip>
+									))
+								) : (
+									<IonText color="medium">
+										<p>Nessun dominio disponibile</p>
+									</IonText>
+								)}
+							</div>
+						</div>
+
+						{/* Apply Button */}
+						<div style={{ padding: '16px 0' }}>
+							<IonButton 
+								expand="block" 
+								onClick={() => {
+									setCurrentPage(1);
+									setIsFilterModalOpen(false);
+								}}
+							>
+								Applica Filtri
+							</IonButton>
+						</div>
 					</div>
 				</IonContent>
 			</IonModal>
@@ -1078,6 +1626,7 @@ const SeeAllArticlesPage: React.FC = () => {
 				error={parseError}
 			/>
 		</IonPage>
+		</>
 	);
 };
 

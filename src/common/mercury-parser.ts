@@ -128,6 +128,8 @@ class MercuryParserService {
 
 		// Check if there's a domain-specific scraper configuration
 		const scraperConfig = getScraperParmas(cleanUrl) as ScraperConfig | null;
+		console.log('Mercury Parser - URL:', cleanUrl);
+		console.log('Mercury Parser - Found scraper config:', scraperConfig);
 		
 		// Build parser strategy based on domain config and user preference
 		let parsers: Array<{ name: string; fn: () => Promise<ParserResult> }> = [];
@@ -373,6 +375,8 @@ class MercuryParserService {
 	 */
 	private processPersonalScraperResponse(html: string, originalUrl: string, config: ScraperConfig): ParsedArticle {
 		const domain = this.extractDomain(originalUrl);
+		console.log('Personal Scraper - Processing domain:', domain);
+		console.log('Personal Scraper - Config:', config);
 		const $ = cheerio.load(html);
 		
 		// Extract content based on config selectors
@@ -416,6 +420,54 @@ class MercuryParserService {
 					} catch (e) {
 						console.warn('Error parsing date for unaparolaalgiorno.it:', e);
 					}
+				}
+				
+				// Build structured content with all semantic sections
+				const wordSillabe = $('.word-sillabe').text().trim();
+				const wordSignificato = $('.word-significato.with-label').html()?.trim() || '';
+				const wordEtimo = $('.word-etimo.with-label').html()?.trim() || '';
+				const wordCommento = $('.word-commento').html()?.trim() || '';
+				
+				// Create a well-structured article with all sections
+				let structuredContent = '';
+				
+				// Add inline CSS for better formatting
+				const sectionStyle = `style="margin: 1.5rem 0; padding: 1rem; border-left: 4px solid #3b82f6; background-color: #f8fafc; border-radius: 0 8px 8px 0;"`;
+				const headingStyle = `style="margin: 0 0 0.5rem 0; color: #1e40af; font-size: 1.1rem; font-weight: 600;"`;
+				const contentStyle = `style="margin: 0; line-height: 1.6;"`;
+				
+				if (wordSillabe) {
+					structuredContent += `<div class="word-section word-pronunciation" ${sectionStyle}>
+						<h3 ${headingStyle}>📢 Pronuncia</h3>
+						<p class="pronunciation" ${contentStyle}><strong>${wordSillabe}</strong></p>
+					</div>`;
+				}
+				
+				if (wordSignificato) {
+					structuredContent += `<div class="word-section word-meaning" ${sectionStyle}>
+						<h3 ${headingStyle}>📖 Significato</h3>
+						<div class="meaning-content" ${contentStyle}>${wordSignificato}</div>
+					</div>`;
+				}
+				
+				if (wordEtimo) {
+					structuredContent += `<div class="word-section word-etymology" ${sectionStyle}>
+						<h3 ${headingStyle}>🏛️ Etimologia</h3>
+						<div class="etymology-content" ${contentStyle}>${wordEtimo}</div>
+					</div>`;
+				}
+				
+				if (wordCommento) {
+					structuredContent += `<div class="word-section word-commentary" ${sectionStyle}>
+						<h3 ${headingStyle}>💭 Commento</h3>
+						<div class="commentary-content" ${contentStyle}>${wordCommento}</div>
+					</div>`;
+				}
+				
+				// Override content with structured version
+				if (structuredContent) {
+					const articleStyle = `style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 100%; margin: 0 auto;"`;
+					content = `<div class="word-article-structured" ${articleStyle}>${structuredContent}</div>`;
 				}
 				break;
 			
@@ -463,6 +515,70 @@ class MercuryParserService {
 						datePublished = moment(eurosportDate).toISOString();
 					} catch (e) {
 						console.warn('Error parsing date for Eurosport:', e);
+					}
+				}
+				break;
+			
+			case 'www.tomshw.it':
+				// Tom's Hardware Italia-specific extraction
+				console.log('Processing tomshw.it with custom parser');
+				
+				// Use og:image meta tag for lead image
+				leadImageUrl = $("meta[property='og:image']").attr("content") || 
+					$(".featured-image img").attr("src") ||
+					$(".article-hero img").attr("src") ||
+					$(".wp-post-image").attr("src") ||
+					null;
+				
+				// Extract content more carefully, trying multiple selectors
+				let tomshwContent = $('.entry-content').first();
+				if (tomshwContent.length === 0) {
+					tomshwContent = $('.post-content').first();
+				}
+				if (tomshwContent.length === 0) {
+					tomshwContent = $('.article-content').first();
+				}
+				if (tomshwContent.length === 0) {
+					tomshwContent = $('main article .content').first();
+				}
+				if (tomshwContent.length === 0) {
+					tomshwContent = $('article').first();
+				}
+				
+				console.log('TomHW content selector found:', tomshwContent.length > 0);
+				
+				if (tomshwContent.length > 0) {
+					// Remove unwanted elements
+					tomshwContent.find('script, style, .ads, .advertisement, .social-share, .newsletter, .sidebar, nav, footer, .comments').remove();
+					
+					// Get clean content
+					content = tomshwContent.html()?.trim() || '';
+					console.log('TomHW extracted content length:', content.length);
+					console.log('TomHW content preview:', content.substring(0, 200) + '...');
+				}
+				
+				// If no specific content found, try fallback
+				if (!content || content.length < 100) {
+					console.log('TomHW fallback: trying broader selectors');
+					const fallbackContent = $('main').first();
+					if (fallbackContent.length > 0) {
+						// Remove navigation, sidebar, footer etc.
+						fallbackContent.find('nav, aside, .sidebar, footer, .comments, script, style, .ads, .advertisement').remove();
+						content = fallbackContent.html()?.trim() || content;
+					}
+				}
+				
+				// Try to extract date from article meta
+				const tomshwDate = $('time').attr('datetime') || 
+					$('.publish-date').text().trim() ||
+					$('.entry-date').text().trim() ||
+					$('meta[property="article:published_time"]').attr('content');
+				
+				if (tomshwDate) {
+					try {
+						datePublished = moment(tomshwDate).toISOString();
+					} catch (e) {
+						console.warn('Error parsing date for TomHW:', e);
 					}
 				}
 				break;

@@ -27,7 +27,11 @@ import {
 	IonFab,
 	IonFabButton,
 	IonActionSheet,
-	IonToast
+	IonToast,
+	IonFooter,
+	IonGrid,
+	IonRow,
+	IonCol
 } from '@ionic/react';
 import {
 	closeOutline,
@@ -330,18 +334,28 @@ const ArticlePreviewModal: React.FC<ArticlePreviewModalProps> = ({
 				{/* Article content preview */}
 				{article.content && (
 					<div className="article-content ion-padding">
+						<IonItem lines="none">
+							<IonIcon icon={eyeOutline} slot="start" color="primary" />
+							<IonLabel>
+								<h3>Content Preview</h3>
+								<p>First 500 characters of the article</p>
+							</IonLabel>
+						</IonItem>
 						<IonCard>
 							<IonCardContent>
 								<div 
 									className="content-preview"
 									dangerouslySetInnerHTML={{ 
-										__html: article.content.substring(0, 1000) + '...' 
+										__html: article.content.substring(0, 500) + (article.content.length > 500 ? '...' : '')
 									}}
 								/>
-								<IonButton fill="clear" size="small" color="primary">
-									<IonIcon icon={eyeOutline} slot="start" />
-									Preview content
-								</IonButton>
+								{article.content.length > 500 && (
+									<div className="read-more-hint ion-margin-top">
+										<IonText color="medium">
+											<p><em>Full content will be available after saving</em></p>
+										</IonText>
+									</div>
+								)}
 							</IonCardContent>
 						</IonCard>
 					</div>
@@ -427,16 +441,8 @@ const ArticlePreviewModal: React.FC<ArticlePreviewModalProps> = ({
 					/>
 				</div>
 
-				{/* Save button */}
-				<IonFab vertical="bottom" horizontal="end" slot="fixed">
-					<IonFabButton
-						onClick={handleSave}
-						disabled={isSaving}
-						color="primary"
-					>
-						{isSaving ? <IonSpinner /> : <IonIcon icon={bookmarkOutline} />}
-					</IonFabButton>
-				</IonFab>
+				{/* Add bottom padding for footer */}
+				<div style={{ height: '80px' }}></div>
 			</IonContent>
 		);
 	};
@@ -464,7 +470,7 @@ const ArticlePreviewModal: React.FC<ArticlePreviewModalProps> = ({
 				<IonHeader>
 					<IonToolbar>
 						<IonTitle>
-							{article ? 'Preview Article' : 'Save Article'}
+							{article ? 'Anteprima Articolo' : 'Salva Articolo'}
 						</IonTitle>
 						<IonButtons slot="end">
 							<IonButton onClick={onClose} fill="clear">
@@ -475,6 +481,46 @@ const ArticlePreviewModal: React.FC<ArticlePreviewModalProps> = ({
 				</IonHeader>
 
 				{renderContent()}
+
+				{/* Footer with save button - only show when article is loaded */}
+				{article && !isLoading && !error && (
+					<IonFooter>
+						<IonToolbar>
+							<IonGrid>
+								<IonRow>
+									<IonCol size="6">
+										<IonButton 
+											expand="block" 
+											fill="clear" 
+											color="medium"
+											onClick={onClose}
+										>
+											<IonIcon icon={closeOutline} slot="start" />
+											Annulla
+										</IonButton>
+									</IonCol>
+									<IonCol size="6">
+										<IonButton 
+											expand="block" 
+											color="primary"
+											onClick={handleSave}
+											disabled={isSaving}
+										>
+											{isSaving ? (
+												<IonSpinner name="lines-small" />
+											) : (
+												<>
+													<IonIcon icon={bookmarkOutline} slot="start" />
+													Salva Articolo
+												</>
+											)}
+										</IonButton>
+									</IonCol>
+								</IonRow>
+							</IonGrid>
+						</IonToolbar>
+					</IonFooter>
+				)}
 			</IonModal>
 
 			{/* Toast for feedback */}
@@ -535,13 +581,95 @@ const ArticlePreviewModal: React.FC<ArticlePreviewModalProps> = ({
 				.content-preview {
 					font-size: 14px;
 					line-height: 1.6;
-					color: var(--ion-color-medium);
+					color: var(--ion-color-dark);
+					font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 				}
 
 				.content-preview h1,
 				.content-preview h2,
-				.content-preview h3 {
+				.content-preview h3,
+				.content-preview h4,
+				.content-preview h5,
+				.content-preview h6 {
+					color: var(--ion-color-primary);
+					margin: 1rem 0 0.5rem 0;
+					font-weight: 600;
+				}
+
+				.content-preview h1 { font-size: 1.5em; }
+				.content-preview h2 { font-size: 1.3em; }
+				.content-preview h3 { font-size: 1.2em; }
+
+				.content-preview p {
+					margin: 0.5rem 0;
+					text-align: justify;
+				}
+
+				.content-preview strong {
+					font-weight: 600;
 					color: var(--ion-color-dark);
+				}
+
+				.content-preview em {
+					font-style: italic;
+					color: var(--ion-color-medium);
+				}
+
+				.content-preview a {
+					color: var(--ion-color-primary);
+					text-decoration: none;
+				}
+
+				.content-preview img {
+					max-width: 100%;
+					height: auto;
+					border-radius: 8px;
+					margin: 0.5rem 0;
+				}
+
+				.content-preview blockquote {
+					border-left: 4px solid var(--ion-color-primary);
+					margin: 1rem 0;
+					padding: 0.5rem 1rem;
+					background-color: var(--ion-color-light);
+					border-radius: 0 8px 8px 0;
+				}
+
+				.content-preview ul,
+				.content-preview ol {
+					margin: 0.5rem 0;
+					padding-left: 1.5rem;
+				}
+
+				.content-preview li {
+					margin: 0.25rem 0;
+				}
+
+				/* Word article structured sections */
+				.content-preview .word-article-structured {
+					background: none;
+				}
+
+				.content-preview .word-section {
+					margin: 1rem 0;
+					padding: 1rem;
+					border-left: 4px solid var(--ion-color-primary);
+					background-color: var(--ion-color-light);
+					border-radius: 0 8px 8px 0;
+				}
+
+				.content-preview .word-section h3 {
+					margin: 0 0 0.5rem 0;
+					color: var(--ion-color-primary);
+					font-size: 1.1rem;
+					font-weight: 600;
+				}
+
+				.read-more-hint {
+					text-align: center;
+					padding: 0.5rem;
+					background-color: var(--ion-color-light);
+					border-radius: 8px;
 				}
 
 				.selected-tags {
