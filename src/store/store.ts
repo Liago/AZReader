@@ -53,7 +53,7 @@ const persistedReducer = persistCombineReducers<RootState>(persistConfig, {
 	archive: archiveReducer,
 	loading: loadingReducer,
 	error: errorReducer,
-});
+} as any); // Cast needed for Redux Toolkit compatibility with legacy store
 
 const store = createStore(persistedReducer, applyMiddleware(...middlewares)) as Store<RootState>;
 const persistor = persistStore(store);

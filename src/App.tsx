@@ -1,18 +1,16 @@
-import { useEffect } from "react";
 import { Redirect, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from "@ionic/react";
+import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import { App as CapApp, URLOpenListenerEvent } from '@capacitor/app';
-import type { User } from "firebase/auth";
 
-import { AuthProvider } from "@context/auth/authContext";
+import { AuthProvider } from "./context";
+import AppUrlListener from "@components/AppUrlListener";
 
 import { persistor, store } from "@store/store";
 
 import Home from "@pages/home";
-import ViewMessage from "@pages/viewMessage";
+import ViewMessage from "@pages/ViewMessage";
 import AuthConfirmPage from "@pages/AuthConfirmPage";
 
 /* Core CSS required for Ionic components to work properly */
@@ -37,62 +35,16 @@ import "./css/main.css";
 
 setupIonicReact();
 
-<<<<<<<< HEAD:src/App.js
-const App = () => {
-	const router = useIonRouter();
 
-	useEffect(() => {
-		CapApp.addListener('appUrlOpen', async ({ url }) => {
-			console.log('Deep link opened:', url);  // Add this line
-========
 const App: React.FC = () => {
-	const [currentUser, setCurrentUser] = useState<User | null>(null);
-	const router = useIonRouter();
-
-	useEffect(() => {
-		const unsubscribe = onAuthStateChanged(auth, (user) => {
-			setCurrentUser(user)
-		})
-		return () => unsubscribe();
-	}, [])
-
-	useEffect(() => {
-		const handleAppUrlOpen = async (event: URLOpenListenerEvent) => {
-			const { url } = event;
-			console.log('Deep link opened:', url);
->>>>>>>> claude/fix-app-js-import-011CUq1uYXQE3sWm1aJP9jUL:src/App.tsx
-
-			if (url.startsWith('azreader://auth/confirm')) {
-				console.log('Routing to /auth/confirm');
-				router.push('/auth/confirm', 'root', 'replace');
-			} else {
-				console.log('Unhandled deep link:', url);
-			}
-		};
-
-		const urlListener = CapApp.addListener('appUrlOpen', handleAppUrlOpen);
-
-		// Add this block to log when the app is ready
-		const stateListener = CapApp.addListener('appStateChange', ({ isActive }) => {
-			if (isActive) {
-				console.log('App has become active');
-			}
-		});
-
-		return () => {
-			// Clean up listeners when component unmounts
-			urlListener.remove();
-			stateListener.remove();
-		};
-	}, [router]);
-
 	return (
 		<Provider store={store}>
-			<IonApp>
-				<PersistGate loading={null} persistor={persistor}>
-					<IonReactRouter>
-						<IonRouterOutlet>
-							<AuthProvider value={{}}>
+			<PersistGate loading={null} persistor={persistor}>
+				<AuthProvider>
+					<IonApp>
+						<IonReactRouter>
+							<AppUrlListener />
+							<IonRouterOutlet>
 								<Route path="/" exact={true} component={Home} />
 								<Route path="/home" exact={true} component={Home} />
 								<Route path="/article/:id" component={ViewMessage} />
@@ -100,11 +52,11 @@ const App: React.FC = () => {
 								<Route path="/" exact={true}>
 									<Redirect to="/home" />
 								</Route>
-							</AuthProvider>
-						</IonRouterOutlet>
-					</IonReactRouter>
-				</PersistGate>
-			</IonApp>
+							</IonRouterOutlet>
+						</IonReactRouter>
+					</IonApp>
+				</AuthProvider>
+			</PersistGate>
 		</Provider>
 	)
 

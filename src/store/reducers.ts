@@ -2,6 +2,7 @@ import * as actionTypes from "./actionTypes";
 import { AnyAction } from "redux";
 import { User, Session, AuthError } from "@supabase/supabase-js";
 import { User as UserProfile } from "@common/database-types";
+import postsSlice, { PostsState as NewPostsState, Post as NewPost } from "./slices/postsSlice";
 
 const fontSizes = ["xs", "sm", "base", "lg", "xl", "2xl"];
 
@@ -59,29 +60,13 @@ interface AuthState {
 	};
 }
 
-interface Post {
-	id: string | number;
-	[key: string]: any;
-}
-
-interface PaginationState {
-	currentPage: number;
-	itemsPerPage: number;
-	totalItems: number;
-}
-
-interface PostsState {
-	list: Post[];
-	pagination: PaginationState;
-}
-
 interface RootState {
 	app: AppState;
 	archive: any[];
 	user: UserState;
 	auth: AuthState;
 	toast: any;
-	posts: PostsState;
+	posts: NewPostsState;
 	loading: boolean;
 	error: null;
 }
@@ -127,11 +112,41 @@ const initialState: RootState = {
 	},
 	toast: null,
 	posts: {
-		list: [],
+		items: [],
+		currentPost: null,
+		favourites: [],
 		pagination: {
 			currentPage: 1,
-			itemsPerPage: 10,
+			itemsPerPage: 20,
 			totalItems: 0,
+			hasNextPage: false,
+			hasPreviousPage: false,
+		},
+		filters: {
+			tags: [],
+			dateRange: {
+				start: null,
+				end: null,
+			},
+			readStatus: 'all',
+			favouritesOnly: false,
+			searchQuery: '',
+			sortBy: 'created_at',
+			sortOrder: 'desc',
+		},
+		loading: {
+			fetchPosts: false,
+			createPost: false,
+			updatePost: false,
+			deletePost: false,
+			searchPosts: false,
+		},
+		errors: {
+			fetch: null,
+			create: null,
+			update: null,
+			delete: null,
+			search: null,
 		},
 	},
 	loading: false,
@@ -381,42 +396,7 @@ const user = (state = initialState.user, action: AnyAction): UserState => {
 	}
 };
 
-const posts = (state = initialState.posts, action: AnyAction): PostsState => {
-	switch (action.type) {
-		case actionTypes.FETCH_POSTS_SUCCESS:
-			return {
-				...state,
-				list: action.payload.posts,
-				pagination: {
-					...state.pagination,
-					totalItems: action.payload.totalItems,
-				},
-			};
-		case actionTypes.APPEND_POSTS:
-			const newPosts = action.payload.filter((newPost: Post) => !state.list.some((existingPost) => existingPost.id === newPost.id));
-			return {
-				...state,
-				list: [...state.list, ...newPosts],
-			};
-		case actionTypes.SET_PAGINATION:
-			return {
-				...state,
-				pagination: {
-					...state.pagination,
-					...action.payload,
-				},
-			};
-		case actionTypes.RESET_POSTS:
-			return initialState.posts;
-		case actionTypes.SAVE_POST:
-			return {
-				...state,
-				list: action.payload,
-			};
-		default:
-			return state;
-	}
-};
+// Old posts reducer removed - now using postsSlice.reducer
 
 const auth = (state = initialState.auth, action: AnyAction): AuthState => {
 	switch (action.type) {
@@ -657,8 +637,10 @@ const createRootReducer = {
 	user,
 	auth,
 	toast,
-	posts,
+	posts: postsSlice.reducer,
 };
 
-export type { RootState, AppState, UserState, AuthState, PostsState, Post };
+// Re-export PostsState and Post from postsSlice to avoid conflicts
+export type { PostsState, Post } from "./slices/postsSlice";
+export type { RootState, AppState, UserState, AuthState };
 export default createRootReducer;

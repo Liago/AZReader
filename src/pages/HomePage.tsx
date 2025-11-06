@@ -134,14 +134,6 @@ const HomePage: React.FC = () => {
 		}
 	};
 
-	// Debug logging for data flow
-	if (process.env.NODE_ENV === 'development') {
-		console.log('HomePage - Session:', session?.user?.id);
-		console.log('HomePage - filteredArticles:', filteredArticles?.length, 'articles');
-		console.log('HomePage - filteredArticles data:', filteredArticles);
-		console.log('HomePage - isLoading:', isLoading);
-	}
-
 	// Get featured articles (first 4-5 articles for carousel)
 	const featuredArticles = filteredArticles?.slice(0, 4) || [];
 	const trendingArticles = filteredArticles?.slice(4, 7) || [];
