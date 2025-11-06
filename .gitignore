@@ -31,8 +31,41 @@ yarn-error.log*
 /build
 /ios
 /android
+/BUILDS
 
 # environment
 /src/config/environment.ts
 /scripts
 env.js
+.env*
+
+# Logs
+logs
+*.log
+dev-debug.log
+# Dependency directories
+node_modules/
+# Environment variables
+.env
+# Editor directories and files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+.claude
+.cursor
+.taskmaster
+
+.mcp.json
+
+
+PERFORMANCE_OPTIMIZATION_SUMMARY.md.backup.1755024950554
+
+SESSION.md
+
+# Task files
+# tasks.json
+# tasks/ 

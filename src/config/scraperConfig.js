@@ -22,7 +22,9 @@ export const scraperConfig = [
 			"title": "h1",
 			"author": "",
 			"content": "article",
-			"lead_image": "newsletter-box",
+			"excerpt": ".word-sillabe",
+			"lead_image": ".newsletter-box",
+			"data_published": ".word-datapub"
 		}
 	},
 	{
@@ -65,4 +67,30 @@ export const scraperConfig = [
 		"url": "www.engadget.com",
 		"parser": "rapidApi",
 	},
+	 {
+	 	"url": "www.eurosport.it",
+	 	"container": "div.atom-template-sections",
+			"isHTML": true,
+			"parser": "personal",
+			"items": {
+				"title": "h1.text-onLight-02",
+				"author": ".molecule-author-banner",
+				"content": ".organism-article-main-content",
+				//"lead_image": ".ugc--2nTu61bm.minor--3O_9dH4U"
+			}
+	 },
+	 {
+	 	"url": "www.tomshw.it",
+	 	"container": "main",
+	 	"isHTML": true,
+	 	"parser": "personal",
+	 	"items": {
+	 		"title": "h1, .entry-title, .post-title, .article-title",
+	 		"author": ".author, .byline, .post-author, .article-author",
+	 		"content": ".entry-content, .post-content, .article-content, .content, main article",
+	 		"excerpt": ".excerpt, .summary, .description",
+	 		"lead_image": ".featured-image img, .post-image img, .article-image img, .wp-post-image",
+	 		"data_published": "time, .date, .publish-date, .entry-date"
+	 	}
+	 }
 ]

@@ -1,182 +1,345 @@
-import React, { useState, useEffect } from "react";
-import { Mail, ArrowRight, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { IonButton, IonInput, IonItem, IonLabel, IonText, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonSpinner, IonGrid, IonRow, IonCol } from "@ionic/react";
+import { mail, logoGoogle, logoApple, logoTwitter, keyOutline } from "ionicons/icons";
 
 import { useCustomToast } from "@hooks/useIonToast";
-import { supabase } from "@store/rest";
+import { useAuth } from "@context/auth/AuthContext";
 
-export const Auth: React.FC = () => {
+interface AuthProps {
+	initialMode?: 'email' | 'verify';
+}
+
+export const Auth: React.FC<AuthProps> = ({ initialMode = 'email' }) => {
 	const showToast = useCustomToast();
-	const [loading, setLoading] = useState(false);
-	const [email, setEmail] = useState("");
-	const [otpSent, setOtpSent] = useState(false);
-	const [otp, setOtp] = useState("");
-	const [cooldown, setCooldown] = useState(0);
-	const [error, setError] = useState("");
+	const { signInWithOtp, verifyOtp, signInWithGoogle, signInWithApple, signInWithTwitter, loading, error, clearError } = useAuth();
+	
+	const [mode, setMode] = useState<'email' | 'verify'>(initialMode);
+	const [email, setEmail] = useState('');
+	const [otpCode, setOtpCode] = useState('');
+	const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+	const [isEmailSent, setIsEmailSent] = useState(false);
 
-	useEffect(() => {
-		let interval: NodeJS.Timeout;
-		if (cooldown > 0) {
-			interval = setInterval(() => {
-				setCooldown((prev) => prev - 1);
-			}, 1000);
-		}
-		return () => clearInterval(interval);
-	}, [cooldown]);
-
-	const handleSendOtp = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setError("");
-
-		if (cooldown > 0) {
-			setError(`Please wait ${cooldown} seconds before requesting a new code`);
-			return;
-		}
-
-		try {
-			setLoading(true);
-			const { error } = await supabase.auth.signInWithOtp({
-				email,
-				options: {
-					emailRedirectTo: "https://example.com/welcome",
-				},
-			});
-
-			if (error) {
-				if (error.message.includes("rate limit")) {
-					setError("Too many requests. Please try again later");
-					setCooldown(60);
-				} else {
-					throw error;
-				}
-			} else {
-				setOtpSent(true);
-				setCooldown(60);
-				showToast({
-					message: "Check your email for the login code!",
-					color: "success",
-				});
-			}
-		} catch (error) {
-			setError(error instanceof Error ? error.message : "An unknown error occurred");
-		} finally {
-			setLoading(false);
+	// Clear auth errors when switching modes
+	const switchMode = (newMode: 'email' | 'verify') => {
+		setMode(newMode);
+		setValidationErrors({});
+		clearError();
+		if (newMode === 'email') {
+			setOtpCode('');
+			setIsEmailSent(false);
 		}
 	};
 
-	const handleVerifyOtp = async (e: React.FormEvent<HTMLFormElement>) => {
+	// Form validation
+	const validateForm = (): boolean => {
+		const errors: { [key: string]: string } = {};
+
+		if (mode === 'email') {
+			// Email validation
+			if (!email) {
+				errors.email = 'Email is required';
+			} else if (!/\S+@\S+\.\S+/.test(email)) {
+				errors.email = 'Email address is invalid';
+			}
+		} else if (mode === 'verify') {
+			// OTP validation
+			if (!otpCode) {
+				errors.otp = 'Verification code is required';
+			} else if (otpCode.length !== 6) {
+				errors.otp = 'Verification code must be 6 digits';
+			}
+		}
+
+		setValidationErrors(errors);
+		return Object.keys(errors).length === 0;
+	};
+
+	// Handle email submission (send OTP/magic link)
+	const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		setError("");
+		clearError();
+		
+		if (!validateForm()) return;
 
 		try {
-			setLoading(true);
-			const { error } = await supabase.auth.verifyOtp({
-				email,
-				token: otp,
-				type: "email",
-			});
+			const { error } = await signInWithOtp(email);
+			if (!error) {
+				setIsEmailSent(true);
+				setMode('verify');
+				showToast({
+					message: 'Check your email for the verification code or magic link!',
+					color: 'success',
+					duration: 5000,
+				});
+			}
+		} catch (err) {
+			console.error('Email send error:', err);
+		}
+	};
 
-			if (error) throw error;
-			showToast({
-				message: "Successfully logged in!",
-				color: "success",
-			});
-		} catch (error) {
-			setError(error instanceof Error ? error.message : "An unknown error occurred");
-		} finally {
-			setLoading(false);
+	// Handle OTP verification
+	const handleOtpVerify = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		clearError();
+		
+		if (!validateForm()) return;
+
+		try {
+			const { error } = await verifyOtp(email, otpCode);
+			if (!error) {
+				showToast({
+					message: 'Successfully logged in!',
+					color: 'success',
+				});
+			}
+		} catch (err) {
+			console.error('OTP verification error:', err);
+		}
+	};
+
+	// Resend OTP/Magic Link
+	const handleResendCode = async () => {
+		clearError();
+		
+		try {
+			const { error } = await signInWithOtp(email);
+			if (!error) {
+				showToast({
+					message: 'New verification code sent!',
+					color: 'success',
+				});
+			}
+		} catch (err) {
+			console.error('Resend error:', err);
+		}
+	};
+
+	// Handle OAuth sign-in
+	const handleOAuthSignIn = async (provider: 'google' | 'apple' | 'twitter') => {
+		clearError();
+		
+		try {
+			let result;
+			switch (provider) {
+				case 'google':
+					result = await signInWithGoogle();
+					break;
+				case 'apple':
+					result = await signInWithApple();
+					break;
+				case 'twitter':
+					result = await signInWithTwitter();
+					break;
+				default:
+					return;
+			}
+
+			if (!result.error) {
+				showToast({
+					message: `Successfully signed in with ${provider}!`,
+					color: 'success',
+				});
+			}
+		} catch (err) {
+			console.error(`${provider} sign-in error:`, err);
+		}
+	};
+
+	const getTitle = () => {
+		switch (mode) {
+			case 'email': return 'Welcome back';
+			case 'verify': return 'Check your email';
+		}
+	};
+
+	const getSubtitle = () => {
+		switch (mode) {
+			case 'email': return 'Enter your email to get started';
+			case 'verify': return `We sent a verification code to ${email}`;
 		}
 	};
 
 	return (
-		<div className="h-full bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex items-center justify-center p-4">
-			<div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl shadow-xl">
-				<div className="text-center">
-					<div className="mx-auto h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-						<Mail className="h-6 w-6 text-indigo-600" />
-					</div>
-					<h2 className="mt-6 text-3xl font-extrabold text-gray-900">{otpSent ? "Enter verification code" : "Welcome back"}</h2>
-					<p className="mt-2 text-sm text-gray-600">
-						{otpSent ? "Check your email for the verification code" : "Enter your email to receive a one-time password"}
-					</p>
-				</div>
+		<IonGrid className="h-full">
+			<IonRow className="h-full ion-justify-content-center ion-align-items-center">
+				<IonCol size="12" sizeMd="6" sizeLg="4">
+					<IonCard className="ion-padding">
+						<IonCardHeader className="ion-text-center">
+							<div className="ion-margin-bottom">
+								<IonIcon
+									icon={mode === 'verify' ? keyOutline : mail}
+									style={{ fontSize: '48px', color: 'var(--ion-color-primary)' }}
+								/>
+							</div>
+							<IonCardTitle>{getTitle()}</IonCardTitle>
+							<IonText color="medium">
+								<p>{getSubtitle()}</p>
+							</IonText>
+						</IonCardHeader>
 
-				{!otpSent ? (
-					<form className="mt-8 space-y-6" onSubmit={handleSendOtp}>
-						<div className="space-y-2">
-							<label htmlFor="email" className="text-sm font-medium text-gray-700">
-								Email address
-							</label>
-							<input
-								id="email"
-								type="email"
-								required
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								className={`appearance-none relative block w-full px-4 py-3 border ${
-									error ? "border-red-300" : "border-gray-300"
-								} placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors`}
-								placeholder="name@example.com"
-							/>
-							{error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-						</div>
-						<button
-							type="submit"
-							disabled={loading || cooldown > 0}
-							className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							{loading ? (
-								<Loader2 className="h-5 w-5 animate-spin" />
-							) : cooldown > 0 ? (
-								`Resend in ${cooldown}s`
-							) : (
+						<IonCardContent>
+							{/* Error Display */}
+							{error && (
+								<IonText color="danger" className="ion-margin-bottom">
+									<p style={{ fontSize: '14px' }}>{typeof error === 'string' ? error : error.message}</p>
+								</IonText>
+							)}
+
+							{mode === 'email' && (
 								<>
-									Send OTP Code
-									<ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+									{/* OAuth Buttons */}
+									<div className="ion-margin-bottom">
+										<IonButton
+											fill="outline"
+											expand="block"
+											className="ion-margin-bottom"
+											onClick={() => handleOAuthSignIn('google')}
+											disabled={loading}
+										>
+											<IonIcon icon={logoGoogle} slot="start" />
+											Continue with Google
+										</IonButton>
+										<IonButton
+											fill="outline"
+											expand="block"
+											className="ion-margin-bottom"
+											onClick={() => handleOAuthSignIn('apple')}
+											disabled={loading}
+										>
+											<IonIcon icon={logoApple} slot="start" />
+											Continue with Apple
+										</IonButton>
+										<IonButton
+											fill="outline"
+											expand="block"
+											className="ion-margin-bottom"
+											onClick={() => handleOAuthSignIn('twitter')}
+											disabled={loading}
+										>
+											<IonIcon icon={logoTwitter} slot="start" />
+											Continue with Twitter
+										</IonButton>
+
+										{/* Divider */}
+										<div className="ion-text-center ion-margin">
+											<IonText color="medium">
+												<small>or continue with email</small>
+											</IonText>
+										</div>
+									</div>
+
+									{/* Email Form */}
+									<form onSubmit={handleEmailSubmit}>
+										<IonItem className="ion-margin-bottom">
+											<IonLabel position="stacked">Email</IonLabel>
+											<IonInput
+												type="email"
+												value={email}
+												onIonInput={(e) => setEmail(e.detail.value!)}
+												placeholder="Enter your email address"
+												required
+											/>
+											{validationErrors.email && (
+												<IonText color="danger" style={{ fontSize: '12px' }}>
+													{validationErrors.email}
+												</IonText>
+											)}
+										</IonItem>
+
+										<IonButton
+											type="submit"
+											expand="block"
+											disabled={loading}
+											className="ion-margin-top"
+										>
+											{loading ? <IonSpinner name="crescent" /> : 'Continue'}
+										</IonButton>
+									</form>
 								</>
 							)}
-						</button>
-					</form>
-				) : (
-					<form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
-						<div className="space-y-2">
-							<label htmlFor="otp" className="text-sm font-medium text-gray-700">
-								Verification code
-							</label>
-							<input
-								id="otp"
-								type="text"
-								required
-								value={otp}
-								onChange={(e) => setOtp(e.target.value)}
-								className={`appearance-none relative block w-full px-4 py-3 border ${
-									error ? "border-red-300" : "border-gray-300"
-								} placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors`}
-								placeholder="Enter code"
-							/>
-							{error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-						</div>
-						<button
-							type="submit"
-							disabled={loading}
-							className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							{loading ? (
-								<Loader2 className="h-5 w-5 animate-spin" />
-							) : (
+
+							{mode === 'verify' && (
 								<>
-									Verify Code
-									<ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+									{/* OTP Form */}
+									<form onSubmit={handleOtpVerify}>
+										<IonItem className="ion-margin-bottom">
+											<IonLabel position="stacked">Verification Code</IonLabel>
+											<IonInput
+												type="text"
+												value={otpCode}
+												onIonInput={(e) => setOtpCode(e.detail.value!)}
+												placeholder="Enter 6-digit code"
+												maxlength={6}
+												required
+											/>
+											{validationErrors.otp && (
+												<IonText color="danger" style={{ fontSize: '12px' }}>
+													{validationErrors.otp}
+												</IonText>
+											)}
+										</IonItem>
+
+										<IonButton
+											type="submit"
+											expand="block"
+											disabled={loading}
+											className="ion-margin-top"
+										>
+											{loading ? <IonSpinner name="crescent" /> : 'Verify Code'}
+										</IonButton>
+									</form>
+
+									{/* Resend and back options */}
+									<div className="ion-text-center ion-margin-top">
+										<IonText color="medium">
+											<p>
+												Didn't receive a code?{' '}
+												<button
+													type="button"
+													style={{ 
+														background: 'none', 
+														border: 'none', 
+														color: 'var(--ion-color-primary)', 
+														textDecoration: 'underline',
+														cursor: 'pointer'
+													}}
+													onClick={handleResendCode}
+													disabled={loading}
+												>
+													Resend
+												</button>
+											</p>
+										</IonText>
+									</div>
+
+									<div className="ion-text-center ion-margin-top">
+										<IonButton
+											fill="clear"
+											size="small"
+											onClick={() => switchMode('email')}
+											disabled={loading}
+										>
+											← Back to email
+										</IonButton>
+									</div>
 								</>
 							)}
-						</button>
-					</form>
-				)}
 
-				<div className="mt-6 text-center">
-					<p className="text-xs text-gray-500">By continuing, you agree to our Terms of Service and Privacy Policy</p>
-				</div>
-			</div>
-		</div>
+							{/* Magic link info */}
+							{mode === 'verify' && (
+								<div className="ion-text-center ion-margin-top">
+									<IonText color="medium">
+										<small>
+											You can also click the magic link in your email to sign in instantly.
+										</small>
+									</IonText>
+								</div>
+							)}
+						</IonCardContent>
+					</IonCard>
+				</IonCol>
+			</IonRow>
+		</IonGrid>
 	);
 };
 

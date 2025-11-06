@@ -1,0 +1,66 @@
+import { persistStore, persistCombineReducers } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+import { createBrowserHistory } from "history";
+import { applyMiddleware, createStore, Store } from "redux";
+import { createReduxHistoryContext, RouterState } from "redux-first-history";
+import thunk, { ThunkMiddleware } from "redux-thunk";
+import createRootReducer, { RootState as BaseRootState } from "./reducers";
+import { AnyAction } from "redux";
+import { PersistConfig } from "redux-persist/es/types";
+
+export interface RootState extends BaseRootState {
+	router: RouterState;
+}
+
+const archiveReducer = (state: any[] = [], action: AnyAction) => state;
+const loadingReducer = (state: boolean = false, action: AnyAction) => state;
+const errorReducer = (state: null = null, action: AnyAction) => state;
+
+const persistConfig: PersistConfig<RootState> = {
+	key: "root",
+	storage,
+	blacklist: ["router"],
+};
+
+// Creazione del contesto history
+const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({
+	history: createBrowserHistory(),
+});
+
+const middlewares: ThunkMiddleware<RootState>[] = [routerMiddleware as ThunkMiddleware<RootState>, thunk as ThunkMiddleware<RootState>];
+
+// Aggiungi redux-logger solo in development
+if (process.env.NODE_ENV === "development") {
+	const { createLogger } = require("redux-logger");
+	const logger = createLogger({
+		collapsed: true,
+		duration: true,
+		timestamp: false,
+		diff: true, // Mostra le differenze tra stati
+		colors: {
+			title: () => "#139BFE",
+			prevState: () => "#9E9E9E",
+			action: () => "#149945",
+			nextState: () => "#A47104",
+		},
+	});
+	middlewares.push(logger as ThunkMiddleware<RootState>);
+}
+
+const persistedReducer = persistCombineReducers<RootState>(persistConfig, {
+	...createRootReducer,
+	router: routerReducer,
+	archive: archiveReducer,
+	loading: loadingReducer,
+	error: errorReducer,
+} as any); // Cast needed for Redux Toolkit compatibility with legacy store
+
+const store = createStore(persistedReducer, applyMiddleware(...middlewares)) as Store<RootState>;
+const persistor = persistStore(store);
+
+// Create history dopo la creazione dello store
+const history = createReduxHistory(store);
+
+export type AppStore = typeof store;
+export type AppDispatch = typeof store.dispatch;
+export { history, store, persistor };

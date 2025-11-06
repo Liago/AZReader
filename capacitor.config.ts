@@ -20,12 +20,15 @@ interface ExtendedCapacitorConfig extends Omit<CapacitorConfig, "android"> {
 }
 
 const config: ExtendedCapacitorConfig = {
-	appId: "io.ionic.starter",
+	appId: "liago.azreader",
 	appName: "AZReader",
 	webDir: "build",
 	bundledWebRuntime: false,
 	plugins: {
 		CapacitorHttp: {
+			enabled: true,
+		},
+		Share: {
 			enabled: true,
 		},
 	},
@@ -40,6 +43,11 @@ const config: ExtendedCapacitorConfig = {
 						host: "auth",
 						pathPrefix: "/confirm",
 					},
+					{
+						scheme: "azreader",
+						host: "article",
+						pathPrefix: "/",
+					},
 				],
 				category: ["BROWSABLE", "DEFAULT"],
 			},
@@ -47,6 +55,14 @@ const config: ExtendedCapacitorConfig = {
 	},
 	ios: {
 		scheme: "azreader",
+		limitsNavigationsToAppBoundDomains: true,
+		contentInset: "always",
+		allowsLinkPreview: false,
+		backgroundColor: "#ffffff",
+		preferredContentMode: "mobile",
+		statusBarStyle: "dark",
+		preferredStatusBarStyle: "dark",
+		handleStatusBarInsets: true,
 	},
 };
 

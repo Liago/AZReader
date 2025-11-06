@@ -1,171 +1,280 @@
-import React, { useState } from "react";
-import { IonIcon, getPlatforms, IonModal } from "@ionic/react";
+import React, { useState, useEffect } from "react";
 import {
-	bookmark,
+	IonIcon,
+	IonToolbar,
+	IonButtons,
+	IonButton,
+	IonFooter,
+	IonContent,
+	IonToast,
+} from "@ionic/react";
+import {
 	chevronBack,
 	ellipsisHorizontal,
-	playCircle,
 	chatbubbleOutline,
+	heart,
 	heartOutline,
-	refreshOutline,
 	shareOutline,
-	searchOutline,
+	bookmarkOutline,
 } from "ionicons/icons";
-import ModalTags from "./modalTags";
-import { useTagsSaver } from "@store/rest";
-import { isEmpty } from "lodash";
+import { Session } from "@supabase/supabase-js";
+import { usePostLikes } from "@hooks/usePostLikes";
+import { useCustomToast } from "@hooks/useIonToast";
 import { renderArticleDatePublished } from "../utility/utils";
-import { ArticleProps } from "@common/interfaces";
+import FontSizeWrapper from "./FontSizeWrapper";
+import { FontSizeControls, OpenReadingSettings } from "./ui";
+import { usePostComments } from "@hooks/usePostComments";
+import Comments from "./Comments";
+import { ShareService } from "@utility/shareService";
 
-const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom }) => {
-	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt } = articleParsed;
-
-	const platforms = getPlatforms();
-	const [showModal, setShowModal] = useState<boolean>(false);
-	const [saveTagsFunc, { error, loading, data }] = useTagsSaver();
-	const [searchQuery, setSearchQuery] = useState<string>("");
-
-	const clickme = () => {
-		console.log("clicked!");
+interface ArticleProps {
+	articleParsed: {
+		title: string;
+		content?: string;
+		html?: string;
+		lead_image_url?: string;
+		date?: string;
+		date_published?: string;
+		domain?: string;
+		excerpt?: string;
+		url?: string;
+		savedBy?: {
+			userEmail: string;
+			userId: string;
+		};
+		savedOn?: string;
 	};
+	onDismiss: () => void;
+	postId: string;
+	displayFrom?: string;
+	session: Session | null;
+}
 
-	const dismissTagModalHandler = async (tagsSelected: string[]) => {
-		setShowModal(false);
-		if (isEmpty(tagsSelected)) return;
+const Article: React.FC<ArticleProps> = ({ articleParsed, onDismiss, postId, displayFrom, session }) => {
+	const { title, content, lead_image_url, html: htmlContent, date, date_published, domain, excerpt, url } = articleParsed;
 
-		await saveTagsFunc({
-			id: postId,
-			tags: tagsSelected,
+	const [showShareToast, setShowShareToast] = useState<boolean>(false);
+	const [shareToastMessage, setShareToastMessage] = useState<string>("");
+	const [imagesLoaded, setImagesLoaded] = useState<{ [key: string]: boolean }>({});
+	const showToast = useCustomToast();
+
+	// Effetto per gestire il caricamento delle immagini
+	useEffect(() => {
+		// Aggiunge un listener agli eventi di caricamento delle immagini
+		const handleImageLoad = (event: Event) => {
+			const img = event.target as HTMLImageElement;
+			if (img.src) {
+				setImagesLoaded(prev => ({
+					...prev,
+					[img.src]: true
+				}));
+				img.classList.add('image-loaded');
+			}
+		};
+
+		// Cerca tutte le immagini nell'articolo
+		const images = document.querySelectorAll('.article-content img');
+		images.forEach(img => {
+			// Aggiungi la classe per l'animazione di caricamento
+			img.classList.add('image-load');
+			// Listener per il caricamento
+			img.addEventListener('load', handleImageLoad);
 		});
+
+		// Pulizia
+		return () => {
+			images.forEach(img => {
+				img.removeEventListener('load', handleImageLoad);
+			});
+		};
+	}, [articleParsed]);
+
+	// Likes handling
+	const { likesCount, hasLiked, toggleLike, isLoading: isLikeLoading, error: likeError } = usePostLikes(postId, session);
+	const [showComments, setShowComments] = useState<boolean>(false);
+	const { commentsCount } = usePostComments(postId, session);
+
+	const handleLikeClick = async () => {
+		try {
+			if (!session) {
+				showToast({
+					message: "Devi effettuare l'accesso per mettere mi piace",
+					color: "warning",
+				});
+				return;
+			}
+
+			await toggleLike();
+
+			if (likeError) {
+				showToast({
+					message: likeError.message,
+					color: "danger",
+				});
+			}
+		} catch (err) {
+			showToast({
+				message: "Errore durante l'operazione",
+				color: "danger",
+			});
+		}
 	};
 
-	const insertTagHandler = () => {
-		setShowModal(true);
+	// Funzione per condividere l'articolo
+	const handleShareArticle = async () => {
+		try {
+			// Verifica se la condivisione è disponibile
+			const canShare = await ShareService.canShare();
+
+			if (!canShare) {
+				setShareToastMessage("La condivisione non è supportata su questo dispositivo");
+				setShowShareToast(true);
+				return;
+			}
+
+			// Usa l'URL originale se disponibile, altrimenti crea un deep link all'articolo nell'app
+			const shareUrl = url || `azreader://article/${postId}`;
+
+			const result = await ShareService.shareArticle(title, shareUrl, excerpt);
+
+			if (!result) {
+				setShareToastMessage("Non è stato possibile condividere l'articolo");
+				setShowShareToast(true);
+			}
+		} catch (error) {
+			console.error("Errore durante la condivisione:", error);
+			setShareToastMessage("Si è verificato un errore durante la condivisione");
+			setShowShareToast(true);
+		}
 	};
 
 	const renderHeader = () => (
-		<header
-			className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10"
-			style={{
-				paddingTop: "env(safe-area-inset-top, 0px)",
-				paddingLeft: "env(safe-area-inset-left, 0px)",
-				paddingRight: "env(safe-area-inset-right, 0px)",
-			}}
-		>
-			<div className="flex justify-between items-center h-14 px-4">
-				<button
-					onClick={onDismiss}
-					className="p-2 hover:bg-gray-100 rounded-full text-gray-700"
-					style={{ marginTop: "env(safe-area-inset-top, 0px)" }}
-				>
+		<IonToolbar className="ion-padding-top safe-area-top">
+			<IonButtons slot="start">
+				<IonButton onClick={onDismiss}>
 					<IonIcon icon={chevronBack} className="w-6 h-6" />
-				</button>
-				<div className="flex space-x-2" style={{ marginTop: "env(safe-area-inset-top, 0px)" }}>
-					<button className="p-2 hover:bg-gray-100 rounded-full">
-						<IonIcon icon={playCircle} className="w-6 h-6 text-gray-700" />
-					</button>
-					<button className="p-2 hover:bg-gray-100 rounded-full">
-						<IonIcon icon={bookmark} className="w-6 h-6 text-gray-700" />
-					</button>
-					<button className="p-2 hover:bg-gray-100 rounded-full">
-						<IonIcon icon={ellipsisHorizontal} className="w-6 h-6 text-gray-700" />
-					</button>
-				</div>
-			</div>
-		</header>
+				</IonButton>
+			</IonButtons>
+			<IonButtons slot="end" className="pr-safe-area">
+				<FontSizeControls />
+				<IonButton>
+					<IonIcon icon={ellipsisHorizontal} className="w-6 h-6 text-gray-700" />
+				</IonButton>
+			</IonButtons>
+		</IonToolbar>
 	);
 
 	const renderFooter = () => (
-		<footer
-			className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10"
-			style={{
-				paddingBottom: "env(safe-area-inset-bottom, 0px)",
-				paddingLeft: "env(safe-area-inset-left, 0px)",
-				paddingRight: "env(safe-area-inset-right, 0px)",
-			}}
-		>
-			<div className="flex justify-between items-center h-14 px-6">
-				<button className="flex items-center space-x-2 text-gray-700">
-					<IonIcon icon={heartOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">1.7K</span>
-				</button>
-				<button className="flex items-center space-x-2 text-gray-700">
-					<IonIcon icon={chatbubbleOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">222</span>
-				</button>
-				<button className="flex items-center space-x-2 text-gray-700">
-					<IonIcon icon={refreshOutline} className="w-6 h-6" />
-					<span className="text-sm font-medium">136</span>
-				</button>
-				<button onClick={insertTagHandler} className="flex items-center text-gray-700">
-					<IonIcon icon={shareOutline} className="w-6 h-6" />
-				</button>
-			</div>
-		</footer>
-	);
+		<IonFooter className="bg-white border-t border-gray-100 shadow-sm">
+			<IonToolbar className="px-2 py-1">
+				<div className="flex justify-around items-center">
+					{/* Like Button */}
+					<IonButton onClick={handleLikeClick} disabled={isLikeLoading} className="flex flex-col items-center" fill="clear" size="large">
+						<div
+							className={`
+            flex flex-col items-center transition-all duration-200 transform
+            ${hasLiked ? "scale-110" : "scale-100"}
+            ${isLikeLoading ? "opacity-50" : "opacity-100"}
+          `}
+						>
+							<IonIcon
+								icon={hasLiked ? heart : heartOutline}
+								className={`w-6 h-6 mb-1 ${hasLiked ? "text-red-500" : "text-gray-600"}`}
+							/>
+							<span className={`text-xs font-medium ${hasLiked ? "text-red-500" : "text-gray-600"}`}>{likesCount}</span>
+						</div>
+					</IonButton>
 
-	const renderSearchBar = () => (
-		<div className="bg-gray-100 rounded-lg mx-4 my-3">
-			<div className="flex items-center px-4 py-2">
-				<IonIcon icon={searchOutline} className="w-5 h-5 text-gray-500 mr-2" />
-				<input
-					type="text"
-					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-					placeholder="Cerca un tag o inseriscine uno nuovo"
-					className="bg-transparent w-full text-gray-700 placeholder-gray-500 outline-none text-sm"
-				/>
-			</div>
-		</div>
-	);
+					{/* Comment Button */}
+					<IonButton onClick={() => setShowComments(true)} className="flex flex-col items-center" fill="clear" size="large">
+						<div className="flex flex-col items-center hover:text-blue-500 transition-colors duration-200">
+							<IonIcon icon={chatbubbleOutline} className="w-6 h-6 mb-1 text-gray-600" />
+							<span className="text-xs font-medium text-gray-600">{commentsCount}</span>
+						</div>
+					</IonButton>
 
-	const renderModalTags = () => (
-		<IonModal
-			isOpen={showModal}
-			onDidDismiss={() => setShowModal(false)}
-			breakpoints={[0, 0.5, 0.75]}
-			initialBreakpoint={0.75}
-			className="bg-white rounded-t-xl"
-		>
-			<div className="px-4 py-6">
-				{renderSearchBar()}
-				<div className="mt-4">
-					<h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-					<ModalTags showModal={showModal} dismissTagModalHandler={dismissTagModalHandler} postId={postId} clickme={clickme} />
+					{/* Share Button */}
+					<IonButton onClick={handleShareArticle} className="flex flex-col items-center" fill="clear" size="large">
+						<div className="flex flex-col items-center hover:text-green-500 transition-colors duration-200">
+							<IonIcon icon={shareOutline} className="w-6 h-6 mb-1 text-gray-600" />
+							<span className="text-xs font-medium text-gray-600">Condividi</span>
+						</div>
+					</IonButton>
+
+					{/* Save Button */}
+					<IonButton className="flex flex-col items-center" fill="clear" size="large">
+						<div className="flex flex-col items-center hover:text-purple-500 transition-colors duration-200">
+							<IonIcon icon={bookmarkOutline} className="w-6 h-6 mb-1 text-gray-600" />
+							<span className="text-xs font-medium text-gray-600">Salva</span>
+						</div>
+					</IonButton>
 				</div>
-			</div>
-		</IonModal>
+			</IonToolbar>
+		</IonFooter>
 	);
 
 	return (
-		<div className="flex flex-col min-h-screen bg-white">
-			{renderHeader()}
-
-			<main className="flex-1 overflow-y-auto pt-16 pb-20">
-				<article className="max-w-2xl mx-auto px-4 font-montserrat">
-					<h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
-					{excerpt && <h2 className="text-lg text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: excerpt }} />}
-
-					<div className="flex justify-between items-center mb-6">
-						<div>
-							<p className="font-medium text-gray-900">{domain}</p>
-							<p className="text-sm text-gray-500">{renderArticleDatePublished(date || date_published)}</p>
+		<>
+			{displayFrom !== 'modalPreview' && renderHeader()}
+			<div className="article-wrapper">
+				<div className="article-content content-fadeIn">
+					{lead_image_url && (
+						<div className="mb-6">
+							<img
+								src={lead_image_url}
+								alt={title}
+								className={`w-full rounded-lg shadow-sm object-cover image-load ${imagesLoaded[lead_image_url] ? 'image-loaded' : ''}`}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement;
+									target.style.display = "none";
+								}}
+							/>
 						</div>
-						<img src="/api/placeholder/40/40" alt={domain} className="w-10 h-10 rounded-full shadow-sm object-cover" />
-					</div>
-
-					{lead_image_url && <img src={lead_image_url} alt={title} className="w-full rounded-lg mb-6 shadow-sm object-cover" />}
-
-					<div
-						className="prose max-w-none text-gray-800 text-base leading-relaxed mb-12"
-						dangerouslySetInnerHTML={{ __html: content || htmlContent || "" }}
-					/>
-				</article>
-			</main>
-
-			{renderFooter()}
-			{renderModalTags()}
-		</div>
+					)}
+					<h1 className="text-2xl font-bold mb-2">{title}</h1>
+					{domain && (
+						<div className="text-sm text-gray-500 mb-2">
+							{domain} • {renderArticleDatePublished(date_published || date)}
+						</div>
+					)}
+					{excerpt && <div className="text-lg text-gray-700 mb-4">{excerpt}</div>}
+					<FontSizeWrapper>
+						{htmlContent ? (
+							<div
+								className="prose prose-sm sm:prose lg:prose-lg max-w-none"
+								dangerouslySetInnerHTML={{ __html: htmlContent }}
+							/>
+						) : content ? (
+							<div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
+								{content.split("\n").map((paragraph, idx) => (
+									<p key={idx}>{paragraph}</p>
+								))}
+							</div>
+						) : (
+							<div className="text-center py-10">
+								<p>Nessun contenuto disponibile.</p>
+							</div>
+						)}
+					</FontSizeWrapper>
+				</div>
+			</div>
+			{displayFrom !== 'modalPreview' && renderFooter()}
+			<Comments
+				isOpen={showComments}
+				onClose={() => setShowComments(false)}
+				articleTitle={title}
+				postId={postId}
+				session={session}
+			/>
+			<IonToast
+				isOpen={showShareToast}
+				onDidDismiss={() => setShowShareToast(false)}
+				message={shareToastMessage}
+				duration={2000}
+				position="bottom"
+				color="danger"
+			/>
+		</>
 	);
 };
 

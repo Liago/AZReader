@@ -3,7 +3,7 @@ formerly called EZReader, developed in React under IonicFramework
 
 # Prerequisites
 - You must have installed Ionic v6
-- You need a Firestore Realtime Database
+- You need a Supabase account and database
 
 *Installation*
 clone the project and run 
@@ -12,17 +12,11 @@ clone the project and run
 # Configuration
 create environemnt wiht empty <code>environment.ts</code> file in <code>/config</code> directory, then build your environemnt using your <code>set-env.js</code>.
 <pre>
-export DEBUG=true && 
-export PARSER_ENDPOINT=http://localhost:PORT && 
-export API_ENDPOINT=https://database-name.firebaseio.com/ && 
-export FIREBASE_AUTH=https://identitytoolkit.googleapis.com/ && 
-export FIREBASE_API_KEY=FIREABASE-API-KEY && 
-export FIREBASE_AUTH_DOMAIN=FIREBASE-AUTH-DOMAIN &&
-export FIREBASE_DB_URL=FIREBASE-DB-URL &&
-export FIREBASE_PROJECT_ID=FIREBASE-PROJECT-ID &&
-export FIREBASE_STORAGE_BUCKET=FIREBASE-STORAGE-BUCKET &&
-export FIREBASE_SENDER_ID=FIREBASE-SENDER-ID &&
-export FIREBASE_APP_ID=FIREBASE-APP-ID && 
+export DEBUG=true &&
+export PARSER_ENDPOINT=http://localhost:PORT &&
+export API_ENDPOINT=https://your-api-endpoint.com/ &&
+export SUPABASE_URL=YOUR-SUPABASE-URL &&
+export SUPABASE_KEY=YOUR-SUPABASE-ANON-KEY &&
 npm run config
 </pre> 
 # Run the project

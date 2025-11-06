@@ -3,54 +3,60 @@ http://ionicframework.com/docs/theming/ */
 
 /** Ionic CSS Variables **/
 :root {
-	/** primary **/
-	--ion-color-primary: #3880ff;
-	--ion-color-primary-rgb: 56, 128, 255;
+	/** primary - Soft blue gradient **/
+	--ion-color-primary: #4F7AFF;
+	--ion-color-primary-rgb: 79, 122, 255;
 	--ion-color-primary-contrast: #ffffff;
 	--ion-color-primary-contrast-rgb: 255, 255, 255;
-	--ion-color-primary-shade: #3171e0;
-	--ion-color-primary-tint: #4c8dff;
-  
-	/** secondary **/
-	--ion-color-secondary: #3dc2ff;
-	--ion-color-secondary-rgb: 61, 194, 255;
-	--ion-color-secondary-contrast: #ffffff;
-	--ion-color-secondary-contrast-rgb: 255, 255, 255;
-	--ion-color-secondary-shade: #36abe0;
-	--ion-color-secondary-tint: #50c8ff;
-  
-	/** tertiary **/
-	--ion-color-tertiary: #5260ff;
-	--ion-color-tertiary-rgb: 82, 96, 255;
+	--ion-color-primary-shade: #456be0;
+	--ion-color-primary-tint: #6187ff;
+	--gradient-primary: linear-gradient(135deg, #4F7AFF 0%, #6DB2FF 100%);
+
+	/** secondary - Soft teal gradient **/
+	--ion-color-secondary: #4AC7B7;
+	--ion-color-secondary-rgb: 74, 199, 183;
+	--ion-color-secondary-contrast: #000000;
+	--ion-color-secondary-contrast-rgb: 0, 0, 0;
+	--ion-color-secondary-shade: #41afa1;
+	--ion-color-secondary-tint: #5ccdbe;
+	--gradient-secondary: linear-gradient(135deg, #4AC7B7 0%, #7DE7D8 100%);
+
+	/** tertiary - Soft purple gradient **/
+	--ion-color-tertiary: #7B68EE;
+	--ion-color-tertiary-rgb: 123, 104, 238;
 	--ion-color-tertiary-contrast: #ffffff;
 	--ion-color-tertiary-contrast-rgb: 255, 255, 255;
-	--ion-color-tertiary-shade: #4854e0;
-	--ion-color-tertiary-tint: #6370ff;
-  
-	/** success **/
+	--ion-color-tertiary-shade: #6c5bd1;
+	--ion-color-tertiary-tint: #8877f0;
+	--gradient-tertiary: linear-gradient(135deg, #7B68EE 0%, #A594FF 100%);
+
+	/** success - Soft green gradient **/
 	--ion-color-success: #2dd36f;
 	--ion-color-success-rgb: 45, 211, 111;
 	--ion-color-success-contrast: #ffffff;
 	--ion-color-success-contrast-rgb: 255, 255, 255;
 	--ion-color-success-shade: #28ba62;
 	--ion-color-success-tint: #42d77d;
-  
-	/** warning **/
+	--gradient-success: linear-gradient(135deg, #2dd36f 0%, #5DF5A0 100%);
+
+	/** warning - Soft amber gradient **/
 	--ion-color-warning: #ffc409;
 	--ion-color-warning-rgb: 255, 196, 9;
 	--ion-color-warning-contrast: #000000;
 	--ion-color-warning-contrast-rgb: 0, 0, 0;
 	--ion-color-warning-shade: #e0ac08;
 	--ion-color-warning-tint: #ffca22;
-  
-	/** danger **/
+	--gradient-warning: linear-gradient(135deg, #ffc409 0%, #FFD952 100%);
+
+	/** danger - Soft red gradient **/
 	--ion-color-danger: #eb445a;
 	--ion-color-danger-rgb: 235, 68, 90;
 	--ion-color-danger-contrast: #ffffff;
 	--ion-color-danger-contrast-rgb: 255, 255, 255;
 	--ion-color-danger-shade: #cf3c4f;
 	--ion-color-danger-tint: #ed576b;
-  
+	--gradient-danger: linear-gradient(135deg, #eb445a 0%, #FF6B7F 100%);
+
 	/** dark **/
 	--ion-color-dark: #222428;
 	--ion-color-dark-rgb: 34, 36, 40;
@@ -58,7 +64,7 @@ http://ionicframework.com/docs/theming/ */
 	--ion-color-dark-contrast-rgb: 255, 255, 255;
 	--ion-color-dark-shade: #1e2023;
 	--ion-color-dark-tint: #383a3e;
-  
+
 	/** medium **/
 	--ion-color-medium: #92949c;
 	--ion-color-medium-rgb: 146, 148, 156;
@@ -66,88 +72,109 @@ http://ionicframework.com/docs/theming/ */
 	--ion-color-medium-contrast-rgb: 255, 255, 255;
 	--ion-color-medium-shade: #808289;
 	--ion-color-medium-tint: #9d9fa6;
-  
+
 	/** light **/
-	--ion-color-light: #f4f5f8;
-	--ion-color-light-rgb: 244, 245, 248;
+	--ion-color-light: #f8fafc;
+	--ion-color-light-rgb: 248, 250, 252;
 	--ion-color-light-contrast: #000000;
 	--ion-color-light-contrast-rgb: 0, 0, 0;
-	--ion-color-light-shade: #d7d8da;
-	--ion-color-light-tint: #f5f6f9;
-  }
-  
-  body.dark {
+	--ion-color-light-shade: #dadde1;
+	--ion-color-light-tint: #f9fafc;
+	
+	/* Common UI variables */
+	--border-radius-sm: 0.375rem;
+	--border-radius-md: 0.5rem;
+	--border-radius-lg: 0.75rem;
+	--border-radius-xl: 1rem;
+	
+	--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	
+	/* Spacing */
+	--spacing-xs: 0.25rem;
+	--spacing-sm: 0.5rem;
+	--spacing-md: 1rem;
+	--spacing-lg: 1.5rem;
+	--spacing-xl: 2rem;
+	
+	/* Text colors - only black and white as requested */
+	--text-color-dark: #000000;
+	--text-color-light: #ffffff;
+}
+
+body.dark {
 	--ion-color-primary: #428cff;
 	--ion-color-primary-rgb: 66, 140, 255;
 	--ion-color-primary-contrast: #ffffff;
 	--ion-color-primary-contrast-rgb: 255, 255, 255;
 	--ion-color-primary-shade: #3a7be0;
 	--ion-color-primary-tint: #5598ff;
-  
+
 	--ion-color-secondary: #50c8ff;
 	--ion-color-secondary-rgb: 80, 200, 255;
 	--ion-color-secondary-contrast: #ffffff;
 	--ion-color-secondary-contrast-rgb: 255, 255, 255;
 	--ion-color-secondary-shade: #46b0e0;
 	--ion-color-secondary-tint: #62ceff;
-  
+
 	--ion-color-tertiary: #6a64ff;
 	--ion-color-tertiary-rgb: 106, 100, 255;
 	--ion-color-tertiary-contrast: #ffffff;
 	--ion-color-tertiary-contrast-rgb: 255, 255, 255;
 	--ion-color-tertiary-shade: #5d58e0;
 	--ion-color-tertiary-tint: #7974ff;
-  
+
 	--ion-color-success: #2fdf75;
 	--ion-color-success-rgb: 47, 223, 117;
 	--ion-color-success-contrast: #000000;
 	--ion-color-success-contrast-rgb: 0, 0, 0;
 	--ion-color-success-shade: #29c467;
 	--ion-color-success-tint: #44e283;
-  
+
 	--ion-color-warning: #ffd534;
 	--ion-color-warning-rgb: 255, 213, 52;
 	--ion-color-warning-contrast: #000000;
 	--ion-color-warning-contrast-rgb: 0, 0, 0;
 	--ion-color-warning-shade: #e0bb2e;
 	--ion-color-warning-tint: #ffd948;
-  
+
 	--ion-color-danger: #ff4961;
 	--ion-color-danger-rgb: 255, 73, 97;
 	--ion-color-danger-contrast: #ffffff;
 	--ion-color-danger-contrast-rgb: 255, 255, 255;
 	--ion-color-danger-shade: #e04055;
 	--ion-color-danger-tint: #ff5b71;
-  
+
 	--ion-color-dark: #f4f5f8;
 	--ion-color-dark-rgb: 244, 245, 248;
 	--ion-color-dark-contrast: #000000;
 	--ion-color-dark-contrast-rgb: 0, 0, 0;
 	--ion-color-dark-shade: #d7d8da;
 	--ion-color-dark-tint: #f5f6f9;
-  
+
 	--ion-color-medium: #989aa2;
 	--ion-color-medium-rgb: 152, 154, 162;
 	--ion-color-medium-contrast: #000000;
 	--ion-color-medium-contrast-rgb: 0, 0, 0;
 	--ion-color-medium-shade: #86888f;
 	--ion-color-medium-tint: #a2a4ab;
-  
+
 	--ion-color-light: #222428;
 	--ion-color-light-rgb: 34, 36, 40;
 	--ion-color-light-contrast: #ffffff;
 	--ion-color-light-contrast-rgb: 255, 255, 255;
 	--ion-color-light-shade: #1e2023;
 	--ion-color-light-tint: #383a3e;
-  }
-  
-  .ios body.dark {
+}
+
+.ios body.dark {
 	--ion-background-color: #000000;
 	--ion-background-color-rgb: 0, 0, 0;
-  
+
 	--ion-text-color: #ffffff;
 	--ion-text-color-rgb: 255, 255, 255;
-  
+
 	--ion-color-step-50: #0d0d0d;
 	--ion-color-step-100: #1a1a1a;
 	--ion-color-step-150: #262626;
@@ -167,23 +194,23 @@ http://ionicframework.com/docs/theming/ */
 	--ion-color-step-850: #d9d9d9;
 	--ion-color-step-900: #e6e6e6;
 	--ion-color-step-950: #f2f2f2;
-  
+
 	--ion-toolbar-background: #0d0d0d;
-  
+
 	--ion-item-background: #000000;
-  
+
 	--ion-card-background: #1c1c1d;
-  }
-  
-  .md body.dark {
+}
+
+.md body.dark {
 	--ion-background-color: #121212;
 	--ion-background-color-rgb: 18, 18, 18;
-  
+
 	--ion-text-color: #ffffff;
 	--ion-text-color-rgb: 255, 255, 255;
-  
+
 	--ion-border-color: #222222;
-  
+
 	--ion-color-step-50: #1e1e1e;
 	--ion-color-step-100: #2a2a2a;
 	--ion-color-step-150: #363636;
@@ -203,13 +230,236 @@ http://ionicframework.com/docs/theming/ */
 	--ion-color-step-850: #dbdbdb;
 	--ion-color-step-900: #e7e7e7;
 	--ion-color-step-950: #f3f3f3;
-  
+
 	--ion-item-background: #1e1e1e;
-  
+
 	--ion-toolbar-background: #1f1f1f;
-  
+
 	--ion-tab-bar-background: #1f1f1f;
-  
+
 	--ion-card-background: #1e1e1e;
+}
+
+ion-toolbar {
+	--shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+	--box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+	--bg-opacity: 1;
+	--background: rgb(255 255 255);
+	--min-height: 30px;
+	--padding-top: 10px;
+	--padding-bottom: 10px;
+}
+
+
+
+/* Aggiungi questi stili al tuo file CSS principale (main.css) */
+
+/* Fix per il layout compatto */
+.compact-header {
+  min-height: 0;
+}
+
+.compact-header ion-toolbar {
+  --min-height: 40px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+}
+
+.compact-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  margin: 0;
+}
+
+.compact-footer {
+  min-height: 0;
+}
+
+/* Safe area per iOS ma con dimensioni più compatte */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .compact-header {
+    padding-top: env(safe-area-inset-top);
   }
   
+  .compact-footer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Riduci i margini eccessivi sui dispositivi iOS */
+.ios ion-content {
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+/* Footer più compatto */
+.compact-footer .button {
+  margin: 0;
+  height: auto;
+}
+
+/* Riduzione dello spazio superiore per iOS */
+.ios .header-ios ion-toolbar:first-of-type {
+  --padding-top: 0;
+  --border-width: 0;
+}
+
+/* Stili specifici per iOS per ridurre gli spazi vuoti */
+.ios article h1 {
+  margin-top: 0;
+}
+
+.ios .prose {
+  margin-bottom: 0;
+}
+
+/* Fix per il padding nel Content */
+ion-content.ion-padding-horizontal {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+/* Assicurati che il footer abbia un'altezza fissa e ridotta */
+ion-footer.compact-footer {
+  height: auto;
+}
+
+ion-footer.compact-footer button {
+  padding: 4px;
+}
+
+/* Riduci il padding tra elementi del footer */
+ion-footer.compact-footer .flex {
+  padding: 4px 0;
+}
+
+/* Riduci la dimensione dei font nell'articolo per iOS */
+.ios article h1 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+.ios article h2 {
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+/* Riduci gli spazi nelle card info */
+.ios article .mb-4 {
+  margin-bottom: 0.75rem;
+}
+
+.reading-options-modal {
+  --backdrop-opacity: 0.25;
+  --border-radius: 16px 16px 0 0;
+  --box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+}
+
+ion-item-sliding {
+  --background: transparent !important;
+}
+
+ion-item {
+  --background: transparent !important;
+}
+
+.item-sliding-transparent .item {
+  --background: transparent !important;
+}
+
+/* Regole specifiche per iOS per garantire la trasparenza */
+.ios ion-item-sliding {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios ion-item {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios ion-card {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios .item-native {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.ios .item-inner {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+/* Forza trasparenza per iOS per tutti i contenitori di elementi */
+.ios .item, 
+.ios .item-content,
+.ios .item-complex,
+.ios ion-list {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+/* ===== SOLUZIONE COMPATIBILE CON IONIC 8 PER HEADER iOS ===== */
+/* Reset CSS precedente, utilizziamo solo stili compatibili con Ionic */
+
+/* Ripristino delle regole di base per l'header iOS */
+.ios ion-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+/* Semplificazione delle regole per la toolbar */
+.ios ion-toolbar {
+  --min-height: 44px;
+  --padding-top: env(safe-area-inset-top);
+}
+
+/* Rimuovi bordi non necessari */
+.ios ion-header.header-ios:after {
+  display: none;
+}
+
+/* Regole base per il posizionamento del contenuto */
+.ios ion-content {
+  --padding-top: 0;
+}
+
+/* Override per il padding nella pagina di lettura */
+.ios ion-content .pb-16 article {
+  padding-top: 12px;
+}
+
+/* Assicuriamo che l'header sia sempre visibile */
+.ios ion-header {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Previeni il padding duplicato dopo il ritorno dalla pagina dettaglio */
+.ios #home-page ion-header:not(.header-collapse-condense) ion-toolbar {
+  --min-height: 44px !important;
+  min-height: calc(44px + env(safe-area-inset-top)) !important;
+  max-height: calc(44px + env(safe-area-inset-top)) !important;
+  height: calc(44px + env(safe-area-inset-top)) !important;
+}
+
+/* Override necessario per impedire che Ionic aggiunga troppo padding */
+.ios ion-header ion-toolbar {
+  padding-top: env(safe-area-inset-top) !important;
+  --padding-top: 0 !important;
+}
+
+/* Fix per garantire una dimensione consistente dell'header */
+.ios ion-toolbar:not(.toolbar-title-default) {
+  --min-height: 44px !important;
+}

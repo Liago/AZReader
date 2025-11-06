@@ -1,0 +1,246 @@
+:root {
+  --app-brightness: 100%;
+  --app-spacing: 1;
+  --app-width: 100%;
+  --font-scale-mobile: 1.05; /* Scala di testo per dispositivi mobili */
+}
+
+.theme-white {
+  --app-bg-color: #ffffff;
+  --app-text-color: #000000;
+  --app-link-color: #456be0;
+  --app-border-color: #e5e7eb;
+  --app-blockquote-color: #6DB2FF;
+  --app-caption-color: #718096;
+}
+
+.theme-sepia {
+  --app-bg-color: #f8f1e3;
+  --app-text-color: #5f4b32;
+  --app-link-color: #90580c;
+  --app-border-color: #e0d6c2;
+  --app-blockquote-color: #b8a182;
+  --app-caption-color: #8c7b68;
+}
+
+.theme-dawn {
+  --app-bg-color: #f2f2f2;
+  --app-text-color: #333333;
+  --app-link-color: #4a6da7;
+  --app-border-color: #dddddd;
+  --app-blockquote-color: #909090;
+  --app-caption-color: #666666;
+}
+
+.theme-paper {
+  --app-bg-color: #e8e8e8;
+  --app-text-color: #333333;
+  --app-link-color: #4a6da7;
+  --app-border-color: #cccccc;
+  --app-blockquote-color: #909090;
+  --app-caption-color: #666666;
+}
+
+.theme-dark {
+  --app-bg-color: #121212;
+  --app-text-color: #e0e0e0;
+  --app-link-color: #81a9ff;
+  --app-border-color: #333333;
+  --app-blockquote-color: #5a88ff;
+  --app-caption-color: #a0a0a0;
+}
+
+.theme-amoled {
+  --app-bg-color: #000000;
+  --app-text-color: #e0e0e0;
+  --app-link-color: #81a9ff;
+  --app-border-color: #333333;
+  --app-blockquote-color: #5a88ff;
+  --app-caption-color: #a0a0a0;
+}
+
+/* Temi ottimizzati per lettura */
+.theme-reading-light {
+  --app-bg-color: #fefefe;
+  --app-text-color: #1a1a1a;
+  --app-link-color: #2563eb;
+  --app-border-color: #e5e7eb;
+  --app-blockquote-color: #3b82f6;
+  --app-caption-color: #6b7280;
+  /* Migliore contrasto per lettura prolungata */
+}
+
+.theme-reading-dark {
+  --app-bg-color: #0f0f0f;
+  --app-text-color: #e8e8e8;
+  --app-link-color: #60a5fa;
+  --app-border-color: #374151;
+  --app-blockquote-color: #3b82f6;
+  --app-caption-color: #9ca3af;
+  /* Colori ottimizzati per lettura notturna */
+}
+
+.theme-reading-sepia {
+  --app-bg-color: #f7f3e9;
+  --app-text-color: #4a3f2a;
+  --app-link-color: #92400e;
+  --app-border-color: #d6c7a3;
+  --app-blockquote-color: #a16207;
+  --app-caption-color: #78716c;
+  /* Tema seppia per lettura rilassante */
+}
+
+.reading-content {
+  background-color: var(--app-bg-color) !important;
+  color: var(--app-text-color) !important;
+  filter: brightness(var(--app-brightness));
+  letter-spacing: calc(var(--app-spacing) * 0.05em);
+  line-height: var(--app-spacing);
+  /* max-width: min(calc(var(--app-width) * 1ch), 90vw); */
+  min-width: 280px;
+  margin: 0 auto;
+  padding: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              filter 0.3s ease,
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reading-content a {
+  color: var(--app-link-color) !important;
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reading-content a:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.reading-content blockquote {
+  border-left-color: var(--app-blockquote-color) !important;
+  transition: border-left-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reading-content figcaption {
+  color: var(--app-caption-color) !important;
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Forza i colori corretti per tutti gli elementi di testo */
+.reading-content p,
+.reading-content div,
+.reading-content span,
+.reading-content li,
+.reading-content h1,
+.reading-content h2,
+.reading-content h3,
+.reading-content h4,
+.reading-content h5,
+.reading-content h6 {
+  color: inherit !important;
+}
+
+/* Transizioni per elementi specifici del toggle tema */
+.reading-theme-toggle-switch {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reading-theme-toggle .ion-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Applicazione spaziatura righe agli elementi di testo */
+.reading-content p,
+.reading-content li,
+.reading-content div {
+  line-height: var(--app-spacing);
+}
+
+.reading-content h1,
+.reading-content h2,
+.reading-content h3,
+.reading-content h4,
+.reading-content h5,
+.reading-content h6 {
+  line-height: calc(var(--app-spacing) * 0.9);
+}
+
+/* Font da tailwind.config.js */
+.font-gentium-book-basic, .font-gentium_book {
+  font-family: 'Gentium Book Basic', serif;
+}
+
+.font-lato {
+  font-family: 'Lato', sans-serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-open-sans, .font-open_sans {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.font-roboto-slab, .font-roboto {
+  font-family: 'Roboto Slab', serif;
+}
+
+/* Font aggiuntivi */
+.font-new-york {
+  font-family: 'New York', serif;
+}
+
+.font-san-francisco {
+  font-family: 'San Francisco', sans-serif;
+}
+
+/* Ottimizzazioni per dispositivi mobili */
+@media (max-width: 640px) {
+  .reading-content {
+    padding: 1rem 0.75rem;
+    font-size: calc(1em * var(--font-scale-mobile));
+    line-height: 1.6;
+  }
+  
+  .reading-content h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  .reading-content h2 {
+    font-size: 1.3rem;
+    line-height: 1.3;
+  }
+  
+  .reading-content p {
+    margin-bottom: 1.2rem;
+  }
+  
+  /* Ottimizzazione spaziatura */
+  .reading-content * + * {
+    margin-top: 0.8rem;
+  }
+}
+
+/* Animazioni per il caricamento del contenuto */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.content-fadeIn {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.image-load {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.image-loaded {
+  opacity: 1;
+} 

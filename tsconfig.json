@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "es5",
+		"target": "es2018",
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"allowJs": true,
 		"skipLibCheck": true,
@@ -16,6 +16,11 @@
 		"noEmit": true,
 		"jsx": "react-jsx",
 		"experimentalDecorators": true,
+		"downlevelIteration": true,
+		"useDefineForClassFields": true,
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"noUncheckedIndexedAccess": true,
 		"baseUrl": "src",
 		"paths": {
 			"@common/*": ["common/*"],
@@ -28,8 +33,12 @@
 			"@store/*": ["store/*"],
 			"@theme/*": ["theme/*"],
 			"@utility/*": ["utility/*"],
-			"@ui/*": ["ui/*"]
+			"@ui/*": ["ui/*"],
+			"@types/*": ["types/*"],
+			"@services/*": ["services/*"],
+			"@utils/*": ["utils/*"]
 		}
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"exclude": ["node_modules", "build", "dist"]
 }

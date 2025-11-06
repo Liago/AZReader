@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Session } from "@supabase/auth-js/dist/module/lib/types";
+import { Session } from "@supabase/supabase-js";
 
 import { ArticleParsed, RootState } from "@common/interfaces";
 
@@ -9,6 +9,7 @@ import { generateUniqueId, getScraperParmas } from "@utility/utils";
 
 import { fetchPostsSuccess, setPagination, appendPosts, resetPosts } from "@store/actions";
 import { useArticleParsed, insertPost, supabase } from "@store/rest";
+import { useCustomToast } from "./useIonToast";
 
 interface CustomPagination {
 	currentPage: number;
@@ -24,7 +25,7 @@ interface UseArticlesReturn {
 	isParsing: boolean;
 	articleParsed: ArticleParsed | null;
 	savePostHandler: () => void;
-	savePostToServer: () => void;
+	savePostToServer: (articleToSave?: any) => Promise<void>;
 	loading: boolean;
 	postFromDb: ArticleParsed[];
 	fetchPostsFromDb: (isInitialFetch?: boolean) => Promise<void>;
@@ -32,6 +33,7 @@ interface UseArticlesReturn {
 	pagination: CustomPagination;
 	refresh: () => Promise<void>;
 	isLoading: boolean;
+	parseArticleError: any;
 }
 
 const useArticles = (session: Session | null): UseArticlesReturn => {
@@ -44,12 +46,18 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 	const [rapidArticleParsed, setRapidArticleParsed] = useState<ArticleParsed | null>(null);
 	const [isParsing, setIsParsing] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [parseError, setParseError] = useState<string | null>(null);
+	const showToast = useCustomToast();
 
 	const isRefreshing = useRef(false);
 	const parseInProgress = useRef(false);
 	const isMounted = useRef(true);
 
-	const [parseArticle, { data: articleParsed, loading }] = useArticleParsed(searchText);
+	const [parseArticle, { data: articleParsed, loading, error: parseArticleError }] = useArticleParsed(searchText);
+
+	useEffect(() => {
+		console.log("parseArticleError", parseArticleError);
+	}, [parseArticleError]);
 
 	useEffect(() => {
 		let isActive = true;
@@ -59,13 +67,43 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 
 			parseInProgress.current = true;
 			setIsParsing(true);
+			setParseError(null);
 
 			try {
-				const parserParams = getScraperParmas(searchText);
-				if (!isActive) return;
+				// Decodifica l'URL se necessario
+				let urlToProcess = searchText;
+				try {
+					if (searchText.includes("%")) {
+						urlToProcess = decodeURIComponent(searchText);
+					}
+				} catch (e) {
+					console.warn("Error decoding URL:", e);
+				}
 
+				// Validazione base dell'URL
+				try {
+					new URL(urlToProcess);
+				} catch (error) {
+					console.error("Invalid URL:", urlToProcess);
+					setParseError("URL non valido");
+					return;
+				}
+
+				// Reset degli stati
 				setCustomArticleParsed(null);
 				setRapidArticleParsed(null);
+
+				if (!isActive) return;
+
+				let parserParams;
+				try {
+					parserParams = getScraperParmas(urlToProcess);
+				} catch (error) {
+					console.error("Error in getScraperParams:", error);
+					// Se getScraperParams fallisce, proviamo con il parser di default
+					await parseArticle();
+					return;
+				}
 
 				if (!parserParams?.parser) {
 					await parseArticle();
@@ -75,18 +113,28 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 
 				switch (parserParams.parser) {
 					case "personal": {
-						const result = await personalScraper(searchText);
-						if (!isActive) return;
-						if (Array.isArray(result) && result.length > 0) {
-							setCustomArticleParsed(result[0] as ArticleParsed);
+						try {
+							const result = await personalScraper(searchText);
+							if (!isActive) return;
+							if (Array.isArray(result) && result.length > 0) {
+								setCustomArticleParsed(result[0] as ArticleParsed);
+							}
+						} catch (error) {
+							console.error("Error in personalScraper:", error);
+							await parseArticle();
 						}
 						break;
 					}
 					case "rapidApi": {
-						const result = await rapidApiScraper(searchText);
-						if (!isActive) return;
-						if (result) {
-							setRapidArticleParsed(result as ArticleParsed);
+						try {
+							const result = await rapidApiScraper(searchText);
+							if (!isActive) return;
+							if (result) {
+								setRapidArticleParsed(result as ArticleParsed);
+							}
+						} catch (error) {
+							console.error("Error in rapidApiScraper:", error);
+							await parseArticle();
 						}
 						break;
 					}
@@ -94,10 +142,8 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 						await parseArticle();
 				}
 			} catch (error) {
-				if (!isActive) return;
 				console.error("Error parsing article:", error);
-				setCustomArticleParsed(null);
-				setRapidArticleParsed(null);
+				setParseError("Errore durante il parsing dell'articolo");
 			} finally {
 				if (isActive) {
 					setIsParsing(false);
@@ -121,12 +167,13 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		setCustomArticleParsed(null);
 		setRapidArticleParsed(null);
 		setIsParsing(false);
+		setParseError(null);
 		parseInProgress.current = false;
 	}, []);
 
 	const fetchPostsFromDb = useCallback(
 		async (isInitialFetch = false): Promise<void> => {
-			if (isLoading || !isMounted.current) return;
+			if (isLoading || !isMounted.current || !session?.user?.id) return;
 			setIsLoading(true);
 
 			try {
@@ -135,9 +182,10 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 				const to = from + itemsPerPage - 1;
 
 				const { data, count } = await supabase
-					.from("posts")
+					.from("articles")
 					.select("*", { count: "exact" })
-					.order("savedOn", { ascending: false, nullsFirst: false })
+					.eq("user_id", session?.user?.id)
+					.order("created_at", { ascending: false, nullsFirst: false })
 					.range(from, to);
 
 				if (!isMounted.current) return;
@@ -180,16 +228,72 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		await fetchPostsFromDb(true);
 	}, [dispatch, fetchPostsFromDb, isLoading]);
 
-	const savePostToServer = useCallback(async (): Promise<void> => {
+	const savePostToServer = useCallback(async (articleToSave?: any): Promise<void> => {
 		if (!isMounted.current) return;
 
 		try {
-			if (rapidArticleParsed && rapidArticleParsed.url) {
-				const url = new URL(rapidArticleParsed.url);
-				rapidArticleParsed["domain"] = url.hostname;
+			// Se viene fornito un articolo esterno, lo usiamo, altrimenti prendiamo quello interno
+			let theArticleParsed = articleToSave;
+
+			// Se non è fornito un articolo esterno, usiamo quelli interni
+			if (!theArticleParsed) {
+				if (rapidArticleParsed && rapidArticleParsed.url) {
+					const url = new URL(rapidArticleParsed.url);
+					rapidArticleParsed["domain"] = url.hostname;
+				}
+
+				theArticleParsed = customArticleParsed || rapidArticleParsed || articleParsed;
+			} else {
+				// Assicurati che l'articolo esterno abbia un dominio
+				if (theArticleParsed.url && !theArticleParsed.domain) {
+					try {
+						const url = new URL(theArticleParsed.url);
+						theArticleParsed.domain = url.hostname;
+					} catch (e) {
+						console.error('Errore nella gestione del dominio:', e);
+					}
+				}
 			}
 
-			const theArticleParsed = customArticleParsed || rapidArticleParsed || articleParsed;
+			// Assicurati che ci sia una data disponibile nel campo date_published
+			if (theArticleParsed && !theArticleParsed.date_published) {
+				console.log('Articolo senza date_published, aggiungo data corrente');
+				theArticleParsed.date_published = new Date().toISOString();
+			}
+
+			// Rimuovi eventuali campi problematici
+			if (theArticleParsed) {
+				// Rimuovi campi che non esistono nella tabella
+				delete theArticleParsed.date;
+				delete theArticleParsed.keywords;
+				delete theArticleParsed.length;
+
+				// Converti 'description' in 'excerpt' (RapidAPI usa description, ma il DB usa excerpt)
+				if (theArticleParsed.description && !theArticleParsed.excerpt) {
+					console.log('Convertito campo description in excerpt');
+					theArticleParsed.excerpt = theArticleParsed.description;
+					delete theArticleParsed.description;
+				}
+
+				// Converti 'html' in 'content' (RapidAPI usa html, ma il DB usa content)
+				if (theArticleParsed.html && !theArticleParsed.content) {
+					console.log('Convertito campo html in content');
+					theArticleParsed.content = theArticleParsed.html;
+					delete theArticleParsed.html;
+				}
+
+				// Rimuovi campi che causano conflitti con lo schema
+				delete theArticleParsed.error;
+				delete theArticleParsed.failed;
+				delete theArticleParsed.POSTS204;
+
+				// Converti eventuali campi di tipo oggetto che possono causare problemi
+				if (typeof theArticleParsed.message === 'object') {
+					theArticleParsed.message = JSON.stringify(theArticleParsed.message);
+				}
+			}
+
+			console.log('Articolo da salvare:', theArticleParsed);
 
 			if (session?.user && theArticleParsed) {
 				const enrichedArticle: ArticleParsed = {
@@ -201,15 +305,29 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 					},
 					savedOn: new Date().toISOString(),
 					id: generateUniqueId(),
+					// Assicura che date_published esista sempre (richiesto dallo schema)
+					date_published: theArticleParsed.date_published || new Date().toISOString(),
 				};
 
+				// Rimuovi il campo date se esiste (non è nella tabella)
+				if ('date' in enrichedArticle) {
+					delete enrichedArticle.date;
+				}
+
 				await insertPost(enrichedArticle);
+			} else {
+				throw new Error("Impossibile salvare: nessun articolo disponibile o utente non autenticato");
 			}
 
 			handleModalClose();
 			await refresh();
 		} catch (error) {
 			console.error("Failed to save post:", error);
+			const errorMessage = error instanceof Error ? error.message : "Errore durante il salvataggio del post";
+			showToast({
+				message: errorMessage,
+				color: "danger",
+			});
 		}
 	}, [session, customArticleParsed, rapidArticleParsed, articleParsed, refresh, handleModalClose]);
 
@@ -257,7 +375,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		setSearchText,
 		isParsing,
 		articleParsed: customArticleParsed || rapidArticleParsed || articleParsed,
-		savePostHandler: () => {}, // Implementazione non fornita
+		savePostHandler: () => savePostToServer(),
 		savePostToServer,
 		loading,
 		postFromDb: postFromDb || [],
@@ -266,6 +384,7 @@ const useArticles = (session: Session | null): UseArticlesReturn => {
 		pagination,
 		refresh,
 		isLoading,
+		parseArticleError,
 	};
 };
 
