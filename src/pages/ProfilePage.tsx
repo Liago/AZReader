@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -44,20 +44,34 @@ const ProfilePage: React.FC = () => {
 
   const user = session?.user;
 
-  // Security check: redirect if not authenticated
+  // Security check: redirect if not authenticated (using useEffect to avoid render loop)
+  useEffect(() => {
+    if (!session?.user) {
+      console.log('ProfilePage: No session, redirecting to home');
+      history.push('/home');
+    }
+  }, [session?.user, history]);
+
+  // Show loading while redirecting
   if (!session?.user) {
-    history.push('/home');
-    return null;
+    return (
+      <IonPage>
+        <IonContent className="ion-padding">
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <IonSpinner />
+          </div>
+        </IonContent>
+      </IonPage>
+    );
   }
 
   const handleSignOut = async () => {
     setIsLoading(true);
     try {
       await signOut();
-      history.push('/home');
+      // Don't manually push to home - useEffect will handle redirect after session becomes null
     } catch (error) {
       console.error('Error signing out:', error);
-    } finally {
       setIsLoading(false);
     }
   };
