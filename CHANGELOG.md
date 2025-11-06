@@ -1,3 +1,15 @@
+# [1.21.0](https://github.com/Liago/AZReader/compare/v1.20.0...v1.21.0) (2025-11-06)
+
+
+### Bug Fixes
+
+* refactors and fixes component imports ([c654a38](https://github.com/Liago/AZReader/commit/c654a38eafd8799548e260d822d3641a94e7c269))
+
+
+### Features
+
+* enhances article parsing and display ([dcc17ca](https://github.com/Liago/AZReader/commit/dcc17ca159f588f4b9088658578945149ba59dcd))
+
 # [1.20.0](https://github.com/Liago/AZReader/compare/v1.19.0...v1.20.0) (2025-08-22)
 
 
