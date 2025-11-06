@@ -63,8 +63,7 @@ const App: React.FC = () => {
 				</AuthProvider>
 			</PersistGate>
 		</Provider>
-	)
-
+	);
 };
 
 export default App;
