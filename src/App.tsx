@@ -12,6 +12,7 @@ import { persistor, store } from "@store/store";
 import Home from "@pages/home";
 import ViewMessage from "@pages/ViewMessage";
 import AuthConfirmPage from "@pages/AuthConfirmPage";
+import SeeAllArticlesPage from "@pages/SeeAllArticlesPage";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -32,9 +33,10 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./css/main.css";
+import VerifyEmail from "@pages/verifyEmail";
+import ProfilePage from "@pages/ProfilePage";
 
 setupIonicReact();
-
 
 const App: React.FC = () => {
 	return (
@@ -47,8 +49,11 @@ const App: React.FC = () => {
 							<IonRouterOutlet>
 								<Route path="/" exact={true} component={Home} />
 								<Route path="/home" exact={true} component={Home} />
+								<Route path="/articles" exact={true} component={SeeAllArticlesPage} />
 								<Route path="/article/:id" component={ViewMessage} />
-								<Route exact path="/auth/confirm" component={AuthConfirmPage}/>
+								{/* <Route path="/verify-email" component={VerifyEmail} /> */}
+								<Route exact path="/auth/confirm" component={AuthConfirmPage} />
+								<Route path="/profile" component={ProfilePage} />
 								<Route path="/" exact={true}>
 									<Redirect to="/home" />
 								</Route>
