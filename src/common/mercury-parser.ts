@@ -351,13 +351,18 @@ class MercuryParserService {
 	 */
 	private processMercuryResponse(data: MercuryResponse, originalUrl: string): ParsedArticle {
 		const domain = this.extractDomain(originalUrl);
-		
+
+		// DEBUG: Log image URL extraction
+		console.log('[MERCURY DEBUG] Raw lead_image_url from Mercury:', data.lead_image_url);
+		const sanitizedImageUrl = this.sanitizeImageUrl(data.lead_image_url);
+		console.log('[MERCURY DEBUG] After sanitizeImageUrl:', sanitizedImageUrl);
+
 		return {
 			title: data.title || 'Untitled',
 			author: data.author || '',
 			content: this.sanitizeContent(data.content),
 			excerpt: data.excerpt || this.generateExcerpt(data.content),
-			lead_image_url: this.sanitizeImageUrl(data.lead_image_url),
+			lead_image_url: sanitizedImageUrl,
 			url: originalUrl,
 			domain,
 			date_published: data.date_published || new Date().toISOString(),
@@ -397,11 +402,15 @@ class MercuryParserService {
 		// Handle domain-specific lead image and date extraction
 		let leadImageUrl: string | null = null;
 		let datePublished: string = new Date().toISOString();
-		
+
+		console.log('[PERSONAL SCRAPER DEBUG] Processing domain:', domain);
+
 		switch (domain) {
 			case 'www.lescienze.it':
 				if (config.items?.lead_image) {
-					leadImageUrl = $(config.items.lead_image).find('img').attr('data-src') || null;
+					const rawImageUrl = $(config.items.lead_image).find('img').attr('data-src') || null;
+					console.log('[PERSONAL SCRAPER DEBUG] lescienze.it - Raw data-src:', rawImageUrl);
+					leadImageUrl = rawImageUrl;
 				}
 				if (config.items?.data_published) {
 					datePublished = $(config.items.data_published).attr('datetime') || new Date().toISOString();
@@ -521,14 +530,23 @@ class MercuryParserService {
 			
 			case 'www.tomshw.it':
 				// Tom's Hardware Italia-specific extraction
-				console.log('Processing tomshw.it with custom parser');
-				
+				console.log('[PERSONAL SCRAPER DEBUG] Processing tomshw.it with custom parser');
+
 				// Use og:image meta tag for lead image
-				leadImageUrl = $("meta[property='og:image']").attr("content") || 
-					$(".featured-image img").attr("src") ||
-					$(".article-hero img").attr("src") ||
-					$(".wp-post-image").attr("src") ||
-					null;
+				const ogImage = $("meta[property='og:image']").attr("content");
+				const featuredImage = $(".featured-image img").attr("src");
+				const heroImage = $(".article-hero img").attr("src");
+				const wpPostImage = $(".wp-post-image").attr("src");
+
+				console.log('[PERSONAL SCRAPER DEBUG] tomshw.it image sources:', {
+					ogImage,
+					featuredImage,
+					heroImage,
+					wpPostImage
+				});
+
+				leadImageUrl = ogImage || featuredImage || heroImage || wpPostImage || null;
+				console.log('[PERSONAL SCRAPER DEBUG] tomshw.it - Selected lead_image_url:', leadImageUrl);
 				
 				// Extract content more carefully, trying multiple selectors
 				let tomshwContent = $('.entry-content').first();
@@ -604,13 +622,18 @@ class MercuryParserService {
 		});
 		
 		const finalContent = this.sanitizeContent(contentCheerio.html() || content);
-		
-		return {
+
+		// DEBUG: Log before sanitization
+		console.log('[PERSONAL SCRAPER DEBUG] Before sanitizeImageUrl:', leadImageUrl);
+		const sanitizedLeadImageUrl = this.sanitizeImageUrl(leadImageUrl || undefined);
+		console.log('[PERSONAL SCRAPER DEBUG] After sanitizeImageUrl:', sanitizedLeadImageUrl);
+
+		const result = {
 			title,
 			author,
 			content: finalContent,
 			excerpt: excerpt || this.generateExcerpt(finalContent),
-			lead_image_url: this.sanitizeImageUrl(leadImageUrl || undefined),
+			lead_image_url: sanitizedLeadImageUrl,
 			url: originalUrl,
 			domain,
 			date_published: datePublished,
@@ -620,6 +643,14 @@ class MercuryParserService {
 			rendered_pages: 1,
 			next_page_url: null,
 		};
+
+		console.log('[PERSONAL SCRAPER DEBUG] Final result:', {
+			title: result.title,
+			domain: result.domain,
+			lead_image_url: result.lead_image_url
+		});
+
+		return result;
 	}
 
 	/**
@@ -629,13 +660,18 @@ class MercuryParserService {
 		const domain = this.extractDomain(originalUrl);
 		// Use html or text content, preferring html
 		const content = data.html || data.text || data.content || '';
-		
+
+		// DEBUG: Log image URL extraction
+		console.log('[RAPIDAPI DEBUG] Raw image from RapidAPI:', data.image);
+		const sanitizedImageUrl = this.sanitizeImageUrl(data.image);
+		console.log('[RAPIDAPI DEBUG] After sanitizeImageUrl:', sanitizedImageUrl);
+
 		return {
 			title: data.title || 'Untitled',
 			author: data.author || '',
 			content: this.sanitizeContent(content),
 			excerpt: data.excerpt || this.generateExcerpt(content),
-			lead_image_url: this.sanitizeImageUrl(data.image),
+			lead_image_url: sanitizedImageUrl,
 			url: originalUrl,
 			domain,
 			date_published: data.publish_date || new Date().toISOString(),
