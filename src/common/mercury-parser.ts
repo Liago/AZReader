@@ -95,6 +95,7 @@ interface RapidApiResponse {
 	content?: string;
 	excerpt?: string;
 	image?: string;
+	topImage?: string; // Alternative field name for image
 	publish_date?: string;
 	domain?: string;
 	[key: string]: any;
@@ -200,15 +201,13 @@ class MercuryParserService {
 	 */
 	private async tryMercuryParser(url: string): Promise<ParserResult> {
 		return this.withRetry(async () => {
-			// Since Mercury API doesn't allow CORS from localhost, we need to use the CORS proxy
-			const corsProxy = 'https://parser-373014.uc.r.appspot.com';
+			// endpoint.parser already includes the CORS proxy, so we just append the parser endpoint and URL
 			const preparedUrl = this.prepareUrl(url);
 			const mercuryApiUrl = `${endpoint.parser}/parser?url=${preparedUrl}`;
-			const proxiedUrl = `${corsProxy}/${mercuryApiUrl}`;
-			
-			console.log('Mercury Parser request for URL:', url, 'via proxy:', proxiedUrl);
-			
-			const response: AxiosResponse<MercuryResponse> = await axios.get(proxiedUrl, {
+
+			console.log('Mercury Parser request for URL:', url, 'via:', mercuryApiUrl);
+
+			const response: AxiosResponse<MercuryResponse> = await axios.get(mercuryApiUrl, {
 				timeout: 15000,
 				headers: {
 					'Accept': 'application/json',
@@ -224,7 +223,7 @@ class MercuryParserService {
 			}
 
 			const processedData = this.processMercuryResponse(response.data, url);
-			
+
 			return {
 				success: true,
 				data: processedData,
@@ -661,9 +660,10 @@ class MercuryParserService {
 		// Use html or text content, preferring html
 		const content = data.html || data.text || data.content || '';
 
-		// DEBUG: Log image URL extraction
-		console.log('[RAPIDAPI DEBUG] Raw image from RapidAPI:', data.image);
-		const sanitizedImageUrl = this.sanitizeImageUrl(data.image);
+		// DEBUG: Log image URL extraction - RapidAPI can use 'image' or 'topImage'
+		const rawImage = data.image || data.topImage;
+		console.log('[RAPIDAPI DEBUG] Raw image from RapidAPI:', rawImage, '(fields checked: image, topImage)');
+		const sanitizedImageUrl = this.sanitizeImageUrl(rawImage);
 		console.log('[RAPIDAPI DEBUG] After sanitizeImageUrl:', sanitizedImageUrl);
 
 		return {
