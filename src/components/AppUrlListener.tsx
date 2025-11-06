@@ -16,7 +16,24 @@ const AppUrlListener: React.FC = () => {
 
 			if (url.startsWith('azreader://auth/confirm')) {
 				console.log('Routing to /auth/confirm');
-				router.push('/auth/confirm', 'root', 'replace');
+
+				// Extract query parameters from deep link
+				try {
+					const urlObj = new URL(url);
+					const queryString = urlObj.search; // Gets ?token_hash=...&type=...
+
+					console.log('Deep link query params:', queryString);
+
+					// Navigate with query parameters preserved
+					const targetPath = `/auth/confirm${queryString}`;
+					console.log('Navigating to:', targetPath);
+
+					router.push(targetPath, 'root', 'replace');
+				} catch (error) {
+					console.error('Error parsing deep link URL:', error);
+					// Fallback to basic routing
+					router.push('/auth/confirm', 'root', 'replace');
+				}
 			} else {
 				console.log('Unhandled deep link:', url);
 			}
