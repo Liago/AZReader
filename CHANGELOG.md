@@ -1,3 +1,13 @@
+# [1.22.0](https://github.com/Liago/AZReader/compare/v1.21.0...v1.22.0) (2025-11-06)
+
+
+### Features
+
+* Add new pages and update main routing ([0d93903](https://github.com/Liago/AZReader/commit/0d939032061c763a6ff242b32e5b5a6dd2a05fbb))
+* Enhance deep link handling for auth confirmation ([a32f191](https://github.com/Liago/AZReader/commit/a32f191cf064116b1b905faca6c1449041561204))
+* **parser:** Support 'topImage' field for RapidAPI image extraction ([7b465bb](https://github.com/Liago/AZReader/commit/7b465bb9439e7c4f28f18c568046f1585fdd84ad))
+* **profile:** Enhance ProfilePage auth redirect and sign-out UX ([6731c78](https://github.com/Liago/AZReader/commit/6731c78b13406b24e42a0d45d8de49ae608ddbbd))
+
 # [1.21.0](https://github.com/Liago/AZReader/compare/v1.20.0...v1.21.0) (2025-11-06)
 
 
