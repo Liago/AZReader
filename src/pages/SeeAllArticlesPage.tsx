@@ -52,8 +52,11 @@ import ArticleParserModal from '@components/ArticleParserModal';
 import { useCustomToast } from '@hooks/useIonToast';
 import useArticleParser from '@hooks/useArticleParser';
 
+// Auth context
+import useAuth from '@hooks/useAuth';
+
 // Store and types
-import { RootState } from '@store/store-rtk';
+import { RootState } from '@store/reducers';
 import { fetchPosts } from '@store/slices/postsSlice';
 import { supabase } from '@store/rest';
 
@@ -81,10 +84,12 @@ const SeeAllArticlesPage: React.FC = () => {
 	const history = useHistory();
 	const dispatch = useDispatch();
 	const showToast = useCustomToast();
-	
+
+	// Auth context
+	const { session } = useAuth();
+
 	// Redux state
 	const { items: articles, loading } = useSelector((state: RootState) => state.posts);
-	const session = useSelector((state: RootState) => state.auth?.session);
 	
 	// Article parser hook (must be called before any early returns)
 	const {
