@@ -17,6 +17,7 @@ import { ParsedArticle } from '@common/mercury-parser';
 import { ArticleInsert } from '@common/database-types';
 import { ExtendedParsedArticle, extendParsedArticle, toArticleInsert } from '../types/article';
 import { enhanceArticleWithMetadata, generateArticleMetadata } from '@utility/articleMetadata';
+import { PlatformHelper } from '@utility/platform-helper';
 
 export interface UseArticleParserReturn {
 	// URL parsing
@@ -111,13 +112,27 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 		try {
 			// Use the preferred parser from user settings
 			const result = await parseArticleWithMercury(cleanUrl, preferredParser);
-			
+
 			if (!result.success || !result.data) {
 				throw new Error(result.error?.message || 'No article content could be extracted from this URL');
 			}
 
+			// DEBUG: Log raw parser result including image_url
+			console.log('[PARSER DEBUG] Raw parser result:', {
+				success: result.success,
+				source: result.source,
+				lead_image_url: result.data.lead_image_url,
+				title: result.data.title,
+				domain: result.data.domain
+			});
+
 			// Convert to extended article and enhance with metadata
 			const baseArticle = extendParsedArticle(result.data);
+			console.log('[PARSER DEBUG] After extendParsedArticle:', {
+				lead_image_url: baseArticle.lead_image_url,
+				image_url: (baseArticle as any).image_url
+			});
+
 			const extendedArticle: ExtendedParsedArticle = {
 				...baseArticle,
 				url: cleanUrl,
@@ -127,13 +142,17 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 
 			// Generate comprehensive metadata
 			const enhancedArticle = enhanceArticleWithMetadata(extendedArticle);
+			console.log('[PARSER DEBUG] After enhanceArticleWithMetadata:', {
+				lead_image_url: enhancedArticle.lead_image_url,
+				image_url: (enhancedArticle as any).image_url
+			});
 
 			setParsedArticle(enhancedArticle);
-			
+
 		} catch (error) {
 			console.error('Article parsing error:', error);
-			const errorMessage = error instanceof Error 
-				? error.message 
+			const errorMessage = error instanceof Error
+				? error.message
 				: 'Failed to parse article. The URL may not contain readable content.';
 			setParseError(errorMessage);
 		} finally {
@@ -158,6 +177,15 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 		}
 
 		try {
+			// DEBUG: Log article before save with platform info
+			console.log('[SAVE DEBUG] Platform:', PlatformHelper.isNative() ? 'MOBILE' : 'BROWSER');
+			console.log('[SAVE DEBUG] Article before conversion:', {
+				lead_image_url: article.lead_image_url,
+				image_url: (article as any).image_url,
+				title: article.title,
+				domain: article.domain
+			});
+
 			// Generate metadata if not already present
 			let metadata = (article as any).metadata;
 			if (!metadata && article.content) {
@@ -173,6 +201,14 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 			// Use the helper function to convert to database format
 			const articleData = toArticleInsert(article, session.user.id, allTags.length > 0 ? allTags : undefined);
 
+			// DEBUG: Log final data being sent to Supabase
+			console.log('[SAVE DEBUG] Article data for Supabase:', {
+				image_url: articleData.image_url,
+				title: articleData.title,
+				domain: articleData.domain,
+				user_id: articleData.user_id
+			});
+
 			// Add notes if provided (this would require extending the database schema)
 			if (notes) {
 				// For now, we could add it to content or create a separate notes field
@@ -180,18 +216,25 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 			}
 
 			// Dispatch Redux action to save article
-			await dispatch(createPost(articleData)).unwrap();
-			
+			const savedArticle = await dispatch(createPost(articleData)).unwrap();
+
+			// DEBUG: Log saved article response
+			console.log('[SAVE DEBUG] Supabase save response:', {
+				id: savedArticle?.id,
+				image_url: savedArticle?.image_url,
+				title: savedArticle?.title
+			});
+
 			// Show success message
 			dispatch(showSuccess('Article saved successfully!'));
-			
+
 			// Reset parser state
 			resetParser();
-			
+
 		} catch (error) {
-			console.error('Save article error:', error);
-			const errorMessage = error instanceof Error 
-				? error.message 
+			console.error('[SAVE DEBUG] Save article error:', error);
+			const errorMessage = error instanceof Error
+				? error.message
 				: 'Failed to save article. Please try again.';
 			dispatch(showError(errorMessage));
 			throw error;
