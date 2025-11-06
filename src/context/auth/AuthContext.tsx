@@ -568,33 +568,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = authHelpers.onAuthStateChange(async (event, session) => {
       if (!mounted) return
 
-      console.log('Auth state changed:', event, session?.user?.id)
-      
+      console.log('Auth state changed:', { event, userId: session?.user?.id, expiresAt: session?.expires_at, timestamp: new Date().toISOString() })
+
       if (session?.user) {
         setUser(session.user)
         setSession(session)
-        await syncUserProfile(session.user)
-        
+
+        // Only sync profile for actual sign-in events, not for token refreshes
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          await syncUserProfile(session.user)
+        } else if (event === 'TOKEN_REFRESHED') {
+          // Just load existing profile on token refresh
+          await loadUserProfile(session.user.id)
+        }
+
         // Schedule automatic token refresh for new sessions
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           scheduleTokenRefresh(session)
           retryCount.current = 0 // Reset retry count on successful auth
         }
       } else {
+        // User is signed out or session is null
         setUser(null)
         setSession(null)
         setUserProfile(null)
-        
+
         // Clear any scheduled refreshes when signed out
         if (refreshTimeoutRef.current) {
           clearTimeout(refreshTimeoutRef.current)
           refreshTimeoutRef.current = null
         }
-        
+
         // Handle session expiry events
-        if (event === 'SIGNED_OUT' && session === null) {
-          // This could be an automatic sign out due to expired session
-          console.log('Session automatically expired')
+        if (event === 'SIGNED_OUT') {
+          console.log('Auth state changed: SIGNED_OUT', session === null ? 'undefined' : session)
+          if (session === null) {
+            // This could be an automatic sign out due to expired session
+            console.log('Session automatically expired')
+          }
         }
       }
       
