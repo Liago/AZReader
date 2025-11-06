@@ -95,6 +95,7 @@ interface RapidApiResponse {
 	content?: string;
 	excerpt?: string;
 	image?: string;
+	topImage?: string; // Alternative field name for image
 	publish_date?: string;
 	domain?: string;
 	[key: string]: any;
@@ -661,9 +662,10 @@ class MercuryParserService {
 		// Use html or text content, preferring html
 		const content = data.html || data.text || data.content || '';
 
-		// DEBUG: Log image URL extraction
-		console.log('[RAPIDAPI DEBUG] Raw image from RapidAPI:', data.image);
-		const sanitizedImageUrl = this.sanitizeImageUrl(data.image);
+		// DEBUG: Log image URL extraction - RapidAPI can use 'image' or 'topImage'
+		const rawImage = data.image || data.topImage;
+		console.log('[RAPIDAPI DEBUG] Raw image from RapidAPI:', rawImage, '(fields checked: image, topImage)');
+		const sanitizedImageUrl = this.sanitizeImageUrl(rawImage);
 		console.log('[RAPIDAPI DEBUG] After sanitizeImageUrl:', sanitizedImageUrl);
 
 		return {
