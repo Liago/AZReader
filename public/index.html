@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Ionic App</title>
+    <title>AZReader - Your Personal Reading Space</title>
 
     <base href="/" />
 
@@ -13,19 +13,178 @@
     />
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="description" content="AZReader - Your personal article reader and sharing application. Parse, save, and read articles with customizable themes." />
+    <meta name="theme-color" content="#4F7AFF" />
 
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
     <link rel="shortcut icon" type="image/png" href="%PUBLIC_URL%/assets/icon/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/assets/icon/icon.svg" />
 
     <!-- add to homescreen for ios -->
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Ionic App" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="AZReader" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/assets/icon/icon.png" />
+
+    <style>
+      /* Splash screen styles */
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #456be0 0%, #7B68EE 50%, #4AC7B7 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+      }
+
+      #splash-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .splash-icon {
+        width: 140px;
+        height: 140px;
+        margin-bottom: 40px;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      .splash-title {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-size: 48px;
+        font-weight: bold;
+        color: white;
+        margin: 0 0 16px 0;
+        letter-spacing: 4px;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .splash-subtitle {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-size: 18px;
+        font-weight: 300;
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0 0 60px 0;
+        letter-spacing: 2px;
+      }
+
+      .splash-loader {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .splash-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: white;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      .splash-dot:nth-child(2) {
+        animation-delay: 0.5s;
+      }
+
+      .splash-dot:nth-child(3) {
+        animation-delay: 1s;
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 0.3;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.2);
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #splash-screen {
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+      }
+
+      /* Hide splash screen when app is loaded */
+      body.loaded #splash-screen {
+        display: none;
+      }
+    </style>
   </head>
 
   <body>
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+      <svg class="splash-icon" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="200" cy="200" r="200" fill="white" opacity="0.95"/>
+        <g transform="translate(200, 200)">
+          <path d="M -70 -90 L -70 90 L -10 85 L -10 -85 Z" fill="url(#icon-grad-1)"/>
+          <path d="M 10 -85 L 10 85 L 70 90 L 70 -90 Z" fill="url(#icon-grad-2)"/>
+          <path d="M -10 -85 L -10 85 L 10 85 L 10 -85 Z" fill="url(#spine-grad)"/>
+          <text x="-40" y="15" font-family="Arial" font-size="70" font-weight="bold" fill="white" text-anchor="middle">A</text>
+          <text x="40" y="15" font-family="Arial" font-size="70" font-weight="bold" fill="white" text-anchor="middle">Z</text>
+        </g>
+        <defs>
+          <linearGradient id="icon-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4F7AFF;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:1" />
+          </linearGradient>
+          <linearGradient id="icon-grad-2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#7B68EE;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4AC7B7;stop-opacity:1" />
+          </linearGradient>
+          <linearGradient id="spine-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#6c5bd1;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#41afa1;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <h1 class="splash-title">AZReader</h1>
+      <p class="splash-subtitle">Your Personal Reading Space</p>
+
+      <div class="splash-loader">
+        <div class="splash-dot"></div>
+        <div class="splash-dot"></div>
+        <div class="splash-dot"></div>
+      </div>
+    </div>
+
     <div id="root"></div>
+
+    <script>
+      // Hide splash screen when React app is loaded
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var splash = document.getElementById('splash-screen');
+          if (splash) {
+            splash.classList.add('fade-out');
+            setTimeout(function() {
+              document.body.classList.add('loaded');
+            }, 500);
+          }
+        }, 1000);
+      });
+    </script>
   </body>
 
 </html>

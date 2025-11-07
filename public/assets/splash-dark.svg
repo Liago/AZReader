@@ -1,0 +1,156 @@
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark background gradient -->
+  <rect width="2732" height="2732" fill="url(#splash-gradient-dark)"/>
+
+  <!-- Animated gradient overlay -->
+  <rect width="2732" height="2732" fill="url(#splash-gradient-overlay-dark)" opacity="0.4"/>
+
+  <!-- Main content group centered -->
+  <g transform="translate(1366, 1366)">
+    <!-- App icon (simplified book design) -->
+    <g transform="scale(1.5)">
+      <!-- Outer glow circle -->
+      <circle cx="0" cy="0" r="200" fill="url(#glow-gradient)" opacity="0.3"/>
+      <circle cx="0" cy="0" r="170" fill="url(#glow-gradient)" opacity="0.4"/>
+
+      <!-- Icon background circle -->
+      <circle cx="0" cy="0" r="140" fill="#2a2a3e" opacity="0.95"/>
+
+      <!-- Book pages -->
+      <g>
+        <!-- Left page -->
+        <path d="M -70 -90 L -70 90 L -10 85 L -10 -85 Z" fill="url(#icon-gradient-dark)"/>
+
+        <!-- Right page -->
+        <path d="M 10 -85 L 10 85 L 70 90 L 70 -90 Z" fill="url(#icon-gradient-2-dark)"/>
+
+        <!-- Book spine -->
+        <path d="M -10 -85 L -10 85 L 10 85 L 10 -85 Z" fill="url(#spine-gradient-dark)"/>
+
+        <!-- Letters -->
+        <text x="-40" y="15" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="white" text-anchor="middle">A</text>
+        <text x="40" y="15" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="white" text-anchor="middle">Z</text>
+      </g>
+    </g>
+
+    <!-- App Name with glow -->
+    <text x="0" y="300" font-family="Arial, sans-serif" font-size="100" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="8" filter="url(#text-glow)">
+      AZReader
+    </text>
+
+    <!-- Tagline -->
+    <text x="0" y="380" font-family="Arial, sans-serif" font-size="40" font-weight="300" fill="white" text-anchor="middle" opacity="0.7" letter-spacing="4">
+      Your Personal Reading Space
+    </text>
+
+    <!-- Loading indicator dots with gradient -->
+    <g transform="translate(0, 500)">
+      <circle cx="-60" cy="0" r="12" fill="url(#dot-gradient)" opacity="0.8">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+      </circle>
+      <circle cx="0" cy="0" r="12" fill="url(#dot-gradient)" opacity="0.8">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+      </circle>
+      <circle cx="60" cy="0" r="12" fill="url(#dot-gradient)" opacity="0.8">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="1s"/>
+      </circle>
+    </g>
+  </g>
+
+  <!-- Decorative elements - floating particles with glow -->
+  <g opacity="0.3">
+    <circle cx="400" cy="500" r="8" fill="#6DB2FF">
+      <animate attributeName="cy" values="500;450;500" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2300" cy="700" r="6" fill="#7B68EE">
+      <animate attributeName="cy" values="700;650;700" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="500" cy="2200" r="10" fill="#4AC7B7">
+      <animate attributeName="cy" values="2200;2150;2200" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2200" cy="2000" r="7" fill="#6DB2FF">
+      <animate attributeName="cy" values="2000;1950;2000" dur="4.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="4.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Decorative book icons in corners (subtle with gradient) -->
+  <g opacity="0.1">
+    <path d="M 300 300 L 300 400 L 340 395 L 340 305 Z" fill="url(#corner-gradient)"/>
+    <path d="M 360 305 L 360 395 L 400 400 L 400 300 Z" fill="url(#corner-gradient)"/>
+
+    <path d="M 2332 300 L 2332 400 L 2372 395 L 2372 305 Z" fill="url(#corner-gradient)"/>
+    <path d="M 2392 305 L 2392 395 L 2432 400 L 2432 300 Z" fill="url(#corner-gradient)"/>
+
+    <path d="M 300 2332 L 300 2432 L 340 2427 L 340 2337 Z" fill="url(#corner-gradient)"/>
+    <path d="M 360 2337 L 360 2427 L 400 2432 L 400 2332 Z" fill="url(#corner-gradient)"/>
+
+    <path d="M 2332 2332 L 2332 2432 L 2372 2427 L 2372 2337 Z" fill="url(#corner-gradient)"/>
+    <path d="M 2392 2337 L 2392 2427 L 2432 2432 L 2432 2332 Z" fill="url(#corner-gradient)"/>
+  </g>
+
+  <!-- Gradients -->
+  <defs>
+    <!-- Dark background gradient -->
+    <linearGradient id="splash-gradient-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#16213e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f3460;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Overlay gradient for depth -->
+    <radialGradient id="splash-gradient-overlay-dark" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#4F7AFF;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.4" />
+    </radialGradient>
+
+    <!-- Glow gradient -->
+    <radialGradient id="glow-gradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#6DB2FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:0" />
+    </radialGradient>
+
+    <!-- Icon gradients -->
+    <linearGradient id="icon-gradient-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6DB2FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A594FF;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="icon-gradient-2-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A594FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7DE7D8;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="spine-gradient-dark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7B68EE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4AC7B7;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Dot gradient -->
+    <linearGradient id="dot-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6DB2FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7DE7D8;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Corner gradient -->
+    <linearGradient id="corner-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6DB2FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4AC7B7;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Text glow filter -->
+    <filter id="text-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" />
+      <feOffset dx="0" dy="0" result="offsetblur" />
+      <feFlood flood-color="#6DB2FF" flood-opacity="0.5" />
+      <feComposite in2="offsetblur" operator="in" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
