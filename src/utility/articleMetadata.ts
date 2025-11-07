@@ -174,6 +174,7 @@ export const generateTopicTags = (article: ExtendedParsedArticle): string[] => {
 
 	// Skip auto-tagging for very short content
 	if (cleanContent.length < MIN_CONTENT_LENGTH) {
+		console.log('[AUTO-TAG DEBUG] Content too short:', cleanContent.length, '< MIN:', MIN_CONTENT_LENGTH);
 		return [];
 	}
 
@@ -211,29 +212,70 @@ export const generateTopicTags = (article: ExtendedParsedArticle): string[] => {
 	const lengthFactor = Math.min(contentWords / 500, 3); // Max 3x for very long articles
 	const threshold = baseThreshold + lengthFactor;
 
+	console.log('[AUTO-TAG DEBUG] Topic scores:', topicScores);
+	console.log('[AUTO-TAG DEBUG] Threshold calculation:', {
+		contentWords,
+		baseThreshold,
+		lengthFactor,
+		finalThreshold: threshold
+	});
+
 	// Add topics that meet the threshold
 	for (const [topic, score] of Object.entries(topicScores)) {
 		if (score >= threshold) {
+			console.log(`[AUTO-TAG DEBUG] Tag "${topic}" added (score: ${score} >= threshold: ${threshold})`);
 			tags.push(topic);
+		} else {
+			console.log(`[AUTO-TAG DEBUG] Tag "${topic}" rejected (score: ${score} < threshold: ${threshold})`);
 		}
 	}
 
 	// Add domain-based tags (these are high confidence)
 	if (article.domain) {
 		const domain = article.domain.toLowerCase();
-		if (domain.includes('medium') && !tags.includes('blog')) tags.push('blog');
-		if (domain.includes('github') && !tags.includes('technology')) tags.push('technology');
-		if (domain.includes('stackoverflow') && !tags.includes('programming')) tags.push('programming');
-		if (domain.includes('reddit') && !tags.includes('discussion')) tags.push('discussion');
-		if (domain.includes('youtube') && !tags.includes('video')) tags.push('video');
-		if (domain.includes('arxiv') && !tags.includes('science')) tags.push('science');
-		if (domain.includes('nature.com') && !tags.includes('science')) tags.push('science');
-		if (domain.includes('techcrunch') && !tags.includes('technology')) tags.push('technology');
-		if (domain.includes('bloomberg') && !tags.includes('business')) tags.push('business');
+		console.log('[AUTO-TAG DEBUG] Checking domain-based tags for:', domain);
+		if (domain.includes('medium') && !tags.includes('blog')) {
+			tags.push('blog');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: blog (medium)');
+		}
+		if (domain.includes('github') && !tags.includes('technology')) {
+			tags.push('technology');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: technology (github)');
+		}
+		if (domain.includes('stackoverflow') && !tags.includes('programming')) {
+			tags.push('programming');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: programming (stackoverflow)');
+		}
+		if (domain.includes('reddit') && !tags.includes('discussion')) {
+			tags.push('discussion');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: discussion (reddit)');
+		}
+		if (domain.includes('youtube') && !tags.includes('video')) {
+			tags.push('video');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: video (youtube)');
+		}
+		if (domain.includes('arxiv') && !tags.includes('science')) {
+			tags.push('science');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: science (arxiv)');
+		}
+		if (domain.includes('nature.com') && !tags.includes('science')) {
+			tags.push('science');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: science (nature.com)');
+		}
+		if (domain.includes('techcrunch') && !tags.includes('technology')) {
+			tags.push('technology');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: technology (techcrunch)');
+		}
+		if (domain.includes('bloomberg') && !tags.includes('business')) {
+			tags.push('business');
+			console.log('[AUTO-TAG DEBUG] Domain tag added: business (bloomberg)');
+		}
 	}
 
 	// Limit to top 5 tags to avoid over-tagging
-	return [...new Set(tags)].slice(0, 5);
+	const finalTags = [...new Set(tags)].slice(0, 5);
+	console.log('[AUTO-TAG DEBUG] Final tags:', finalTags);
+	return finalTags;
 };
 
 /**
@@ -320,8 +362,10 @@ export const generateArticleMetadata = (
 	article: ExtendedParsedArticle,
 	htmlContent?: string
 ): ArticleMetadata => {
+	console.log('[METADATA DEBUG] generateArticleMetadata called for:', article.title?.substring(0, 80));
+
 	const content = article.content || '';
-	
+
 	const wordCount = countWords(content);
 	const readingTime = calculateReadingTime(content);
 	const publishedDate = extractPublicationDate(article, htmlContent);
@@ -330,7 +374,7 @@ export const generateArticleMetadata = (
 	const imageCount = countImages(content);
 	const linkCount = countLinks(content);
 	const authorConfidence = validateAuthorConfidence(article.author);
-	
+
 	const metadata: ArticleMetadata = {
 		readingTime,
 		wordCount,
@@ -343,10 +387,17 @@ export const generateArticleMetadata = (
 		authorConfidence,
 		qualityScore: 5 // Will be calculated below
 	};
-	
+
 	// Calculate quality score with all metadata
 	metadata.qualityScore = calculateQualityScore(article, metadata);
-	
+
+	console.log('[METADATA DEBUG] Generated metadata:', {
+		topicTags: metadata.topicTags,
+		wordCount: metadata.wordCount,
+		readingTime: metadata.readingTime,
+		contentType: metadata.contentType
+	});
+
 	return metadata;
 };
 
@@ -357,16 +408,20 @@ export const enhanceArticleWithMetadata = (
 	article: ExtendedParsedArticle,
 	htmlContent?: string
 ): ExtendedParsedArticle & { metadata: ArticleMetadata } => {
+	console.log('[ENHANCE DEBUG] enhanceArticleWithMetadata called');
 	const metadata = generateArticleMetadata(article, htmlContent);
-	
-	return {
+
+	const enhanced = {
 		...article,
-		// Update article fields with enhanced data  
+		// Update article fields with enhanced data
 		reading_time_estimate: metadata.readingTime,
 		date_published: metadata.publishedDate || article.date_published,
 		published_date: metadata.publishedDate || article.published_date,
 		metadata
 	};
+
+	console.log('[ENHANCE DEBUG] Enhanced article with metadata.topicTags:', enhanced.metadata.topicTags);
+	return enhanced;
 };
 
 export default {
