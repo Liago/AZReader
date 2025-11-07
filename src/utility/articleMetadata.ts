@@ -147,40 +147,86 @@ export const detectContentType = (article: ExtendedParsedArticle): ArticleMetada
 };
 
 /**
- * Generate topic tags based on content analysis
+ * Generate topic tags based on content analysis with improved matching
  */
 export const generateTopicTags = (article: ExtendedParsedArticle): string[] => {
-	const content = `${article.title || ''} ${article.excerpt || ''} ${article.content || ''}`.toLowerCase();
+	const title = (article.title || '').toLowerCase();
+	const excerpt = (article.excerpt || '').toLowerCase();
+	const content = (article.content || '').toLowerCase();
+
+	// Strip HTML tags from content for better matching
+	const cleanContent = content.replace(/<[^>]*>/g, ' ');
+
+	// Weight factors: title has highest weight, then excerpt, then content
+	const TITLE_WEIGHT = 3;
+	const EXCERPT_WEIGHT = 2;
+	const CONTENT_WEIGHT = 1;
+
+	// Minimum content length to avoid false positives on short articles
+	const MIN_CONTENT_LENGTH = 100;
+
+	// Skip auto-tagging for very short content
+	if (cleanContent.length < MIN_CONTENT_LENGTH) {
+		return [];
+	}
+
 	const tags: string[] = [];
-	
-	// Check for topic keywords
+	const topicScores: Record<string, number> = {};
+
+	// Check for topic keywords with word boundaries
 	for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
-		const matchCount = keywords.filter(keyword => 
-			content.includes(keyword.toLowerCase())
-		).length;
-		
-			// If multiple keywords match, add the topic
-		if (matchCount >= 2) {
-			tags.push(topic);
-		} else if (matchCount === 1 && keywords.some(keyword => 
-			content.includes(keyword.toLowerCase()) && content.split(' ').includes(keyword.toLowerCase())
-		)) {
-			// Single exact word match
+		let score = 0;
+
+		for (const keyword of keywords) {
+			// Create regex with word boundaries for exact matching
+			const wordBoundaryRegex = new RegExp(`\\b${keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+
+			// Count matches in title (highest weight)
+			const titleMatches = (title.match(wordBoundaryRegex) || []).length;
+			score += titleMatches * TITLE_WEIGHT;
+
+			// Count matches in excerpt (medium weight)
+			const excerptMatches = (excerpt.match(wordBoundaryRegex) || []).length;
+			score += excerptMatches * EXCERPT_WEIGHT;
+
+			// Count matches in content (lower weight)
+			const contentMatches = (cleanContent.match(wordBoundaryRegex) || []).length;
+			score += contentMatches * CONTENT_WEIGHT;
+		}
+
+		topicScores[topic] = score;
+	}
+
+	// Dynamic threshold based on content length
+	// Longer articles need higher scores to avoid over-tagging
+	const contentWords = cleanContent.split(/\s+/).length;
+	const baseThreshold = 3; // Minimum score needed
+	const lengthFactor = Math.min(contentWords / 500, 3); // Max 3x for very long articles
+	const threshold = baseThreshold + lengthFactor;
+
+	// Add topics that meet the threshold
+	for (const [topic, score] of Object.entries(topicScores)) {
+		if (score >= threshold) {
 			tags.push(topic);
 		}
 	}
-	
-	// Add domain-based tags
+
+	// Add domain-based tags (these are high confidence)
 	if (article.domain) {
 		const domain = article.domain.toLowerCase();
-		if (domain.includes('medium')) tags.push('blog');
-		if (domain.includes('github')) tags.push('technology');
-		if (domain.includes('stackoverflow')) tags.push('programming');
-		if (domain.includes('reddit')) tags.push('discussion');
-		if (domain.includes('youtube')) tags.push('video');
+		if (domain.includes('medium') && !tags.includes('blog')) tags.push('blog');
+		if (domain.includes('github') && !tags.includes('technology')) tags.push('technology');
+		if (domain.includes('stackoverflow') && !tags.includes('programming')) tags.push('programming');
+		if (domain.includes('reddit') && !tags.includes('discussion')) tags.push('discussion');
+		if (domain.includes('youtube') && !tags.includes('video')) tags.push('video');
+		if (domain.includes('arxiv') && !tags.includes('science')) tags.push('science');
+		if (domain.includes('nature.com') && !tags.includes('science')) tags.push('science');
+		if (domain.includes('techcrunch') && !tags.includes('technology')) tags.push('technology');
+		if (domain.includes('bloomberg') && !tags.includes('business')) tags.push('business');
 	}
-	
-	return [...new Set(tags)]; // Remove duplicates
+
+	// Limit to top 5 tags to avoid over-tagging
+	return [...new Set(tags)].slice(0, 5);
 };
 
 /**
