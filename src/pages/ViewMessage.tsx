@@ -165,7 +165,14 @@ const ViewMessage: React.FC = () => {
 	};
 
 	const insertTagHandler = () => {
-		setShowModal(true);
+		console.log('[ViewMessage] insertTagHandler called');
+		console.log('[ViewMessage] Current showModal state:', showModal);
+		try {
+			setShowModal(true);
+			console.log('[ViewMessage] setShowModal(true) executed');
+		} catch (err) {
+			console.error('[ViewMessage] Error in insertTagHandler:', err);
+		}
 	};
 
 	const dismissTagModalHandler = async (tagsSelected: string[]) => {
@@ -182,6 +189,16 @@ const ViewMessage: React.FC = () => {
 				showToast({
 					message: "Errore durante il salvataggio dei tag",
 					color: "danger",
+				});
+			} else {
+				// Update the article in Redux state with the new tags
+				if (article) {
+					setArticle({ ...article, tags: tagsSelected });
+				}
+
+				showToast({
+					message: "Tag salvati con successo",
+					color: "success",
 				});
 			}
 		} catch (err) {
@@ -206,23 +223,29 @@ const ViewMessage: React.FC = () => {
 		</div>
 	);
 
-	const renderModalTags = () => (
-		<IonModal
-			isOpen={showModal}
-			onDidDismiss={() => setShowModal(false)}
-			breakpoints={[0, 0.5, 0.75]}
-			initialBreakpoint={0.75}
-			className="bg-white rounded-t-xl"
-		>
-			<div className="px-4 py-6">
-				{renderSearchBar()}
-				<div className="mt-4">
-					<h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-					<ModalTags showModal={showModal} dismissTagModalHandler={dismissTagModalHandler} postId={id} />
+	const renderModalTags = () => {
+		console.log('[ViewMessage] Rendering modal, showModal:', showModal);
+		return (
+			<IonModal
+				isOpen={showModal}
+				onDidDismiss={() => {
+					console.log('[ViewMessage] Modal dismissed');
+					setShowModal(false);
+				}}
+				breakpoints={[0, 0.5, 0.75]}
+				initialBreakpoint={0.75}
+				className="bg-white rounded-t-xl"
+			>
+				<div className="px-4 py-6">
+					{renderSearchBar()}
+					<div className="mt-4">
+						<h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
+						<ModalTags showModal={showModal} dismissTagModalHandler={dismissTagModalHandler} postId={id} />
+					</div>
 				</div>
-			</div>
-		</IonModal>
-	);
+			</IonModal>
+		);
+	};
 
 	if (isLoading || !article) {
 		return (
@@ -335,7 +358,16 @@ const ViewMessage: React.FC = () => {
 					</div>
 
 					<div className="flex flex-col items-center justify-center">
-						<IonButton fill="clear" size="small" onClick={insertTagHandler}>
+						<IonButton
+							fill="clear"
+							size="small"
+							onClick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								console.log('[ViewMessage] Tags button clicked');
+								insertTagHandler();
+							}}
+						>
 							<IonIcon icon={bookmarkOutline} color="medium" size="small" />
 						</IonButton>
 						<div className="text-xs text-center text-gray-500">Tags</div>

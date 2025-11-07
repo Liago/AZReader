@@ -1,3 +1,16 @@
+# [1.23.0](https://github.com/Liago/AZReader/compare/v1.22.0...v1.23.0) (2025-11-07)
+
+
+### Features
+
+* Add `tags` field to Post interface ([02e84a8](https://github.com/Liago/AZReader/commit/02e84a85c03568d2ee1cb7db993c153d49101b15))
+* adds profile page with data fetching ([d32d901](https://github.com/Liago/AZReader/commit/d32d901ad00407f3683fc0a997a9f90c8db6facc))
+* **article-card:** Display article tags on card ([951f4b0](https://github.com/Liago/AZReader/commit/951f4b0ecc0afc00f09c84defe538594cb6ab227))
+* **modal:** Improve tag input with explicit add button and Enter key support ([786f93c](https://github.com/Liago/AZReader/commit/786f93ce1103bc2a2bf87dc75c77ef0ef7370a0d))
+* Persist article tags during saving process ([f5f9c94](https://github.com/Liago/AZReader/commit/f5f9c948a83ff86f098c337808babb229840df0f))
+* **supabase:** Migrate tag data fetching and saving to Supabase ([91d6323](https://github.com/Liago/AZReader/commit/91d6323dec1943a37edd9b59ff738ae170e350c3))
+* **view-message:** Integrate tag modal and update article state ([ab0a8c7](https://github.com/Liago/AZReader/commit/ab0a8c7a2bcf9d21b3172e38d81d243947846c2a))
+
 # [1.22.0](https://github.com/Liago/AZReader/compare/v1.21.0...v1.22.0) (2025-11-06)
 
 

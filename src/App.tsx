@@ -33,7 +33,6 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./css/main.css";
-import VerifyEmail from "@pages/verifyEmail";
 import ProfilePage from "@pages/ProfilePage";
 
 setupIonicReact();
@@ -51,7 +50,6 @@ const App: React.FC = () => {
 								<Route path="/home" exact={true} component={Home} />
 								<Route path="/articles" exact={true} component={SeeAllArticlesPage} />
 								<Route path="/article/:id" component={ViewMessage} />
-								{/* <Route path="/verify-email" component={VerifyEmail} /> */}
 								<Route exact path="/auth/confirm" component={AuthConfirmPage} />
 								<Route path="/profile" component={ProfilePage} />
 								<Route path="/" exact={true}>

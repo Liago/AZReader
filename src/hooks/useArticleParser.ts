@@ -188,15 +188,23 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 
 			// Generate metadata if not already present
 			let metadata = (article as any).metadata;
+			console.log('[SAVE DEBUG] Article metadata present?', !!metadata);
+
 			if (!metadata && article.content) {
+				console.log('[SAVE DEBUG] Generating metadata since not present...');
 				metadata = generateArticleMetadata(article);
 			}
+
+			console.log('[SAVE DEBUG] Metadata topicTags:', metadata?.topicTags);
+			console.log('[SAVE DEBUG] User-provided tags:', tags);
 
 			// Combine user tags with auto-generated tags
 			const allTags = [
 				...tags,
 				...(metadata?.topicTags || [])
 			].slice(0, 10); // Limit to 10 tags total
+
+			console.log('[SAVE DEBUG] Combined tags (allTags):', allTags);
 
 			// Use the helper function to convert to database format
 			const articleData = toArticleInsert(article, session.user.id, allTags.length > 0 ? allTags : undefined);
@@ -206,7 +214,8 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 				image_url: articleData.image_url,
 				title: articleData.title,
 				domain: articleData.domain,
-				user_id: articleData.user_id
+				user_id: articleData.user_id,
+				tags: articleData.tags
 			});
 
 			// Add notes if provided (this would require extending the database schema)

@@ -123,6 +123,7 @@ export interface Post {
 	lead_image_url?: string;
 	likes_count?: number;
 	comments_count?: number;
+	tags?: string[]; // Tags associati al post
 	[key: string]: any; // Altri campi del post
 }
 
