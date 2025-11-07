@@ -206,7 +206,8 @@ const useArticleParser = (session: Session | null): UseArticleParserReturn => {
 				image_url: articleData.image_url,
 				title: articleData.title,
 				domain: articleData.domain,
-				user_id: articleData.user_id
+				user_id: articleData.user_id,
+				tags: articleData.tags
 			});
 
 			// Add notes if provided (this would require extending the database schema)
