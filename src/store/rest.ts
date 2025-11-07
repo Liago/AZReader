@@ -5,7 +5,7 @@ import { PostData, UseLazyApiReturn, ArticleParseResponse, TagsResponse } from "
 import { store } from "./store";
 import { PlatformHelper } from "@utility/platform-helper";
 import { generateUniqueId } from "@utility/utils";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const { useLazyApi } = wrappedApi();
 
@@ -36,19 +36,98 @@ export const useArticleParsed = (url: string): UseLazyApiReturn<ArticleParseResp
 };
 
 export const useTagsHandler = () => {
-	const { tokenApp } = store.getState().app;
-	const [fetchTags, response] = useLazyApi<TagsResponse[]>("GET", `tags.json?auth=${tokenApp}`);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<any>(null);
+	const [data, setData] = useState<TagsResponse[] | null>(null);
 
 	useEffect(() => {
+		const fetchTags = async () => {
+			setLoading(true);
+			setError(null);
+
+			try {
+				// Get current user from auth state
+				const { data: { user } } = await supabase.auth.getUser();
+
+				if (!user) {
+					console.log('[useTagsHandler] No user authenticated');
+					setData([]);
+					return;
+				}
+
+				console.log('[useTagsHandler] Fetching tags for user:', user.id);
+
+				// Fetch all unique tags from user's articles
+				const { data: articles, error: fetchError } = await supabase
+					.from('articles')
+					.select('id, tags')
+					.eq('user_id', user.id)
+					.not('tags', 'is', null);
+
+				if (fetchError) throw fetchError;
+
+				console.log('[useTagsHandler] Fetched articles with tags:', articles);
+
+				// Transform to TagsResponse format (id + tags array)
+				const tagsData: TagsResponse[] = articles
+					.filter(article => article.tags && article.tags.length > 0)
+					.map(article => ({
+						id: article.id,
+						tags: article.tags || []
+					}));
+
+				setData(tagsData);
+			} catch (err) {
+				console.error('[useTagsHandler] Error fetching tags:', err);
+				setError(err);
+			} finally {
+				setLoading(false);
+			}
+		};
+
 		fetchTags();
 	}, []);
 
-	return response;
+	return { data, loading, error };
 };
 
 export const useTagsSaver = (): UseLazyApiReturn<{ success: boolean }> => {
-	const { tokenApp } = store.getState().app;
-	return useLazyApi<{ success: boolean }>("POST", `tags/save?auth=${tokenApp}`);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<any>(null);
+	const [data, setData] = useState<{ success: boolean } | null>(null);
+
+	const saveTags = useCallback(async (payload: { id: string; tags: string[] }) => {
+		setLoading(true);
+		setError(null);
+		setData(null);
+
+		try {
+			console.log('[useTagsSaver] Saving tags:', payload);
+
+			// Save tags directly to the articles table
+			const { data: articleData, error: updateError } = await supabase
+				.from('articles')
+				.update({ tags: payload.tags })
+				.eq('id', payload.id)
+				.select()
+				.single();
+
+			if (updateError) {
+				console.error('[useTagsSaver] Error saving tags:', updateError);
+				throw updateError;
+			}
+
+			console.log('[useTagsSaver] Tags saved successfully:', articleData);
+			setData({ success: true });
+		} catch (err) {
+			console.error('[useTagsSaver] Error:', err);
+			setError(err);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	return [saveTags, { data, error, loading }];
 };
 
 /**

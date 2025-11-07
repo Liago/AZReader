@@ -154,6 +154,13 @@ export const generateTopicTags = (article: ExtendedParsedArticle): string[] => {
 	const excerpt = (article.excerpt || '').toLowerCase();
 	const content = (article.content || '').toLowerCase();
 
+	console.log('[AUTO-TAG DEBUG] Starting tag generation for:', {
+		title: article.title?.substring(0, 80),
+		domain: article.domain,
+		contentLength: content.length,
+		excerptLength: excerpt.length
+	});
+
 	// Strip HTML tags from content for better matching
 	const cleanContent = content.replace(/<[^>]*>/g, ' ');
 
