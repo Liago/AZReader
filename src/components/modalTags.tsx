@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { IonContent, IonSearchbar, IonToolbar, IonListHeader, IonButton } from "@ionic/react";
+import { IonContent, IonSearchbar, IonToolbar, IonListHeader, IonButton, IonIcon } from "@ionic/react";
+import { addOutline } from "ionicons/icons";
 import { useTagsHandler } from "@store/rest";
 import { filter, isEmpty } from "lodash";
 import { flattenServerTagList } from "../utility/utils";
@@ -19,17 +20,7 @@ const ModalTags: React.FC<ModalTagsProps> = ({ showModal, dismissTagModalHandler
 
 	const { data: tagList, loading, error } = useTagsHandler();
 
-	useEffect(() => {
-		if (searchText === "") return;
-		if (!tagList) return;
-
-		const tagValues = flattenServerTagList(tagList);
-		console.log("Available tags:", tagValues);
-
-		if (!tags.includes(searchText) && searchText.trim()) {
-			setTagList((prevTags) => [...prevTags, searchText]);
-		}
-	}, [searchText, tagList, tags]);
+	// Removed auto-add useEffect - now tags are added explicitly via button or Enter key
 
 	useEffect(() => {
 		if (!tagList) return;
@@ -42,6 +33,21 @@ const ModalTags: React.FC<ModalTagsProps> = ({ showModal, dismissTagModalHandler
 		}
 		if (!tags.includes(tag)) {
 			setTagList((prevTags) => [...prevTags, tag]);
+		}
+	};
+
+	const addTagFromSearch = () => {
+		const trimmedTag = searchText.trim();
+		if (trimmedTag && !tags.includes(trimmedTag)) {
+			setTagList((prevTags) => [...prevTags, trimmedTag]);
+			setSearchText(""); // Clear search after adding
+		}
+	};
+
+	const handleSearchKeyDown = (e: KeyboardEvent) => {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			addTagFromSearch();
 		}
 	};
 
@@ -113,15 +119,28 @@ const ModalTags: React.FC<ModalTagsProps> = ({ showModal, dismissTagModalHandler
 		<>
 			<IonToolbar>{renderArticleTags()}</IonToolbar>
 			<IonContent fullscreen>
-				<IonSearchbar
-					animated
-					className="py-10"
-					value={searchText}
-					placeholder="cerca un tag o inseriscine uno nuovo"
-					debounce={1000}
-					onIonChange={(e) => setSearchText(e.detail.value || "")}
-					disabled={loading}
-				/>
+				<div className="px-5 pt-4">
+					<div className="flex gap-2 items-center">
+						<IonSearchbar
+							animated
+							className="flex-1"
+							value={searchText}
+							placeholder="cerca un tag o inseriscine uno nuovo"
+							debounce={300}
+							onIonChange={(e) => setSearchText(e.detail.value || "")}
+							onKeyDown={(e: any) => handleSearchKeyDown(e)}
+							disabled={loading}
+						/>
+						<IonButton
+							color="primary"
+							onClick={addTagFromSearch}
+							disabled={!searchText.trim() || loading}
+						>
+							<IonIcon slot="start" icon={addOutline} />
+							Aggiungi
+						</IonButton>
+					</div>
+				</div>
 				<div className="px-5">
 					<div className="grid grid-cols-4 gap-1">{renderTags()}</div>
 					<IonListHeader className="py-4 border-b-2">
