@@ -304,7 +304,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
 					<IonLabel>{article.author}</IonLabel>
 				</IonChip>
 			)}
-			
+
 			<IonChip color="medium" outline>
 				<IonIcon icon={calendarOutline} />
 				<IonLabel>{formatDate(article.created_at || article.published_date)}</IonLabel>
@@ -324,6 +324,21 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
 			)}
 		</div>
 	);
+
+	// Render tags
+	const renderTags = () => {
+		if (!article.tags || article.tags.length === 0) return null;
+
+		return (
+			<div className="article-tags">
+				{article.tags.map((tag, index) => (
+					<IonChip key={index} color="success" outline>
+						<IonLabel>{tag}</IonLabel>
+					</IonChip>
+				))}
+			</div>
+		);
+	};
 
 	// Render engagement stats
 	const renderEngagement = () => (
@@ -402,7 +417,8 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
 						)}
 
 						{renderMetadata()}
-						
+						{renderTags()}
+
 						{!isCompact && renderEngagement()}
 					</div>
 				</IonCardContent>
@@ -569,6 +585,19 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
 					--background: var(--ion-color-light);
 					font-size: 12px;
 					height: 28px;
+				}
+
+				.article-tags {
+					display: flex;
+					flex-wrap: wrap;
+					gap: 6px;
+					margin: 8px 0;
+				}
+
+				.article-tags ion-chip {
+					font-size: 11px;
+					height: 26px;
+					--background: var(--ion-color-success-tint);
 				}
 
 				.article-engagement {
