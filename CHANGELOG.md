@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/Liago/AZReader/compare/v1.23.0...v1.24.0) (2025-11-08)
+
+
+### Features
+
+* Add app icon and modern splash screen ([faeb714](https://github.com/Liago/AZReader/commit/faeb7143501c0edfbfc7f5e4aa95932e7cc7cdb6))
+
 # [1.23.0](https://github.com/Liago/AZReader/compare/v1.22.0...v1.23.0) (2025-11-07)
 
 
