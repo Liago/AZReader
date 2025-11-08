@@ -3,6 +3,8 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
+import { useEffect } from "react";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 import { AuthProvider } from "./context";
 import AppUrlListener from "@components/AppUrlListener";
@@ -38,6 +40,22 @@ import ProfilePage from "@pages/ProfilePage";
 setupIonicReact();
 
 const App: React.FC = () => {
+	useEffect(() => {
+		// Hide splash screen when app is ready
+		const hideSplash = async () => {
+			try {
+				// Wait a bit for the app to render
+				await new Promise(resolve => setTimeout(resolve, 1000));
+				await SplashScreen.hide();
+			} catch (error) {
+				// SplashScreen might not be available in web context
+				console.debug('SplashScreen hide error (expected in browser):', error);
+			}
+		};
+
+		hideSplash();
+	}, []);
+
 	return (
 		<Provider store={store}>
 			<PersistGate loading={null} persistor={persistor}>

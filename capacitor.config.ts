@@ -31,6 +31,20 @@ const config: ExtendedCapacitorConfig = {
 		Share: {
 			enabled: true,
 		},
+		SplashScreen: {
+			launchShowDuration: 2000,
+			launchAutoHide: true,
+			launchFadeOutDuration: 500,
+			backgroundColor: "#4F7AFF",
+			androidSplashResourceName: "splash",
+			androidScaleType: "CENTER_CROP",
+			showSpinner: false,
+			androidSpinnerStyle: "large",
+			iosSpinnerStyle: "small",
+			spinnerColor: "#ffffff",
+			splashFullScreen: true,
+			splashImmersive: true,
+		},
 	},
 	android: {
 		intentFilters: [

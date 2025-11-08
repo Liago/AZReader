@@ -1,0 +1,122 @@
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <rect width="2732" height="2732" fill="url(#splash-gradient)"/>
+
+  <!-- Animated gradient overlay -->
+  <rect width="2732" height="2732" fill="url(#splash-gradient-overlay)" opacity="0.5"/>
+
+  <!-- Main content group centered -->
+  <g transform="translate(1366, 1366)">
+    <!-- App icon (simplified book design) -->
+    <g transform="scale(1.5)">
+      <!-- Outer glow circle -->
+      <circle cx="0" cy="0" r="200" fill="white" opacity="0.1"/>
+      <circle cx="0" cy="0" r="170" fill="white" opacity="0.15"/>
+
+      <!-- Icon background circle -->
+      <circle cx="0" cy="0" r="140" fill="white" opacity="0.95"/>
+
+      <!-- Book pages -->
+      <g>
+        <!-- Left page -->
+        <path d="M -70 -90 L -70 90 L -10 85 L -10 -85 Z" fill="url(#icon-gradient)"/>
+
+        <!-- Right page -->
+        <path d="M 10 -85 L 10 85 L 70 90 L 70 -90 Z" fill="url(#icon-gradient-2)"/>
+
+        <!-- Book spine -->
+        <path d="M -10 -85 L -10 85 L 10 85 L 10 -85 Z" fill="url(#spine-gradient)"/>
+
+        <!-- Letters -->
+        <text x="-40" y="15" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="white" text-anchor="middle">A</text>
+        <text x="40" y="15" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="white" text-anchor="middle">Z</text>
+      </g>
+    </g>
+
+    <!-- App Name -->
+    <text x="0" y="300" font-family="Arial, sans-serif" font-size="100" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="8">
+      AZReader
+    </text>
+
+    <!-- Tagline -->
+    <text x="0" y="380" font-family="Arial, sans-serif" font-size="40" font-weight="300" fill="white" text-anchor="middle" opacity="0.9" letter-spacing="4">
+      Your Personal Reading Space
+    </text>
+
+    <!-- Loading indicator dots -->
+    <g transform="translate(0, 500)">
+      <circle cx="-60" cy="0" r="12" fill="white" opacity="0.6">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+      </circle>
+      <circle cx="0" cy="0" r="12" fill="white" opacity="0.6">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+      </circle>
+      <circle cx="60" cy="0" r="12" fill="white" opacity="0.6">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" begin="1s"/>
+      </circle>
+    </g>
+  </g>
+
+  <!-- Decorative elements - floating particles -->
+  <g opacity="0.2">
+    <circle cx="400" cy="500" r="8" fill="white">
+      <animate attributeName="cy" values="500;450;500" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2300" cy="700" r="6" fill="white">
+      <animate attributeName="cy" values="700;650;700" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="500" cy="2200" r="10" fill="white">
+      <animate attributeName="cy" values="2200;2150;2200" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2200" cy="2000" r="7" fill="white">
+      <animate attributeName="cy" values="2000;1950;2000" dur="4.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Decorative book icons in corners (subtle) -->
+  <g opacity="0.08">
+    <path d="M 300 300 L 300 400 L 340 395 L 340 305 Z" fill="white"/>
+    <path d="M 360 305 L 360 395 L 400 400 L 400 300 Z" fill="white"/>
+
+    <path d="M 2332 300 L 2332 400 L 2372 395 L 2372 305 Z" fill="white"/>
+    <path d="M 2392 305 L 2392 395 L 2432 400 L 2432 300 Z" fill="white"/>
+
+    <path d="M 300 2332 L 300 2432 L 340 2427 L 340 2337 Z" fill="white"/>
+    <path d="M 360 2337 L 360 2427 L 400 2432 L 400 2332 Z" fill="white"/>
+
+    <path d="M 2332 2332 L 2332 2432 L 2372 2427 L 2372 2337 Z" fill="white"/>
+    <path d="M 2392 2337 L 2392 2427 L 2432 2432 L 2432 2332 Z" fill="white"/>
+  </g>
+
+  <!-- Gradients -->
+  <defs>
+    <!-- Main background gradient -->
+    <linearGradient id="splash-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#456be0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7B68EE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4AC7B7;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Overlay gradient for depth -->
+    <radialGradient id="splash-gradient-overlay" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.2" />
+    </radialGradient>
+
+    <!-- Icon gradients -->
+    <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F7AFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="icon-gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7B68EE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4AC7B7;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="spine-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6c5bd1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#41afa1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
