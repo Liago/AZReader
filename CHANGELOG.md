@@ -1,3 +1,12 @@
+## [1.25.1](https://github.com/Liago/AZReader/compare/v1.25.0...v1.25.1) (2025-11-10)
+
+
+### Bug Fixes
+
+* Correct icon generation to create proper sizes for all platforms ([7ecae51](https://github.com/Liago/AZReader/commit/7ecae51421bdb483002448b61c642b65c9badda0))
+* Make generate-assets.js compatible with all Jimp versions ([c0d335a](https://github.com/Liago/AZReader/commit/c0d335ad1810b9d2f794934c7bc22db4a4942757))
+* removes duplicate icon files ([72c738b](https://github.com/Liago/AZReader/commit/72c738ba630784a4d61186e00a477272f842d925))
+
 # [1.25.0](https://github.com/Liago/AZReader/compare/v1.24.0...v1.25.0) (2025-11-10)
 
 
