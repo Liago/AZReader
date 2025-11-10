@@ -1,6 +1,6 @@
 {
 	"name": "azreader",
-	"version": "1.23.0",
+	"version": "1.25.0",
 	"private": true,
 	"repository": {
 		"type": "git",
@@ -85,7 +85,12 @@
 		"start": "PORT=3001 craco start",
 		"build": "craco build",
 		"test": "craco test",
-		"deploy:version": "semantic-release --no-ci"
+		"deploy:version": "semantic-release --no-ci",
+		"assets:generate": "node generate-assets.js",
+		"assets:copy-android": "node copy-android-assets.js",
+		"assets:copy-ios": "node copy-ios-assets.js",
+		"assets:copy": "npm run assets:copy-android && npm run assets:copy-ios",
+		"assets:all": "npm run assets:generate && npm run assets:copy"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -117,6 +122,7 @@
 		"js-yaml": "^4.1.0",
 		"postcss-import": "^14.0.2",
 		"semantic-release": "^24.2.0",
+		"svg2img": "^1.0.0-beta.2",
 		"tailwindcss": "^3.0.17"
 	},
 	"description": "An Ionic project"

@@ -1,3 +1,22 @@
+# [1.25.0](https://github.com/Liago/AZReader/compare/v1.24.0...v1.25.0) (2025-11-10)
+
+
+### Bug Fixes
+
+* Generate native app icons and splash screens properly ([70faece](https://github.com/Liago/AZReader/commit/70faece1208e795a0d36cea6de70d65606358c2d))
+
+
+### Features
+
+* replaces generated icon and splash files. ([38fe9f9](https://github.com/Liago/AZReader/commit/38fe9f93a1dc29c368b36611bf948613d8b2e61b))
+
+# [1.24.0](https://github.com/Liago/AZReader/compare/v1.23.0...v1.24.0) (2025-11-08)
+
+
+### Features
+
+* Add app icon and modern splash screen ([faeb714](https://github.com/Liago/AZReader/commit/faeb7143501c0edfbfc7f5e4aa95932e7cc7cdb6))
+
 # [1.23.0](https://github.com/Liago/AZReader/compare/v1.22.0...v1.23.0) (2025-11-07)
 
 
