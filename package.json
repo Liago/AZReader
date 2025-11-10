@@ -46,6 +46,7 @@
 		"dompurify": "^3.2.6",
 		"ionicons": "^5.4.0",
 		"isomorphic-dompurify": "^2.26.0",
+		"jimp": "^1.6.0",
 		"lodash": "^4.17.21",
 		"lucide-react": "^0.459.0",
 		"moment": "^2.29.4",

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const svg2img = require('svg2img');
+const Jimp = require('jimp');
 
 // Ensure output directories exist
 const ensureDir = (dir) => {
@@ -9,21 +10,38 @@ const ensureDir = (dir) => {
   }
 };
 
-// Convert SVG to PNG
-const convertSvg = (svgPath, outputPath, width, height) => {
+// Convert SVG to PNG at base size (1024x1024)
+const convertSvgToBase = (svgPath, outputPath) => {
   return new Promise((resolve, reject) => {
-    const svgContent = fs.readFileSync(svgPath, 'utf8');
+    let svgContent = fs.readFileSync(svgPath, 'utf8');
 
-    svg2img(svgContent, { width, height }, (error, buffer) => {
+    // Remove hardcoded width and height attributes to allow proper scaling
+    svgContent = svgContent.replace(/\s*width="[^"]*"/, '');
+    svgContent = svgContent.replace(/\s*height="[^"]*"/, '');
+
+    svg2img(svgContent, { width: 1024, height: 1024 }, (error, buffer) => {
       if (error) {
         reject(error);
       } else {
         fs.writeFileSync(outputPath, buffer);
-        console.log(`✓ Generated: ${outputPath} (${width}x${height})`);
+        console.log(`✓ Generated base: ${outputPath} (1024x1024)`);
         resolve();
       }
     });
   });
+};
+
+// Resize PNG to target size using Jimp
+const resizeImage = async (srcPath, destPath, size) => {
+  try {
+    const image = await Jimp.Jimp.read(srcPath);
+    await image.resize({ w: size, h: size });
+    await image.write(destPath);
+    console.log(`✓ Resized: ${path.basename(destPath)} (${size}x${size})`);
+  } catch (error) {
+    console.error(`✗ Error resizing ${destPath}:`, error.message);
+    throw error;
+  }
 };
 
 async function generateAssets() {
@@ -71,22 +89,47 @@ async function generateAssets() {
     ensureDir('resources/generated/icons');
 
     const iconSvg = 'resources/icon.svg';
+    const baseIconPath = 'resources/generated/icons/icon-base-1024.png';
+
+    // First, generate base icon at 1024x1024
+    await convertSvgToBase(iconSvg, baseIconPath);
+
+    // Then resize to all needed sizes
+    console.log('\n📐 Resizing icons to all required sizes...');
     for (const { size, name } of iconSizes) {
-      await convertSvg(iconSvg, `resources/generated/icons/${name}`, size, size);
+      const destPath = `resources/generated/icons/${name}`;
+      await resizeImage(baseIconPath, destPath, size);
     }
+
+    // Remove base icon as it's not needed anymore
+    fs.unlinkSync(baseIconPath);
 
     // Copy main icon to public
     fs.copyFileSync('resources/generated/icons/icon.png', 'public/assets/icon/icon.png');
     fs.copyFileSync('resources/generated/icons/favicon.png', 'public/assets/icon/favicon.png');
     console.log('\n✓ Icons copied to public/assets/icon/\n');
 
-    // Generate splash screens
+    // Generate splash screens (keep existing svg2img approach for splash as they're different sizes)
     console.log('🎨 Generating splash screens...');
     ensureDir('resources/generated/splash');
 
     const splashSvg = 'resources/splash.svg';
+    let splashContent = fs.readFileSync(splashSvg, 'utf8');
+    splashContent = splashContent.replace(/\s*width="[^"]*"/, '');
+    splashContent = splashContent.replace(/\s*height="[^"]*"/, '');
+
     for (const { width, height, name } of splashSizes) {
-      await convertSvg(splashSvg, `resources/generated/splash/${name}`, width, height);
+      await new Promise((resolve, reject) => {
+        svg2img(splashContent, { width, height }, (error, buffer) => {
+          if (error) {
+            reject(error);
+          } else {
+            fs.writeFileSync(`resources/generated/splash/${name}`, buffer);
+            console.log(`✓ Generated: resources/generated/splash/${name} (${width}x${height})`);
+            resolve();
+          }
+        });
+      });
     }
 
     // Generate dark mode splash screens
@@ -94,14 +137,28 @@ async function generateAssets() {
     ensureDir('resources/generated/splash-dark');
 
     const splashDarkSvg = 'resources/splash-dark.svg';
+    let splashDarkContent = fs.readFileSync(splashDarkSvg, 'utf8');
+    splashDarkContent = splashDarkContent.replace(/\s*width="[^"]*"/, '');
+    splashDarkContent = splashDarkContent.replace(/\s*height="[^"]*"/, '');
+
     for (const { width, height, name } of splashSizes) {
-      await convertSvg(splashDarkSvg, `resources/generated/splash-dark/${name}`, width, height);
+      await new Promise((resolve, reject) => {
+        svg2img(splashDarkContent, { width, height }, (error, buffer) => {
+          if (error) {
+            reject(error);
+          } else {
+            fs.writeFileSync(`resources/generated/splash-dark/${name}`, buffer);
+            console.log(`✓ Generated: resources/generated/splash-dark/${name} (${width}x${height})`);
+            resolve();
+          }
+        });
+      });
     }
 
     console.log('\n✅ All assets generated successfully!');
     console.log('\n📋 Next steps:');
-    console.log('   1. Run: npx cap sync');
-    console.log('   2. The assets will be copied to Android and iOS projects');
+    console.log('   1. Run: npm run assets:copy');
+    console.log('   2. Run: npx cap sync');
     console.log('   3. Build and test on your devices\n');
 
   } catch (error) {
