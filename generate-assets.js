@@ -34,9 +34,30 @@ const convertSvgToBase = (svgPath, outputPath) => {
 // Resize PNG to target size using Jimp
 const resizeImage = async (srcPath, destPath, size) => {
   try {
-    const image = await Jimp.Jimp.read(srcPath);
-    await image.resize({ w: size, h: size });
-    await image.write(destPath);
+    // Support different Jimp versions and import structures
+    const JimpClass = Jimp.Jimp || Jimp.default || Jimp;
+    const image = await JimpClass.read(srcPath);
+
+    // Try new API first (v1.x), then fall back to old API (v0.x)
+    if (typeof image.resize === 'function') {
+      // Try v1.x API: resize({ w, h })
+      try {
+        await image.resize({ w: size, h: size });
+      } catch {
+        // Fall back to v0.x API: resize(w, h)
+        image.resize(size, size);
+      }
+    }
+
+    // Write the image
+    if (typeof image.write === 'function') {
+      await image.write(destPath);
+    } else if (typeof image.writeAsync === 'function') {
+      await image.writeAsync(destPath);
+    } else {
+      throw new Error('No write method available on Jimp image');
+    }
+
     console.log(`✓ Resized: ${path.basename(destPath)} (${size}x${size})`);
   } catch (error) {
     console.error(`✗ Error resizing ${destPath}:`, error.message);
