@@ -34,6 +34,7 @@ import ReadingStyleProvider from '@components/ReadingStyleProvider';
 import { usePostLikes } from '@hooks/usePostLikes';
 import { usePostComments } from '@hooks/usePostComments';
 import { useCustomToast } from '@hooks/useIonToast';
+import { useReadingLogger } from '@hooks/useReadingLogger';
 import { ShareService } from '@utility/shareService';
 
 // Store and data
@@ -68,6 +69,15 @@ const ArticleViewPage: React.FC = () => {
 	// Hooks
 	const { likesCount, hasLiked, toggleLike, isLoading: isLikeLoading } = usePostLikes(id, supabaseSession);
 	const { commentsCount } = usePostComments(id, supabaseSession);
+
+	// Reading tracking hook
+	const { updateProgress, stopTracking } = useReadingLogger({
+		articleId: id,
+		session: supabaseSession,
+		minimumReadTime: 5, // Log after 5 seconds of reading
+		updateInterval: 30, // Update every 30 seconds
+		autoStart: true // Start tracking automatically
+	});
 
 	// Initialize session
 	useEffect(() => {
@@ -138,6 +148,14 @@ const ArticleViewPage: React.FC = () => {
 	useIonViewWillEnter(() => {
 		fetchArticle();
 	});
+
+	// Clean up tracking when leaving the page
+	useEffect(() => {
+		return () => {
+			// Stop tracking when component unmounts
+			stopTracking();
+		};
+	}, [stopTracking]);
 
 	// Handle like action
 	const handleLikeClick = useCallback(async () => {
@@ -235,7 +253,10 @@ const ArticleViewPage: React.FC = () => {
 	// Handle reading progress
 	const handleReadingProgressChange = useCallback(async (progress: number) => {
 		setReadingProgress(progress);
-		
+
+		// Update reading logger with current progress
+		updateProgress(progress);
+
 		// Mark as completed when progress reaches 90%
 		if (progress >= 90 && article && supabaseSession?.user && article.reading_status !== 'completed') {
 			try {
@@ -254,7 +275,7 @@ const ArticleViewPage: React.FC = () => {
 				console.error('Errore aggiornamento stato lettura:', error);
 			}
 		}
-	}, [article, supabaseSession]);
+	}, [article, supabaseSession, updateProgress]);
 
 	// Handle reading time updates
 	const handleReadingTimeUpdate = useCallback((timeSpent: number) => {

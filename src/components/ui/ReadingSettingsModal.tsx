@@ -7,13 +7,8 @@ import {
 	IonToolbar,
 	IonTitle,
 	IonButtons,
-	IonButton,
 	IonIcon,
 	IonRange,
-	IonItem,
-	IonLabel,
-	IonSegment,
-	IonSegmentButton
 } from '@ionic/react';
 import { close, sunny, contrast, text, remove, add } from 'ionicons/icons';
 import { RootState } from '@store/store-rtk';
@@ -26,6 +21,20 @@ import {
 	setTheme,
 	setWidth
 } from '@store/slices/appSlice';
+
+// Font sizes for increment/decrement
+const FONT_SIZES = ['xs', 'sm', 'base', 'lg', 'xl', '2xl'] as const;
+
+// Available fonts with descriptions
+const AVAILABLE_FONTS = [
+	{ id: 'New York', label: 'New York', description: 'Elegante e raffinato' },
+	{ id: 'San Francisco', label: 'San Francisco', description: 'Moderno e leggibile' },
+	{ id: 'Gentium Book Basic', label: 'Gentium', description: 'Classico e accademico' },
+	{ id: 'Lato', label: 'Lato', description: 'Pulito e professionale' },
+	{ id: 'Montserrat', label: 'Montserrat', description: 'Contemporaneo' },
+	{ id: 'Open Sans', label: 'Open Sans', description: 'Versatile e chiaro' },
+	{ id: 'Roboto Slab', label: 'Roboto', description: 'Leggibile su schermi' }
+] as const;
 
 interface ReadingSettingsModalProps {
 	isOpen: boolean;
@@ -43,7 +52,7 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 		width
 	} = useSelector((state: RootState) => state.app);
 
-	// Stati locali
+	// Local state for immediate UI feedback
 	const [localBrightness, setLocalBrightness] = useState(brightness);
 	const [localTheme, setLocalTheme] = useState(theme);
 	const [localFontFamily, setLocalFontFamily] = useState(fontFamily);
@@ -51,27 +60,8 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 	const [localSpacing, setLocalSpacing] = useState(spacing);
 	const [localWidth, setLocalWidth] = useState(width);
 
-	// Debug per verificare se il componente riceve gli aggiornamenti dallo store
+	// Sync local state with Redux store
 	useEffect(() => {
-		console.log('ReadingSettingsModal - Props aggiornate:', {
-			brightness, theme, fontFamily, fontSize, spacing, width
-		});
-	}, [brightness, theme, fontFamily, fontSize, spacing, width]);
-
-	// Font disponibili
-	const availableFonts = [
-		{ id: 'New York', label: 'New York', description: 'Elegante e raffinato' },
-		{ id: 'San Francisco', label: 'San Francisco', description: 'Moderno e leggibile' },
-		{ id: 'Gentium Book Basic', label: 'Gentium', description: 'Classico e accademico' },
-		{ id: 'Lato', label: 'Lato', description: 'Pulito e professionale' },
-		{ id: 'Montserrat', label: 'Montserrat', description: 'Contemporaneo' },
-		{ id: 'Open Sans', label: 'Open Sans', description: 'Versatile e chiaro' },
-		{ id: 'Roboto Slab', label: 'Roboto', description: 'Leggibile su schermi' }
-	];
-
-	// Aggiorna gli stati locali quando cambiano le props
-	useEffect(() => {
-		console.log('ReadingSettingsModal - Aggiornamento degli stati locali');
 		setLocalBrightness(brightness);
 		setLocalTheme(theme);
 		setLocalFontFamily(fontFamily);
@@ -80,111 +70,93 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 		setLocalWidth(width);
 	}, [brightness, theme, fontFamily, fontSize, spacing, width, isOpen]);
 
-	// Funzioni per gestire i cambiamenti
+	// Event handlers
 	const handleBrightnessChange = (value: number) => {
-		console.log('handleBrightnessChange chiamato con:', value);
 		setLocalBrightness(value);
 		dispatch(setBrightness(value));
 	};
 
 	const handleThemeChange = (value: string) => {
-		console.log('handleThemeChange chiamato con:', value);
 		setLocalTheme(value);
 		dispatch(setTheme(value));
 	};
 
 	const handleFontFamilyChange = (value: string) => {
-		console.log('handleFontFamilyChange chiamato con:', value);
 		setLocalFontFamily(value);
 		dispatch(setFontFamily(value));
 	};
 
 	const handleFontSizeIncrease = () => {
-		console.log('handleFontSizeIncrease chiamato');
-		const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl'];
-		const currentIndex = sizes.indexOf(localFontSize);
-		if (currentIndex < sizes.length - 1) {
-			const newSize = sizes[currentIndex + 1] as 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
+		const currentIndex = FONT_SIZES.indexOf(localFontSize);
+		if (currentIndex < FONT_SIZES.length - 1) {
+			const newSize = FONT_SIZES[currentIndex + 1] as 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
 			setLocalFontSize(newSize);
 			dispatch(increaseFontSize());
 		}
 	};
 
 	const handleFontSizeDecrease = () => {
-		console.log('handleFontSizeDecrease chiamato');
-		const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl'];
-		const currentIndex = sizes.indexOf(localFontSize);
+		const currentIndex = FONT_SIZES.indexOf(localFontSize);
 		if (currentIndex > 0) {
-			const newSize = sizes[currentIndex - 1] as 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
+			const newSize = FONT_SIZES[currentIndex - 1] as 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
 			setLocalFontSize(newSize);
 			dispatch(decreaseFontSize());
 		}
 	};
 
 	const handleSpacingChange = (value: number) => {
-		console.log('handleSpacingChange chiamato con:', value);
 		setLocalSpacing(value);
 		dispatch(setSpacing(value));
 	};
 
 	const handleWidthChange = (value: number) => {
-		console.log('handleWidthChange chiamato con:', value);
 		setLocalWidth(value);
 		dispatch(setWidth(value));
 	};
 
-	// Componenti di bottone con gestione esplicita degli eventi
-	const ThemeButton = ({ value, label, color, isActive }: { value: string, label: string, color: string, isActive: boolean }) => {
-		const onClickHandler = (e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
-			console.log('ThemeButton clicked:', value);
-			handleThemeChange(value);
-		};
+	// UI Components
+	const ThemeButton = ({ value, label, color, isActive }: {
+		value: string;
+		label: string;
+		color: string;
+		isActive: boolean;
+	}) => (
+		<div
+			className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200 cursor-pointer ${
+				isActive ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'
+			}`}
+			onClick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				handleThemeChange(value);
+			}}
+			style={{ WebkitTapHighlightColor: 'transparent' }}
+		>
+			<div className="w-full h-12 rounded mb-2 shadow-sm" style={{ backgroundColor: color }} />
+			<span className="text-xs font-medium">{label}</span>
+		</div>
+	);
 
-		return (
-			<div
-				className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200 ${isActive ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'}`}
-				onClick={onClickHandler}
-				style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
-			>
-				<div
-					className="w-full h-12 rounded mb-2 shadow-sm"
-					style={{ backgroundColor: color }}
-				/>
-				<span className="text-xs font-medium">{label}</span>
-			</div>
-		);
-	};
+	const SizeButton = ({ action, icon }: { action: () => void; icon: string }) => (
+		<div
+			className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+			onClick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				action();
+			}}
+			style={{ WebkitTapHighlightColor: 'transparent' }}
+		>
+			<IonIcon icon={icon} className="text-gray-600" />
+		</div>
+	);
 
-	const SizeButton = ({ action, icon }: { action: () => void, icon: string }) => {
-		const onClickHandler = (e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
-			console.log('SizeButton clicked');
-			action();
-		};
-
-		return (
-			<div
-				className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center"
-				onClick={onClickHandler}
-				style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
-			>
-				<IonIcon icon={icon} className="text-gray-600" />
-			</div>
-		);
-	};
-
-	// Funzione per chiudere la modale con prevenzione di eventi
 	const handleCloseModal = (e: React.MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
-		console.log('Close modal clicked');
 		onClose();
 	};
 
-	// Aggiungi questo all'inizio della modale
 	const handleStopPropagation = (e: React.MouseEvent | React.TouchEvent) => {
 		e.stopPropagation();
 	};
@@ -329,7 +301,7 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 							<div className="space-y-2">
 								<div className="text-sm text-gray-600 dark:text-gray-400 font-medium">Tipo di carattere</div>
 								<div className="grid grid-cols-2 gap-2">
-									{availableFonts.map((font) => (
+									{AVAILABLE_FONTS.map((font) => (
 										<div
 											key={font.id}
 											className={`text-left px-3 py-2 rounded-lg border transition ${localFontFamily === font.id
@@ -364,9 +336,9 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 									<div className="flex-1 px-4">
 										<div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full relative">
 											<div
-												className="absolute h-full bg-blue-500 rounded-full"
-												style={{ width: `${(sizes.indexOf(localFontSize) * 100) / (sizes.length - 1)}%` }}
-											></div>
+												className="absolute h-full bg-blue-500 rounded-full transition-all duration-200"
+												style={{ width: `${(FONT_SIZES.indexOf(localFontSize) * 100) / (FONT_SIZES.length - 1)}%` }}
+											/>
 										</div>
 									</div>
 
@@ -424,14 +396,13 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 						</div>
 					</div>
 
-					{/* Pulsante Applica */}
+					{/* Apply Button */}
 					<div className="mt-4 mb-8">
 						<div
-							className="w-full py-3 rounded-lg text-white font-medium text-center"
+							className="w-full py-3 rounded-lg text-white font-medium text-center cursor-pointer transition-all hover:shadow-lg active:scale-[0.98]"
 							onClick={handleCloseModal}
 							style={{
 								background: 'linear-gradient(135deg, #4F7AFF 0%, #6DB2FF 100%)',
-								cursor: 'pointer',
 								WebkitTapHighlightColor: 'transparent'
 							}}
 						>
@@ -443,8 +414,5 @@ const ReadingSettingsModal: React.FC<ReadingSettingsModalProps> = ({ isOpen, onC
 		</IonModal>
 	);
 };
-
-// Variabili per la dimensione del font
-const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl'];
 
 export default ReadingSettingsModal; 
