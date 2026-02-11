@@ -38,7 +38,7 @@
 		"@types/react-router-dom": "^5.3.3",
 		"@types/react-window": "^1.8.8",
 		"async": "^3.2.4",
-		"axios": "^1.7.4",
+		"axios": "^1.13.5",
 		"cheerio": "^1.0.0-rc.12",
 		"connected-react-router": "^6.9.2",
 		"date-fns": "^4.1.0",
